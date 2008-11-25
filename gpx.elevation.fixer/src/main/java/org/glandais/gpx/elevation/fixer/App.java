@@ -44,6 +44,7 @@ public class App {
 		processor.parse();
 		System.out.println(file.getName());
 		processor.showStats();
+
 		//		processElement(gpxFile, gpxFile.getDocumentElement());
 
 		TransformerFactory tf = TransformerFactory.newInstance();
@@ -52,6 +53,9 @@ public class App {
 		Source xmlSource = new DOMSource(processor.getGpxDocument());
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
+
+		processor.createChart(fout.getAbsolutePath() + "/" + file.getName()
+				+ ".png");
 	}
 
 }
