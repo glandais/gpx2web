@@ -1,6 +1,5 @@
 package org.glandais.gpx.elevation.fixer;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,14 +10,11 @@ import org.glandais.srtm.loader.SRTMHelper;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.xy.XYDataset;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -61,6 +57,8 @@ public class GPXProcessor {
 	private void processElement(Document document, Element element)
 			throws Exception {
 		if (element.getTagName().toLowerCase().equals("trkpt")) {
+			processPoint(document, element);
+		} else if (element.getTagName().toLowerCase().equals("rtept")) {
 			processPoint(document, element);
 		} else {
 			NodeList childNodes = element.getChildNodes();
@@ -139,8 +137,8 @@ public class GPXProcessor {
 		plot.setRenderer(1, rendu);
 
 		try {
-			ChartUtilities.saveChartAsPNG(new File(outputFile), chart, 1300,
-					600);
+			ChartUtilities.saveChartAsPNG(new File(outputFile), chart, 1680,
+					1050);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -165,6 +163,47 @@ public class GPXProcessor {
 			previousPoint = p;
 			i++;
 		}
+		zs = postProcess(dists, zs);
 		return new double[][] { dists, zs };
+	}
+
+	private double[] postProcess(double[] dists, double[] zs) {
+		double[] newZs = new double[zs.length];
+		for (int i = 0; i < newZs.length; i++) {
+			newZs[i] = computeNewZ(dists, zs, i);
+		}
+		return newZs;
+	}
+
+	private double computeNewZ(double[] dists, double[] zs, int i) {
+		double dsample = 0.25;
+
+		double ac = dists[i];
+
+		int mini = i - 1;
+		while (mini >= 0 && (ac - dists[mini]) <= dsample) {
+			mini--;
+		}
+		mini++;
+
+		int maxi = i + 1;
+		while (maxi < zs.length && (dists[maxi] - ac) <= dsample) {
+			maxi++;
+		}
+
+		double totc = 0;
+		double totz = 0;
+		for (int j = mini; j < maxi; j++) {
+			double c = 1 - (Math.abs(dists[j] - ac) / dsample);
+			totc = totc + c;
+			totz = totz + zs[j] * c;
+		}
+
+		if (totc == 0) {
+			return zs[i];
+		} else {
+			return totz / totc;
+		}
+
 	}
 }
