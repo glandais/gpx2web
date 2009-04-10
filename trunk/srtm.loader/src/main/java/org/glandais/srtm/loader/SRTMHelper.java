@@ -26,6 +26,7 @@ public class SRTMHelper {
 	}
 
 	public static void main(String[] args) throws Exception {
+		/*
 		System.out.println(SRTMHelper.getInstance().getElevation(6.864167,
 				45.8325));
 		System.out.println(SRTMHelper.getInstance().getElevation(2.35, 48.9));
@@ -41,11 +42,38 @@ public class SRTMHelper {
 			}
 			System.out.println();
 		}
+		*/
+		System.out.println(SRTMHelper.getInstance().getElevation(-5, 45));
+		System.out.println(SRTMHelper.getInstance().getElevation(
+				-4.999999999999, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(
+				-0.000000000001, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(0, 50));
+		System.out.println(SRTMHelper.getInstance().getElevation(
+				-4.999999999999, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(-5, 50));
+		System.out.println(SRTMHelper.getInstance().getElevation(
+				-0.000000000001, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(0, 45));
+		//		http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
+		//http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
+		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876,
+				47.227357));
 
-		System.out.println(SRTMHelper.getInstance().getElevation(-4.9, 45.1));
-		System.out.println(SRTMHelper.getInstance().getElevation(-0.1, 49.9));
-		System.out.println(SRTMHelper.getInstance().getElevation(-4.9, 49.9));
-		System.out.println(SRTMHelper.getInstance().getElevation(-0.1, 45.1));
+		//		double d = 5.0d / 6000.0d;
+		//
+		//		double lon = -1857 * d;
+		//		double lat = 56672 * d;
+		//
+		//		System.out.println(SRTMHelper.getInstance().getElevation(lon, lat));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(lon + d, lat));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(lon + d,
+		//				lat - d));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(lon, lat - d));
+		//
+		//		System.out.println(SRTMHelper.getInstance().getElevation(lon + d / 2.0,
+		//				lat - d / 2.0));
+
 		//				System.out.println(SRTMHelper.getInstance().getElevation(-179, 59));
 	}
 
@@ -82,7 +110,7 @@ public class SRTMHelper {
 		}
 
 		reader.close();
-		asciiResult.delete();
+//		asciiResult.delete();
 	}
 
 	private void writeShort(short dele, BufferedOutputStream bof)
@@ -98,25 +126,59 @@ public class SRTMHelper {
 	}
 
 	private void downloadASCIITile(String fileName) throws Exception {
-		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/"
-				+ fileName + ".ZIP";
-		File zipFile = new File(dataFolder + fileName + ".ZIP");
+		//		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/"
+		//				+ fileName + ".ZIP";
+		//		File zipFile = new File(dataFolder + fileName + ".ZIP");
+
+		String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
+				+ fileName + ".zip";
+		File zipFile = new File(dataFolder + fileName + ".zip");
+
 		saveFile(url, zipFile);
 		unzip(zipFile);
 	}
 
+	//
+	//	public double getElevationOld(double lon, double lat) throws SRTMException {
+	//		double val = 0;
+	//		try {
+	//			File tile = getTile(lat, lon);
+	//			long ilon = getILon(lon);
+	//			long ilat = getILat(lat);
+	//
+	//			double dlon = lon - ((5 * (ilon - 1)) - 180);
+	//			double dlat = (65 - (5 * ilat)) - lat;
+	//
+	//			double dcol = Math.max(0, Math.min(5998.999, (6000 * dlon) / 5));
+	//			double drow = Math.max(0, Math.min(5998.999, (6000 * dlat) / 5));
+	//
+	//			int colmin = (int) Math.round(Math.floor(dcol));
+	//			double coefcolmin = dcol - colmin;
+	//
+	//			int rowmin = (int) Math.round(Math.floor(drow));
+	//			double coefrowmin = drow - rowmin;
+	//
+	//			short[] values = new short[4];
+	//			values[0] = getValue(tile, colmin, rowmin);
+	//			values[1] = getValue(tile, colmin + 1, rowmin);
+	//			values[2] = getValue(tile, colmin, rowmin + 1);
+	//			values[3] = getValue(tile, colmin + 1, rowmin + 1);
+	//
+	//			double val1 = values[0] * (1 - coefcolmin) + values[1] * coefcolmin;
+	//			double val2 = values[2] * (1 - coefcolmin) + values[3] * coefcolmin;
+	//
+	//			val = val1 * (1 - coefrowmin) + val2 * coefrowmin;
+	//		} catch (Exception e) {
+	//			throw new SRTMException(e);
+	//		}
+	//		return val;
+	//	}
+
 	public double getElevation(double lon, double lat) throws SRTMException {
 		double val = 0;
 		try {
-			File tile = getTile(lat, lon);
-			long ilon = getILon(lon);
-			long ilat = getILat(lat);
-
-			double dlon = lon - ((5 * (ilon - 1)) - 180);
-			double dlat = (65 - (5 * ilat)) - lat;
-
-			double dcol = Math.max(0, Math.min(5998.999, (6000 * dlon) / 5));
-			double drow = Math.max(0, Math.min(5998.999, (6000 * dlat) / 5));
+			double dcol = (6000 * (180 + lon)) / 5;
+			double drow = (6000 * (60 - lat)) / 5;
 
 			int colmin = (int) Math.round(Math.floor(dcol));
 			double coefcolmin = dcol - colmin;
@@ -125,37 +187,51 @@ public class SRTMHelper {
 			double coefrowmin = drow - rowmin;
 
 			short[] values = new short[4];
-			values[0] = getValues(tile, colmin, rowmin);
-			values[1] = getValues(tile, colmin + 1, rowmin);
-			values[2] = getValues(tile, colmin, rowmin + 1);
-			values[3] = getValues(tile, colmin + 1, rowmin + 1);
+			values[0] = getValue(colmin, rowmin);
+			values[1] = getValue(colmin + 1, rowmin);
+			values[2] = getValue(colmin, rowmin + 1);
+			values[3] = getValue(colmin + 1, rowmin + 1);
 
-			double val1 = values[0] * coefcolmin + values[1] * (1 - coefcolmin);
-			double val2 = values[2] * coefcolmin + values[3] * (1 - coefcolmin);
+			double val1 = values[0] * (1 - coefcolmin) + values[1] * coefcolmin;
+			double val2 = values[2] * (1 - coefcolmin) + values[3] * coefcolmin;
 
-			val = val1 * coefrowmin + val2 * (1 - coefrowmin);
+			val = val1 * (1 - coefrowmin) + val2 * coefrowmin;
 		} catch (Exception e) {
 			throw new SRTMException(e);
 		}
 		return val;
 	}
 
-	private long getILat(double lat) {
-		double dlat = (60 - lat) / 5.0;
-		long ilat = Math.round(Math.ceil(dlat));
-		return ilat;
+	private short getValue(int colmin, int rowmin) throws Exception {
+		int ilon = (int) Math.round(Math.ceil(colmin / 6000.0));
+		int ilat = (int) Math.round(Math.ceil(rowmin / 6000.0));
+		File tile = getTile(ilon, ilat);
+		int col = colmin - 6000 * (ilon - 1);
+		int row = rowmin - 6000 * (ilat - 1);
+		short result = getValue(tile, col, row);
+		return result;
 	}
+//
+//	private long getILat(double lat) {
+//		double dlat = (60 - lat) / 5.0;
+//		long ilat = Math.round(Math.ceil(dlat));
+//		return ilat;
+//	}
+//
+//	private long getILon(double lon) {
+//		double dlon = (lon + 180) / 5.0;
+//		long ilon = Math.round(Math.ceil(dlon));
+//		return ilon;
+//	}
+//
+//	private File getTile(double lat, double lon) throws Exception {
+//		long ilon = getILon(lon);
+//		long ilat = getILat(lat);
+//		File result = getTile(ilon, ilat);
+//		return result;
+//	}
 
-	private long getILon(double lon) {
-		double dlon = (lon + 180) / 5.0;
-		long ilon = Math.round(Math.ceil(dlon));
-		return ilon;
-	}
-
-	private File getTile(double lat, double lon) throws Exception {
-		long ilon = getILon(lon);
-		long ilat = getILat(lat);
-
+	private File getTile(long ilon, long ilat) throws Exception {
 		String slon = Long.toString(ilon);
 		String slat = Long.toString(ilat);
 		if (slon.length() == 1) {
@@ -167,20 +243,19 @@ public class SRTMHelper {
 		String fileName = "srtm_" + slon + "_" + slat;
 		File result = new File(dataFolder + fileName + ".bin");
 		if (!result.exists()) {
-			File asciiResult = new File(dataFolder + fileName + ".ASC");
+			File asciiResult = new File(dataFolder + fileName + ".asc");
 			if (!asciiResult.exists()) {
 				downloadASCIITile(fileName);
 			}
 			createBin(asciiResult, result);
 		}
-
 		return result;
 	}
 
-	private short getValues(File tile, int colmin, int rowmin) throws Exception {
+	private short getValue(File tile, int col, int row) throws Exception {
 		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(
 				tile));
-		long starti = (rowmin * 6000) + colmin;
+		long starti = (row * 6000) + col;
 		bis.skip(2 * starti);
 		short readShort = readShort(bis);
 		bis.close();
