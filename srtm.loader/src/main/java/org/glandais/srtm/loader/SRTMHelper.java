@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -20,6 +21,10 @@ import org.apache.commons.httpclient.methods.GetMethod;
 public class SRTMHelper {
 
 	private static SRTMHelper instance = new SRTMHelper();
+
+	private File[][] tiles;
+
+	private static final boolean debugging = true;
 
 	public static SRTMHelper getInstance() {
 		return instance;
@@ -83,40 +88,14 @@ public class SRTMHelper {
 
 	private SRTMHelper() {
 		createClient();
-	}
-
-	private void createBin(File asciiResult, File result) throws Exception {
-		FileReader fileReader;
-		fileReader = new FileReader(asciiResult);
-		BufferedReader reader = new BufferedReader(fileReader);
-		for (int i = 0; i < 6; i++) {
-			reader.readLine();
-		}
-		String line = null;
-		short sele = 0;
-
-		BufferedOutputStream bof = new BufferedOutputStream(
-				new FileOutputStream(result), 1024 * 1024);
-
-		while ((line = reader.readLine()) != null) {
-			String[] split = line.split(" ");
-			for (String elevation : split) {
-				sele = Short.parseShort(elevation);
-				if (sele == -9999) {
-					sele = 0;
-				}
-				writeShort(sele, bof);
+		tiles = new File[72][];
+		for (int i = 0; i < tiles.length; i++) {
+			tiles[i] = new File[36];
+			for (int j = 0; j < tiles[i].length; j++) {
+				String fileName = getFileName(i, j);
+				tiles[i][j] = new File(dataFolder + fileName + ".bin");
 			}
 		}
-
-		reader.close();
-		asciiResult.delete();
-	}
-
-	private void writeShort(short dele, BufferedOutputStream bof)
-			throws IOException {
-		bof.write((dele >>> 8) & 0xFF);
-		bof.write((dele >>> 0) & 0xFF);
 	}
 
 	private void createClient() {
@@ -130,49 +109,9 @@ public class SRTMHelper {
 				+ fileName + ".ZIP";
 		File zipFile = new File(dataFolder + fileName + ".ZIP");
 
-		//						String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
-		//								+ fileName + ".zip";
-		//						File zipFile = new File(dataFolder + fileName + ".zip");
-
 		saveFile(url, zipFile);
 		unzip(zipFile);
 	}
-
-	//
-	//	public double getElevationOld(double lon, double lat) throws SRTMException {
-	//		double val = 0;
-	//		try {
-	//			File tile = getTile(lat, lon);
-	//			long ilon = getILon(lon);
-	//			long ilat = getILat(lat);
-	//
-	//			double dlon = lon - ((5 * (ilon - 1)) - 180);
-	//			double dlat = (65 - (5 * ilat)) - lat;
-	//
-	//			double dcol = Math.max(0, Math.min(5998.999, (6000 * dlon) / 5));
-	//			double drow = Math.max(0, Math.min(5998.999, (6000 * dlat) / 5));
-	//
-	//			int colmin = (int) Math.round(Math.floor(dcol));
-	//			double coefcolmin = dcol - colmin;
-	//
-	//			int rowmin = (int) Math.round(Math.floor(drow));
-	//			double coefrowmin = drow - rowmin;
-	//
-	//			short[] values = new short[4];
-	//			values[0] = getValue(tile, colmin, rowmin);
-	//			values[1] = getValue(tile, colmin + 1, rowmin);
-	//			values[2] = getValue(tile, colmin, rowmin + 1);
-	//			values[3] = getValue(tile, colmin + 1, rowmin + 1);
-	//
-	//			double val1 = values[0] * (1 - coefcolmin) + values[1] * coefcolmin;
-	//			double val2 = values[2] * (1 - coefcolmin) + values[3] * coefcolmin;
-	//
-	//			val = val1 * (1 - coefrowmin) + val2 * coefrowmin;
-	//		} catch (Exception e) {
-	//			throw new SRTMException(e);
-	//		}
-	//		return val;
-	//	}
 
 	public double getElevation(double lon, double lat) throws SRTMException {
 		double val = 0;
@@ -208,47 +147,30 @@ public class SRTMHelper {
 		File tile = getTile(ilon, ilat);
 		int col = colmin - 6000 * (ilon - 1);
 		int row = rowmin - 6000 * (ilat - 1);
+
+		boolean changed = false;
+		if (col > 5999) {
+			ilon = ilon + 1;
+			changed = true;
+		}
+		if (row > 5999) {
+			ilat = ilat + 1;
+			changed = true;
+		}
+		if (changed) {
+			tile = getTile(ilon, ilat);
+			col = colmin - 6000 * (ilon - 1);
+			row = rowmin - 6000 * (ilat - 1);
+		}
+
 		short result = getValue(tile, col, row);
 		return result;
 	}
 
-	//
-	//	private long getILat(double lat) {
-	//		double dlat = (60 - lat) / 5.0;
-	//		long ilat = Math.round(Math.ceil(dlat));
-	//		return ilat;
-	//	}
-	//
-	//	private long getILon(double lon) {
-	//		double dlon = (lon + 180) / 5.0;
-	//		long ilon = Math.round(Math.ceil(dlon));
-	//		return ilon;
-	//	}
-	//
-	//	private File getTile(double lat, double lon) throws Exception {
-	//		long ilon = getILon(lon);
-	//		long ilat = getILat(lat);
-	//		File result = getTile(ilon, ilat);
-	//		return result;
-	//	}
-
-	private File getTile(long ilon, long ilat) throws Exception {
-		String slon = Long.toString(ilon);
-		String slat = Long.toString(ilat);
-		if (slon.length() == 1) {
-			slon = "0" + slon;
-		}
-		if (slat.length() == 1) {
-			slat = "0" + slat;
-		}
-		String fileName = "srtm_" + slon + "_" + slat;
-		File result = new File(dataFolder + fileName + ".bin");
+	private File getTile(int ilon, int ilat) throws Exception {
+		File result = tiles[ilon][ilat];
 		if (!result.exists()) {
-			File asciiResult = new File(dataFolder + fileName + ".ASC");
-			if (!asciiResult.exists()) {
-				downloadASCIITile(fileName);
-			}
-			createBin(asciiResult, result);
+			downloadTile(ilon, ilat, result);
 		}
 		return result;
 	}
@@ -268,6 +190,67 @@ public class SRTMHelper {
 		return (short) ((ch1 << 8) + (ch2 << 0));
 	}
 
+	private void downloadTile(int ilon, int ilat, File result) throws Exception {
+		String fileName = getFileName(ilon, ilat);
+		File asciiResult = new File(dataFolder + fileName + ".ASC");
+		if (!asciiResult.exists()) {
+			downloadASCIITile(fileName);
+		}
+		createBin(asciiResult, result);
+	}
+
+	private void createBin(File asciiResult, File result) throws Exception {
+		FileReader fileReader;
+		fileReader = new FileReader(asciiResult);
+		BufferedReader reader = new BufferedReader(fileReader);
+		for (int i = 0; i < 6; i++) {
+			reader.readLine();
+		}
+		String line = null;
+		short sele = 0;
+
+		BufferedOutputStream bof = new BufferedOutputStream(
+				new FileOutputStream(result), 1024 * 1024);
+
+		int l = 0;
+		while ((line = reader.readLine()) != null) {
+			String[] split = line.split(" ");
+			for (String elevation : split) {
+				sele = Short.parseShort(elevation);
+				if (sele == -9999) {
+					sele = 0;
+				}
+				writeShort(sele, bof);
+			}
+			//			System.out.println(l + " - " + split.length);
+			l++;
+		}
+		bof.close();
+		reader.close();
+		if (!debugging) {
+			asciiResult.delete();
+		}
+	}
+
+	private void writeShort(short dele, BufferedOutputStream bof)
+			throws IOException {
+		bof.write((dele >>> 8) & 0xFF);
+		bof.write((dele >>> 0) & 0xFF);
+	}
+
+	private String getFileName(int ilon, int ilat) {
+		String slon = Long.toString(ilon);
+		String slat = Long.toString(ilat);
+		if (slon.length() == 1) {
+			slon = "0" + slon;
+		}
+		if (slat.length() == 1) {
+			slat = "0" + slat;
+		}
+		String fileName = "srtm_" + slon + "_" + slat;
+		return fileName;
+	}
+
 	private void saveFile(String url, File file) throws Exception {
 		GetMethod get = new GetMethod(url);
 		get.setRequestHeader("User-Agent",
@@ -278,6 +261,14 @@ public class SRTMHelper {
 		try {
 			client.executeMethod(get);
 			if (get.getStatusCode() != 404) {
+				long grandtotal = -1;
+				long total = 0;
+				long previoustotal = 0;
+				long previousTime = System.currentTimeMillis();
+				long previouspercent = 0;
+				if (get.getResponseContentLength() > 0) {
+					grandtotal = get.getResponseContentLength();
+				}
 				InputStream in = new BufferedInputStream(get
 						.getResponseBodyAsStream());
 				OutputStream out = new BufferedOutputStream(
@@ -286,6 +277,26 @@ public class SRTMHelper {
 				int count = -1;
 				while ((count = in.read(buffer)) != -1) {
 					out.write(buffer, 0, count);
+					if (grandtotal > -1) {
+						total += count;
+						long percent = (100 * total) / grandtotal;
+						if (previouspercent != percent) {
+							long time = System.currentTimeMillis();
+
+							long difftotal = total - previoustotal;
+							long difftime = time - previousTime;
+							long speed = -1;
+							if (difftime > 0) {
+								speed = difftotal / difftime;
+							}
+							System.out.println(file.getAbsolutePath() + " : "
+									+ percent + "% (" + speed + "kB/s)");
+
+							previouspercent = percent;
+							previoustotal = total;
+							previousTime = time;
+						}
+					}
 				}
 				out.flush();
 				out.close();

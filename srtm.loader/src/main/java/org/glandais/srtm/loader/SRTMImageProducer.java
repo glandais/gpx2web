@@ -21,10 +21,19 @@ public class SRTMImageProducer {
 	private double maxz = Double.MIN_VALUE;
 
 	public static void main(String[] args) throws Exception {
-		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
-				47.5, 200, 0);
+//		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
+//				47.5, 200, 0);
+		
+//		System.out.println(SRTMHelper.getInstance().getElevation(4, 44.9997));
+//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 44.9997));
+//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 45.0003));
+//		System.out.println(SRTMHelper.getInstance().getElevation(4, 45.0003));
+		
+		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999, 45.0001,
+				45.9999, 200, 0);
 		imageProducer.fillWithZ();
 		imageProducer.saveImage("/tmp/map.png");
+		
 	}
 
 	public void saveImage(String fileName) throws IOException {
