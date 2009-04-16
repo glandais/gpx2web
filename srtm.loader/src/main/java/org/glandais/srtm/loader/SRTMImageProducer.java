@@ -1,0 +1,126 @@
+package org.glandais.srtm.loader;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+
+public class SRTMImageProducer {
+
+	private BufferedImage image;
+
+	private double minlon;
+	private double minlat;
+	private double maxlon;
+	private double maxlat;
+	private int width;
+	private int height;
+	private double minz = Double.MAX_VALUE;
+	private double maxz = Double.MIN_VALUE;
+
+	public static void main(String[] args) throws Exception {
+		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
+				47.5, 200, 0);
+		imageProducer.fillWithZ();
+		imageProducer.saveImage("/tmp/map.png");
+	}
+
+	public void saveImage(String fileName) throws IOException {
+		ImageIO.write(image, "png", new File(fileName));
+	}
+
+	public SRTMImageProducer(double minlon, double maxlon, double minlat,
+			double maxlat, int width, double margin) {
+		super();
+
+		double lonmiddle = (maxlon + minlon) / 2;
+		double lonwidht = (maxlon - minlon) * (1.0 + margin);
+		this.minlon = lonmiddle - lonwidht / 2.0;
+		this.maxlon = lonmiddle + lonwidht / 2.0;
+
+		double latmiddle = (maxlat + minlat) / 2;
+		double latwidht = (maxlat - minlat) * (1.0 + margin);
+		this.minlat = latmiddle - latwidht / 2.0;
+		this.maxlat = latmiddle + latwidht / 2.0;
+
+		this.width = width;
+		this.height = (int) Math.round((1.0 * width * (maxlat - minlat))
+				/ (maxlon - minlon));
+		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+	}
+
+	public void fillWithZ() throws SRTMException {
+		double[][] zs = new double[width][];
+		for (int i = 0; i < width; i++) {
+			zs[i] = new double[height];
+			for (int j = 0; j < height; j++) {
+				double lon = getLon(i);
+				double lat = getLat(j);
+				double z = SRTMHelper.getInstance().getElevation(lon, lat);
+				if (z < minz) {
+					minz = z;
+				}
+				if (z > maxz) {
+					maxz = z;
+				}
+				zs[i][j] = z;
+			}
+		}
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				double z = zs[i][j];
+				image.setRGB(i, j, getRgb(getRelativeZ(z)));
+			}
+		}
+	}
+
+	private double getRelativeZ(double z) {
+		return (z - minz) / (maxz - minz);
+	}
+
+	private int getRgb(double d) {
+		int r = (int) Math.round(255 * d);
+		int g = r;
+		int b = r;
+		return (r << 16) + (g << 8) + b;
+	}
+
+	private double getLat(int j) {
+		return minlat + (1.0 * (height - 1 - j) * (maxlat - minlat)) / height;
+	}
+
+	private double getLon(int i) {
+		return minlon + (1.0 * i * (maxlon - minlon)) / width;
+	}
+
+	public void addPoints(List<Point> points) {
+		for (Point point : points) {
+			int i = getI(point.getLon());
+			int j = getJ(point.getLat());
+			int c = getColor(getRelativeZ(point.getZ()));
+			image.setRGB(i, j, c);
+		}
+	}
+
+	private int getColor(double z) {
+		int r = (int) Math.round(255 * z);
+		int g = 255 - (r / 2);
+		int b = (r / 2);
+		return (r << 16) + (g << 8) + b;
+	}
+
+	private int getJ(double lat) {
+		int j = (int) Math.round(1.0 * height * (maxlat - lat)
+				/ (maxlat - minlat));
+		return j;
+	}
+
+	private int getI(double lon) {
+		int i = (int) Math.round(1.0 * width * (lon - minlon)
+				/ (maxlon - minlon));
+		return i;
+	}
+
+}
