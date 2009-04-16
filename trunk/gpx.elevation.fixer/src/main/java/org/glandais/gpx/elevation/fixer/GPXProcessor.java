@@ -98,12 +98,12 @@ public class GPXProcessor {
 		}
 	}
 
-	public void createCharts(String string) throws Exception {
+	public void createCharts(String string, int maxsize) throws Exception {
 		for (GPXPath path : paths) {
 			System.out.println("chart " + path.getName());
 			path.createChart(string);
 			System.out.println("map " + path.getName());
-			path.createMap(string);
+			path.createMap(string, maxsize);
 		}
 
 	}
