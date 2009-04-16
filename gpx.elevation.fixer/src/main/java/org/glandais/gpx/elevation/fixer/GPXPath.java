@@ -26,9 +26,9 @@ public class GPXPath {
 	private double totalElevation = 0;
 	private double previousElevation = -9999;
 	private double minlon = Double.MAX_VALUE;
-	private double maxlon = Double.MIN_VALUE;
+	private double maxlon = - Double.MAX_VALUE;
 	private double minlat = Double.MAX_VALUE;
-	private double maxlat = Double.MIN_VALUE;
+	private double maxlat = - Double.MAX_VALUE;
 
 	private List<Point> points = new ArrayList<Point>();
 	private String name;
@@ -49,10 +49,9 @@ public class GPXPath {
 		System.out.println("total elevation : " + totalElevation);
 	}
 
-	public void processPoint(double lon, double lat, Element ele)
-			throws SRTMException {
+	public void processPoint(double lon, double lat, Element ele) throws SRTMException {
 		double elevation = -100;
-		
+
 		if (lon < minlon) {
 			minlon = lon;
 		}
@@ -111,12 +110,11 @@ public class GPXPath {
 		return new double[][] { dists, zs };
 	}
 
-	public void createMap(String outputFile) throws Exception {
+	public void createMap(String outputFile, int maxsize) throws Exception {
 		String imgPath = outputFile + name + ".map.png";
-		SRTMImageProducer imageProducer = new SRTMImageProducer(minlon, maxlon,
-				minlat, maxlat, 300, 0.2);
+		SRTMImageProducer imageProducer = new SRTMImageProducer(minlon, maxlon, minlat, maxlat, maxsize, 0.2);
 		imageProducer.fillWithZ();
-		imageProducer.addPoints(points);
+		imageProducer.addPoints(points, minElevation, maxElevation);
 		imageProducer.saveImage(imgPath);
 	}
 
@@ -125,8 +123,8 @@ public class GPXPath {
 
 		DefaultXYDataset dataset = new DefaultXYDataset();
 		dataset.addSeries("", getSerie());
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z",
-				dataset, PlotOrientation.VERTICAL, false, false, false);
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false,
+				false, false);
 
 		XYPlot plot = (XYPlot) chart.getPlot();
 

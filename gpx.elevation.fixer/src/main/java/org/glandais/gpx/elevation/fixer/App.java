@@ -24,8 +24,7 @@ public class App {
 		File fout = new File(args[1]);
 		File[] listFiles = fin.listFiles();
 		for (File file : listFiles) {
-			if (!file.getName().startsWith(".")
-					&& file.getName().toLowerCase().endsWith(".gpx")) {
+			if (!file.getName().startsWith(".") && file.getName().toLowerCase().endsWith(".gpx")) {
 				try {
 					processfile(file, fout);
 				} catch (Exception e) {
@@ -45,8 +44,6 @@ public class App {
 		System.out.println(file.getName());
 		processor.showStats();
 
-		//		processElement(gpxFile, gpxFile.getDocumentElement());
-
 		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer transformer = tf.newTransformer();
 		File fileOut = new File(fout.getAbsolutePath() + "/" + file.getName());
@@ -54,7 +51,7 @@ public class App {
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
 
-		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName());
+		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(), 100);
 	}
 
 }
