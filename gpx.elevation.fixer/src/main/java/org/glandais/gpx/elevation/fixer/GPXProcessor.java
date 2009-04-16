@@ -100,7 +100,9 @@ public class GPXProcessor {
 
 	public void createCharts(String string) throws Exception {
 		for (GPXPath path : paths) {
+			System.out.println("chart " + path.getName());
 			path.createChart(string);
+			System.out.println("map " + path.getName());
 			path.createMap(string);
 		}
 
