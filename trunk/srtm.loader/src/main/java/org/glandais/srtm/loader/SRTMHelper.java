@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,7 +23,7 @@ public class SRTMHelper {
 
 	private File[][] tiles;
 
-	private static final boolean debugging = true;
+	private static final boolean debugging = false;
 
 	public static SRTMHelper getInstance() {
 		return instance;
@@ -49,21 +48,16 @@ public class SRTMHelper {
 		}
 		*/
 		System.out.println(SRTMHelper.getInstance().getElevation(-5, 45));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-4.999999999999, 45.000000000001));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-0.000000000001, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 49.999999999999));
 		System.out.println(SRTMHelper.getInstance().getElevation(0, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-4.999999999999, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 49.999999999999));
 		System.out.println(SRTMHelper.getInstance().getElevation(-5, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-0.000000000001, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 45.000000000001));
 		System.out.println(SRTMHelper.getInstance().getElevation(0, 45));
 		//		http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
 		//http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
-		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876,
-				47.227357));
+		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876, 47.227357));
 
 		//		double d = 5.0d / 6000.0d;
 		//
@@ -82,7 +76,7 @@ public class SRTMHelper {
 		//				System.out.println(SRTMHelper.getInstance().getElevation(-179, 59));
 	}
 
-	private String dataFolder = "/opt/srtm/";
+	private String dataFolder = "F:/srtm/";
 
 	private HttpClient client = null;
 
@@ -99,17 +93,16 @@ public class SRTMHelper {
 	}
 
 	private void createClient() {
-		System.getProperties().setProperty("httpclient.useragent",
-				"Mozilla/4.0");
+		System.getProperties().setProperty("httpclient.useragent", "Mozilla/4.0");
 		client = new HttpClient(new MultiThreadedHttpConnectionManager());
 	}
 
 	private void downloadASCIITile(String fileName) throws Exception {
-		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/"
-				+ fileName + ".ZIP";
+		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/" + fileName + ".ZIP";
 		File zipFile = new File(dataFolder + fileName + ".ZIP");
-
-		saveFile(url, zipFile);
+		if (!zipFile.exists()) {
+			saveFile(url, zipFile);
+		}
 		unzip(zipFile);
 	}
 
@@ -209,8 +202,7 @@ public class SRTMHelper {
 		String line = null;
 		short sele = 0;
 
-		BufferedOutputStream bof = new BufferedOutputStream(
-				new FileOutputStream(result), 1024 * 1024);
+		BufferedOutputStream bof = new BufferedOutputStream(new FileOutputStream(result), 1024 * 1024);
 
 		int l = 0;
 		while ((line = reader.readLine()) != null) {
@@ -232,8 +224,7 @@ public class SRTMHelper {
 		}
 	}
 
-	private void writeShort(short dele, BufferedOutputStream bof)
-			throws IOException {
+	private void writeShort(short dele, BufferedOutputStream bof) throws IOException {
 		bof.write((dele >>> 8) & 0xFF);
 		bof.write((dele >>> 0) & 0xFF);
 	}
@@ -253,8 +244,7 @@ public class SRTMHelper {
 
 	private void saveFile(String url, File file) throws Exception {
 		GetMethod get = new GetMethod(url);
-		get.setRequestHeader("User-Agent",
-				"Mozilla/4.0 (compatible; MSIE 6.0; Windows 2000)");
+		get.setRequestHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows 2000)");
 
 		get.setFollowRedirects(true);
 		Exception tothrow = null;
@@ -269,10 +259,8 @@ public class SRTMHelper {
 				if (get.getResponseContentLength() > 0) {
 					grandtotal = get.getResponseContentLength();
 				}
-				InputStream in = new BufferedInputStream(get
-						.getResponseBodyAsStream());
-				OutputStream out = new BufferedOutputStream(
-						new FileOutputStream(file));
+				InputStream in = new BufferedInputStream(get.getResponseBodyAsStream());
+				OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 				byte[] buffer = new byte[1024];
 				int count = -1;
 				while ((count = in.read(buffer)) != -1) {
@@ -289,8 +277,7 @@ public class SRTMHelper {
 							if (difftime > 0) {
 								speed = difftotal / difftime;
 							}
-							System.out.println(file.getAbsolutePath() + " : "
-									+ percent + "% (" + speed + "kB/s)");
+							System.out.println(file.getAbsolutePath() + " : " + percent + "% (" + speed + "kB/s)");
 
 							previouspercent = percent;
 							previoustotal = total;
@@ -320,8 +307,7 @@ public class SRTMHelper {
 		while ((entry = zis.getNextEntry()) != null) {
 			int count;
 			byte data[] = new byte[2048];
-			FileOutputStream fos = new FileOutputStream(dataFolder
-					+ entry.getName());
+			FileOutputStream fos = new FileOutputStream(dataFolder + entry.getName());
 			dest = new BufferedOutputStream(fos, 2048);
 			while ((count = zis.read(data, 0, 2048)) != -1) {
 				dest.write(data, 0, count);
