@@ -110,7 +110,7 @@ public class SRTMHelper {
 		}
 
 		reader.close();
-//		asciiResult.delete();
+		asciiResult.delete();
 	}
 
 	private void writeShort(short dele, BufferedOutputStream bof)
@@ -126,13 +126,13 @@ public class SRTMHelper {
 	}
 
 	private void downloadASCIITile(String fileName) throws Exception {
-		//		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/"
-		//				+ fileName + ".ZIP";
-		//		File zipFile = new File(dataFolder + fileName + ".ZIP");
+		String url = "http://hypersphere.telascience.org/elevation/cgiar_srtm_v4/ascii/zip/"
+				+ fileName + ".ZIP";
+		File zipFile = new File(dataFolder + fileName + ".ZIP");
 
-		String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
-				+ fileName + ".zip";
-		File zipFile = new File(dataFolder + fileName + ".zip");
+		//						String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
+		//								+ fileName + ".zip";
+		//						File zipFile = new File(dataFolder + fileName + ".zip");
 
 		saveFile(url, zipFile);
 		unzip(zipFile);
@@ -211,25 +211,26 @@ public class SRTMHelper {
 		short result = getValue(tile, col, row);
 		return result;
 	}
-//
-//	private long getILat(double lat) {
-//		double dlat = (60 - lat) / 5.0;
-//		long ilat = Math.round(Math.ceil(dlat));
-//		return ilat;
-//	}
-//
-//	private long getILon(double lon) {
-//		double dlon = (lon + 180) / 5.0;
-//		long ilon = Math.round(Math.ceil(dlon));
-//		return ilon;
-//	}
-//
-//	private File getTile(double lat, double lon) throws Exception {
-//		long ilon = getILon(lon);
-//		long ilat = getILat(lat);
-//		File result = getTile(ilon, ilat);
-//		return result;
-//	}
+
+	//
+	//	private long getILat(double lat) {
+	//		double dlat = (60 - lat) / 5.0;
+	//		long ilat = Math.round(Math.ceil(dlat));
+	//		return ilat;
+	//	}
+	//
+	//	private long getILon(double lon) {
+	//		double dlon = (lon + 180) / 5.0;
+	//		long ilon = Math.round(Math.ceil(dlon));
+	//		return ilon;
+	//	}
+	//
+	//	private File getTile(double lat, double lon) throws Exception {
+	//		long ilon = getILon(lon);
+	//		long ilat = getILat(lat);
+	//		File result = getTile(ilon, ilat);
+	//		return result;
+	//	}
 
 	private File getTile(long ilon, long ilat) throws Exception {
 		String slon = Long.toString(ilon);
@@ -243,7 +244,7 @@ public class SRTMHelper {
 		String fileName = "srtm_" + slon + "_" + slat;
 		File result = new File(dataFolder + fileName + ".bin");
 		if (!result.exists()) {
-			File asciiResult = new File(dataFolder + fileName + ".asc");
+			File asciiResult = new File(dataFolder + fileName + ".ASC");
 			if (!asciiResult.exists()) {
 				downloadASCIITile(fileName);
 			}
@@ -253,16 +254,15 @@ public class SRTMHelper {
 	}
 
 	private short getValue(File tile, int col, int row) throws Exception {
-		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(
-				tile));
+		FileInputStream fis = new FileInputStream(tile);
 		long starti = (row * 6000) + col;
-		bis.skip(2 * starti);
-		short readShort = readShort(bis);
-		bis.close();
+		fis.skip(2 * starti);
+		short readShort = readShort(fis);
+		fis.close();
 		return readShort;
 	}
 
-	private short readShort(BufferedInputStream bis) throws IOException {
+	private short readShort(FileInputStream bis) throws IOException {
 		int ch1 = bis.read();
 		int ch2 = bis.read();
 		return (short) ((ch1 << 8) + (ch2 << 0));

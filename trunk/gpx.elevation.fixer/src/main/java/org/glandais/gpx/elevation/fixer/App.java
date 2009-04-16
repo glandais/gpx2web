@@ -54,8 +54,7 @@ public class App {
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
 
-		processor.createChart(fout.getAbsolutePath() + "/" + file.getName()
-				+ ".png");
+		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName());
 	}
 
 }
