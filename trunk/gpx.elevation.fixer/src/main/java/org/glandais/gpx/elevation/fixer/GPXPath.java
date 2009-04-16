@@ -38,6 +38,10 @@ public class GPXPath {
 		this.name = name;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public void showStats() {
 		System.out.println(name);
 		System.out.println("min elevation : " + minElevation);
