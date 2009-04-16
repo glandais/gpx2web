@@ -1,5 +1,7 @@
 package org.glandais.srtm.loader;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,30 +20,30 @@ public class SRTMImageProducer {
 	private int width;
 	private int height;
 	private double minz = Double.MAX_VALUE;
-	private double maxz = Double.MIN_VALUE;
+	private double maxz = - Double.MAX_VALUE;
+
+	private Graphics2D graphics;
 
 	public static void main(String[] args) throws Exception {
-//		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
-//				47.5, 200, 0);
-		
-//		System.out.println(SRTMHelper.getInstance().getElevation(4, 44.9997));
-//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 44.9997));
-//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 45.0003));
-//		System.out.println(SRTMHelper.getInstance().getElevation(4, 45.0003));
-		
-		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999, 45.0001,
-				45.9999, 200, 0);
+		//		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
+		//				47.5, 200, 0);
+
+		//		System.out.println(SRTMHelper.getInstance().getElevation(4, 44.9997));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 44.9997));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 45.0003));
+		//		System.out.println(SRTMHelper.getInstance().getElevation(4, 45.0003));
+
+		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999, 45.0001, 45.9999, 200, 0);
 		imageProducer.fillWithZ();
 		imageProducer.saveImage("/tmp/map.png");
-		
+
 	}
 
 	public void saveImage(String fileName) throws IOException {
 		ImageIO.write(image, "png", new File(fileName));
 	}
 
-	public SRTMImageProducer(double minlon, double maxlon, double minlat,
-			double maxlat, int width, double margin) {
+	public SRTMImageProducer(double minlon, double maxlon, double minlat, double maxlat, int maxsize, double margin) {
 		super();
 
 		double lonmiddle = (maxlon + minlon) / 2;
@@ -54,10 +56,16 @@ public class SRTMImageProducer {
 		this.minlat = latmiddle - latwidht / 2.0;
 		this.maxlat = latmiddle + latwidht / 2.0;
 
-		this.width = width;
-		this.height = (int) Math.round((1.0 * width * (maxlat - minlat))
-				/ (maxlon - minlon));
+		if (lonwidht > latwidht) {
+			this.width = maxsize;
+			this.height = (int) Math.round((1.0 * maxsize * (maxlat - minlat)) / (maxlon - minlon));
+		} else {
+			this.height = maxsize;
+			this.width = (int) Math.round((1.0 * maxsize * (maxlon - minlon)) / (maxlat - minlat));
+		}
+
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		graphics = image.createGraphics();
 	}
 
 	public void fillWithZ() throws SRTMException {
@@ -80,12 +88,12 @@ public class SRTMImageProducer {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				double z = zs[i][j];
-				image.setRGB(i, j, getRgb(getRelativeZ(z)));
+				image.setRGB(i, j, getRgb(getRelativeZ(z, minz, maxz)));
 			}
 		}
 	}
 
-	private double getRelativeZ(double z) {
+	private double getRelativeZ(double z, double minz, double maxz) {
 		return (z - minz) / (maxz - minz);
 	}
 
@@ -104,12 +112,21 @@ public class SRTMImageProducer {
 		return minlon + (1.0 * i * (maxlon - minlon)) / width;
 	}
 
-	public void addPoints(List<Point> points) {
+	public void addPoints(List<Point> points, double trackminz, double trackmaxz) {
+		boolean first = true;
+		int previ = 0;
+		int prevj = 0;
 		for (Point point : points) {
 			int i = getI(point.getLon());
 			int j = getJ(point.getLat());
-			int c = getColor(getRelativeZ(point.getZ()));
-			image.setRGB(i, j, c);
+			if (!first) {
+				int c = getColor(getRelativeZ(point.getZ(), trackminz, trackmaxz));
+				graphics.setColor(new Color(c));
+				graphics.drawLine(previ, prevj, i, j);
+			}
+			previ = i;
+			prevj = j;
+			first = false;
 		}
 	}
 
@@ -121,14 +138,12 @@ public class SRTMImageProducer {
 	}
 
 	private int getJ(double lat) {
-		int j = (int) Math.round(1.0 * height * (maxlat - lat)
-				/ (maxlat - minlat));
+		int j = (int) Math.round(1.0 * height * (maxlat - lat) / (maxlat - minlat));
 		return j;
 	}
 
 	private int getI(double lon) {
-		int i = (int) Math.round(1.0 * width * (lon - minlon)
-				/ (maxlon - minlon));
+		int i = (int) Math.round(1.0 * width * (lon - minlon) / (maxlon - minlon));
 		return i;
 	}
 
