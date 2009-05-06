@@ -76,7 +76,7 @@ public class SRTMHelper {
 		//				System.out.println(SRTMHelper.getInstance().getElevation(-179, 59));
 	}
 
-	private String dataFolder = "F:/srtm/";
+	private String dataFolder = "/opt/srtm/";
 
 	private HttpClient client = null;
 
