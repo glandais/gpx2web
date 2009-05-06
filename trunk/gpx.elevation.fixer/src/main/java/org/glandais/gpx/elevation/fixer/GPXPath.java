@@ -25,10 +25,10 @@ public class GPXPath {
 	private double maxElevation = -10000;
 	private double totalElevation = 0;
 	private double previousElevation = -9999;
-	private double minlon = Double.MAX_VALUE;
-	private double maxlon = - Double.MAX_VALUE;
-	private double minlat = Double.MAX_VALUE;
-	private double maxlat = - Double.MAX_VALUE;
+	private double minlon = 180;
+	private double maxlon = - 180;
+	private double minlat = 180;
+	private double maxlat = - 180;
 
 	private List<Point> points = new ArrayList<Point>();
 	private String name;
