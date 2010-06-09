@@ -3,6 +3,9 @@ package org.glandais.gpx.elevation.fixer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.glandais.srtm.loader.Point;
@@ -17,6 +20,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Element;
 
 public class GPXPath {
@@ -26,16 +31,20 @@ public class GPXPath {
 	private double totalElevation = 0;
 	private double previousElevation = -9999;
 	private double minlon = 180;
-	private double maxlon = - 180;
+	private double maxlon = -180;
 	private double minlat = 180;
-	private double maxlat = - 180;
+	private double maxlat = -180;
+	private long currentTime = 0;
+	DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 
-	private List<Point> points = new ArrayList<Point>();
+	private List<GPXPoint> points = new ArrayList<GPXPoint>();
 	private String name;
+	private GPXBikeTimeEval bikeTimeEval;
 
-	public GPXPath(String name) {
+	public GPXPath(String name, GPXBikeTimeEval bikeTimeEval) {
 		super();
 		this.name = name;
+		this.bikeTimeEval = bikeTimeEval;
 	}
 
 	public String getName() {
@@ -49,7 +58,8 @@ public class GPXPath {
 		System.out.println("total elevation : " + totalElevation);
 	}
 
-	public void processPoint(double lon, double lat, Element ele) throws SRTMException {
+	public void processPoint(double lon, double lat, Element eleEle,
+			Element timeEle) throws SRTMException {
 		double elevation = -100;
 
 		if (lon < minlon) {
@@ -66,7 +76,6 @@ public class GPXPath {
 		}
 
 		elevation = SRTMHelper.getInstance().getElevation(lon, lat);
-		ele.setTextContent(Double.toString(elevation));
 
 		if (elevation < minElevation) {
 			minElevation = elevation;
@@ -80,8 +89,10 @@ public class GPXPath {
 				totalElevation += dz;
 			}
 		}
-		Point p = new Point(lon, lat);
+
+		GPXPoint p = new GPXPoint(lon, lat, eleEle, timeEle);
 		p.setZ(elevation);
+
 		points.add(p);
 
 		previousElevation = elevation;
@@ -106,13 +117,14 @@ public class GPXPath {
 			previousPoint = p;
 			i++;
 		}
-		zs = postProcess(dists, zs);
+		// zs = postProcess(dists, zs);
 		return new double[][] { dists, zs };
 	}
 
 	public void createMap(String outputFile, int maxsize) throws Exception {
 		String imgPath = outputFile + name + ".map.png";
-		SRTMImageProducer imageProducer = new SRTMImageProducer(minlon, maxlon, minlat, maxlat, maxsize, 0.2);
+		SRTMImageProducer imageProducer = new SRTMImageProducer(minlon, maxlon,
+				minlat, maxlat, maxsize, 0.2);
 		imageProducer.fillWithZ();
 		imageProducer.addPoints(points, minElevation, maxElevation);
 		imageProducer.saveImage(imgPath);
@@ -123,8 +135,8 @@ public class GPXPath {
 
 		DefaultXYDataset dataset = new DefaultXYDataset();
 		dataset.addSeries("", getSerie());
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false,
-				false, false);
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z",
+				dataset, PlotOrientation.VERTICAL, false, false, false);
 
 		XYPlot plot = (XYPlot) chart.getPlot();
 
@@ -147,7 +159,8 @@ public class GPXPath {
 	}
 
 	private double computeNewZ(double[] dists, double[] zs, int i) {
-		double dsample = 0.25;
+//		double dsample = 0.25;
+		double dsample = 1;
 
 		double ac = dists[i];
 
@@ -176,5 +189,54 @@ public class GPXPath {
 			return totz / totc;
 		}
 
+	}
+
+	public void postProcess() {
+		double[] dists = new double[points.size()];
+		double[] zs = new double[points.size()];
+		Point previousPoint = null;
+		int i = 0;
+		double d = 0;
+		for (Point p : points) {
+			if (previousPoint != null) {
+				double dz = previousPoint.distanceTo(p);
+				if (Double.toString(dz).contains("NaN")) {
+					dz = 0;
+				}
+				d += dz;
+			}
+			dists[i] = d;
+			zs[i] = p.getZ();
+			previousPoint = p;
+			i++;
+		}
+		zs = postProcess(dists, zs);
+
+		GregorianCalendar today = new GregorianCalendar();
+		today.set(Calendar.HOUR_OF_DAY, 0);
+		today.set(Calendar.MINUTE, 0);
+		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.MILLISECOND, 0);
+		currentTime = today.getTimeInMillis();
+		for (int j = 0; j < zs.length; j++) {
+			GPXPoint p = points.get(j);
+			p.setZ(zs[j]);
+			p.getEleEle().setTextContent(Double.toString(zs[j]));
+			if (j > 0) {
+				Point prevPoint = points.get(j - 1);
+				// en km double
+				double dist = prevPoint.distanceTo(p);
+				if (dist > 0.005) {
+					double dz = p.getZ() - prevPoint.getZ();
+					double pente = (dz * 0.1) / dist;
+					// vitesse en km/h
+					double vitesse = bikeTimeEval.getVitesse(pente); // temps!
+					long ts = Math.round((dist / vitesse) * 60 * 60 * 1000);
+					currentTime = currentTime + ts;
+				}
+			}
+			String time = fmt.print(currentTime);
+			p.getTimeEle().setTextContent(time);
+		}
 	}
 }

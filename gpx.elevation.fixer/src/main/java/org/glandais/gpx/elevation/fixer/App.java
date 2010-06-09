@@ -23,10 +23,12 @@ public class App {
 		File fin = new File(args[0]);
 		File fout = new File(args[1]);
 		File[] listFiles = fin.listFiles();
+		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(100, 170);
 		for (File file : listFiles) {
-			if (!file.getName().startsWith(".") && file.getName().toLowerCase().endsWith(".gpx")) {
+			if (!file.getName().startsWith(".")
+					&& file.getName().toLowerCase().endsWith(".gpx")) {
 				try {
-					processfile(file, fout);
+					processfile(file, fout, bikeTimeEval);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -34,13 +36,15 @@ public class App {
 		}
 	}
 
-	private static void processfile(File file, File fout) throws Exception {
+	private static void processfile(File file, File fout,
+			GPXBikeTimeEval bikeTimeEval) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(file);
 
-		GPXProcessor processor = new GPXProcessor(gpxFile);
+		GPXProcessor processor = new GPXProcessor(gpxFile, bikeTimeEval);
 		processor.parse();
+		processor.postProcess();		
 		System.out.println(file.getName());
 		processor.showStats();
 
@@ -51,7 +55,8 @@ public class App {
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
 
-		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(), 100);
+		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(),
+				10);
 	}
 
 }

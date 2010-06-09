@@ -1,8 +1,11 @@
 package org.glandais.gpx.elevation.fixer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -15,11 +18,16 @@ public class GPXProcessor {
 	private List<GPXPath> paths = new ArrayList<GPXPath>();
 	private GPXPath currentPath;
 
-	//	private Point previousPoint = null;
+	DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 
-	public GPXProcessor(Document gpxDocument) {
+	private GPXBikeTimeEval bikeTimeEval;
+
+	// private Point previousPoint = null;
+
+	public GPXProcessor(Document gpxDocument, GPXBikeTimeEval bikeTimeEval) {
 		super();
 		this.gpxDocument = gpxDocument;
+		this.bikeTimeEval = bikeTimeEval;
 	}
 
 	public Document getGpxDocument() {
@@ -39,7 +47,7 @@ public class GPXProcessor {
 			if (nameElement != null) {
 				name = nameElement.getTextContent();
 			}
-			currentPath = new GPXPath(name);
+			currentPath = new GPXPath(name, bikeTimeEval);
 			paths.add(currentPath);
 		}
 
@@ -63,8 +71,9 @@ public class GPXProcessor {
 		double lon = Double.parseDouble(element.getAttribute("lon"));
 		double lat = Double.parseDouble(element.getAttribute("lat"));
 
-		Element ele = findElementEle(document, element);
-		currentPath.processPoint(lon, lat, ele);
+		Element eleEle = findElementEle(document, element);
+		Element eleTime = findElementTime(document, element);
+		currentPath.processPoint(lon, lat, eleEle, eleTime);
 	}
 
 	private Element findElementEle(Document document, Element element) {
@@ -72,6 +81,17 @@ public class GPXProcessor {
 		if (ele == null) {
 			ele = document.createElement("ele");
 			ele.setTextContent("0");
+			element.appendChild(ele);
+		}
+		return ele;
+	}
+
+	private Element findElementTime(Document document, Element element) {
+		Element ele = findElement(element, "time");
+		if (ele == null) {
+			ele = document.createElement("time");
+			String time = fmt.print(new Date().getTime());
+			ele.setTextContent(time);
 			element.appendChild(ele);
 		}
 		return ele;
@@ -106,6 +126,13 @@ public class GPXProcessor {
 			path.createMap(string, maxsize);
 		}
 
+	}
+
+	public void postProcess() {
+		for (GPXPath path : paths) {
+			System.out.println("postProcess " + path.getName());
+			path.postProcess();
+		}		
 	}
 
 }
