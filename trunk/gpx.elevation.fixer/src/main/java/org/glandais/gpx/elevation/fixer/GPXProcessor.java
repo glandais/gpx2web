@@ -1,9 +1,12 @@
 package org.glandais.gpx.elevation.fixer;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.glandais.srtm.loader.Point;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Document;
@@ -14,11 +17,17 @@ import org.w3c.dom.NodeList;
 public class GPXProcessor {
 
 	private Document gpxDocument;
+	private Element gpxElement;
+	private Element refElement;
 
 	private List<GPXPath> paths = new ArrayList<GPXPath>();
 	private GPXPath currentPath;
 
+	private List<Point> wpts = new ArrayList<Point>();
+
 	DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+	DateTimeFormatter fmt2 = ISODateTimeFormat.hourMinute();
+	DateTimeFormatter fmt3 = ISODateTimeFormat.hourMinuteSecond();
 
 	private GPXBikeTimeEval bikeTimeEval;
 
@@ -41,13 +50,23 @@ public class GPXProcessor {
 	private void processElement(Document document, Element element)
 			throws Exception {
 		String tagName = element.getTagName().toLowerCase();
+
+		if (tagName.equals("gpx")) {
+			gpxElement = element;
+			refElement = null;
+		}
+
 		if (tagName.equals("trk") || tagName.equals("rte")) {
+			if (refElement == null) {
+				refElement = element;
+			}
+
 			Element nameElement = findElement(element, "name");
 			String name = "path-" + paths.size();
 			if (nameElement != null) {
 				name = nameElement.getTextContent();
 			}
-			currentPath = new GPXPath(name, bikeTimeEval);
+			currentPath = new GPXPath(name, bikeTimeEval, wpts);
 			paths.add(currentPath);
 		}
 
@@ -55,6 +74,15 @@ public class GPXProcessor {
 			processPoint(document, element);
 		} else if (tagName.equals("rtept")) {
 			processPoint(document, element);
+		} else if (tagName.equals("wpt")) {
+			double lon = Double.parseDouble(element.getAttribute("lon"));
+			double lat = Double.parseDouble(element.getAttribute("lat"));
+			Point p = new Point(lon, lat);
+			Element eleName = findElement(element, "name");
+			if (eleName != null) {
+				p.setCaption(eleName.getTextContent());
+			}
+			wpts.add(p);
 		} else {
 			NodeList childNodes = element.getChildNodes();
 			for (int i = 0; i < childNodes.getLength(); i++) {
@@ -128,11 +156,41 @@ public class GPXProcessor {
 
 	}
 
-	public void postProcess() {
-		for (GPXPath path : paths) {
-			System.out.println("postProcess " + path.getName());
-			path.postProcess();
-		}		
-	}
+	public void postProcess(StringBuilder timeSheet) {
+		NumberFormat nf = NumberFormat.getNumberInstance();
 
+		List<Point> pointsTime = new ArrayList<Point>();
+		for (GPXPath path : paths) {
+			timeSheet.append(path.getName());
+			timeSheet.append("\r\n");
+
+			System.out.println("postProcess " + path.getName());
+			pointsTime.addAll(path.postProcess());
+
+			List<CheckPoint> wptsPath = path.getWptsPath();
+			Collections.sort(wptsPath);
+			for (CheckPoint checkPoint : wptsPath) {
+				timeSheet.append(checkPoint.getCaption());
+				timeSheet.append(";");
+				timeSheet.append(nf.format(checkPoint.getDist()));
+				timeSheet.append(";");
+				timeSheet.append(fmt3.print(checkPoint.getTmin()));
+				timeSheet.append(";");
+				timeSheet.append(fmt3.print(checkPoint.getTmax()));
+				timeSheet.append("\r\n");
+			}
+
+		}
+		for (Point point : pointsTime) {
+			Element wpt = gpxDocument.createElement("wpt");
+			wpt.setAttribute("lat", Double.toString(point.getLat()));
+			wpt.setAttribute("lon", Double.toString(point.getLon()));
+
+			Element name = gpxDocument.createElement("name");
+			name.setTextContent(point.getCaption());
+			wpt.appendChild(name);
+
+			gpxElement.insertBefore(wpt, refElement);
+		}
+	}
 }
