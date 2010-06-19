@@ -19,6 +19,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 public class SRTMHelper {
 
+	private String dataFolder = "D://srtm//";
+
 	private static SRTMHelper instance = new SRTMHelper();
 
 	private File[][] tiles;
@@ -75,8 +77,6 @@ public class SRTMHelper {
 
 		//				System.out.println(SRTMHelper.getInstance().getElevation(-179, 59));
 	}
-
-	private String dataFolder = "/opt/srtm/";
 
 	private HttpClient client = null;
 

@@ -5,6 +5,9 @@ public class Point {
 	private double lon;
 	private double lat;
 	private double z;
+	private String caption;
+	private double dist;
+	private long time;
 
 	public double getZ() {
 		return z;
@@ -43,6 +46,7 @@ public class Point {
 				+ Math.cos(deg2rad(lat))
 				* Math.cos(deg2rad(otherPoint.getLat()))
 				* Math.cos(deg2rad(theta));
+		dist = Math.max(-1.0, Math.min(1.0, dist));
 		dist = Math.acos(dist);
 		dist = rad2deg(dist);
 		dist = dist * 60 * 1.1515;
@@ -57,6 +61,30 @@ public class Point {
 
 	private double rad2deg(double rad) {
 		return (rad * 180.0 / Math.PI);
+	}
+
+	public String getCaption() {
+		return caption;
+	}
+
+	public void setCaption(String caption) {
+		this.caption = caption;
+	}
+
+	public double getDist() {
+		return dist;
+	}
+
+	public void setDist(double dist) {
+		this.dist = dist;
+	}
+
+	public long getTime() {
+		return time;
+	}
+
+	public void setTime(long time) {
+		this.time = time;
 	}
 
 }
