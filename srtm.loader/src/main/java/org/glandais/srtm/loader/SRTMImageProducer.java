@@ -28,13 +28,17 @@ public class SRTMImageProducer {
 	private Graphics2D graphics;
 
 	public static void main(String[] args) throws Exception {
-		//		SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
-		//				47.5, 200, 0);
+		// SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
+		// 47.5, 200, 0);
 
-		//		System.out.println(SRTMHelper.getInstance().getElevation(4, 44.9997));
-		//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 44.9997));
-		//		System.out.println(SRTMHelper.getInstance().getElevation(4.0005, 45.0003));
-		//		System.out.println(SRTMHelper.getInstance().getElevation(4, 45.0003));
+		// System.out.println(SRTMHelper.getInstance().getElevation(4,
+		// 44.9997));
+		// System.out.println(SRTMHelper.getInstance().getElevation(4.0005,
+		// 44.9997));
+		// System.out.println(SRTMHelper.getInstance().getElevation(4.0005,
+		// 45.0003));
+		// System.out.println(SRTMHelper.getInstance().getElevation(4,
+		// 45.0003));
 
 		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999,
 				45.0001, 45.9999, 200, 0);
@@ -106,10 +110,8 @@ public class SRTMImageProducer {
 
 	private int getRgb(double d) {
 		/*
-		int r = (int) Math.round(255 * d);
-		int g = r;
-		int b = r;
-		*/
+		 * int r = (int) Math.round(255 * d); int g = r; int b = r;
+		 */
 		int r = 0;
 		int g = 0;
 		int b = 0;
@@ -122,7 +124,7 @@ public class SRTMImageProducer {
 			b = (int) Math.round(511 * (d - 0.5));
 			g = 255 - b;
 		}
-		
+
 		return (r << 16) + (g << 8) + b;
 	}
 
@@ -134,7 +136,8 @@ public class SRTMImageProducer {
 		return minlon + (1.0 * i * (maxlon - minlon)) / width;
 	}
 
-	public void addPoints(List<Point> points, double trackminz, double trackmaxz) {
+	public void addPoints(List<? extends Point> points, double trackminz,
+			double trackmaxz) {
 		boolean first = true;
 		int previ = 0;
 		int prevj = 0;
