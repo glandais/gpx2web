@@ -1,6 +1,7 @@
 package org.glandais.gpx.elevation.fixer;
 
 import java.io.File;
+import java.io.FileWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,7 +24,7 @@ public class App {
 		File fin = new File(args[0]);
 		File fout = new File(args[1]);
 		File[] listFiles = fin.listFiles();
-		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(100, 170);
+		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(110, 130, 160);
 		for (File file : listFiles) {
 			if (!file.getName().startsWith(".")
 					&& file.getName().toLowerCase().endsWith(".gpx")) {
@@ -34,29 +35,38 @@ public class App {
 				}
 			}
 		}
+
 	}
 
 	private static void processfile(File file, File fout,
 			GPXBikeTimeEval bikeTimeEval) throws Exception {
+		StringBuilder timeSheet = new StringBuilder();
+
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(file);
 
 		GPXProcessor processor = new GPXProcessor(gpxFile, bikeTimeEval);
 		processor.parse();
-		processor.postProcess();		
+		processor.postProcess(timeSheet);
 		System.out.println(file.getName());
 		processor.showStats();
 
 		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer transformer = tf.newTransformer();
-		File fileOut = new File(fout.getAbsolutePath() + "/" + file.getName());
+		String pathName = fout.getAbsolutePath() + "/" + file.getName();
+		File fileOut = new File(pathName);
 		Source xmlSource = new DOMSource(processor.getGpxDocument());
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
 
-		processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(),
-				10);
+		// processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(),
+		// 10);
+
+		File outFile = new File(pathName + ".txt");
+		FileWriter out = new FileWriter(outFile);
+		out.write(timeSheet.toString().replace('.', ','));
+		out.close();
 	}
 
 }
