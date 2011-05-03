@@ -6,7 +6,7 @@ var minlat;
 var maxlat;
 
 function clearMap() {
-	myFirstMap.removeAllLayers();
+	myMap.removeAllLayers();
 	minlon = 180;
 	maxlon = -180;
 	minlat = 90;
@@ -35,7 +35,7 @@ function endPath() {
 		strokeOpacity : 0.6,
 		strokeWeight : 8
 	});
-	myFirstMap.addLayer(polyline);
+	myMap.addLayer(polyline);
 	if (strokeColor == '#f00') {
 		strokeColor = '#c30';
 	} else {
@@ -58,13 +58,13 @@ function addWaypoint(rlon, rlat, caption) {
 				},
 				autoOpen : true
 			});
-	myFirstMap.addLayer(marker);
+	myMap.addLayer(marker);
 }
 
 function getTiles() {
 	var tiles = new Array();
 
-	layer = myFirstMap.tileLayers[myFirstMap.masterTile];
+	layer = myMap.tileLayers[myMap.masterTile];
 
 	tiles.push(layer.configuration.tileWidth);
 
@@ -91,12 +91,12 @@ function getTiles() {
 				lon : minlon,
 				lat : maxlat
 			};
-			var minPixCoords = myFirstMap.convertGeoToPixel(minCoords);
+			var minPixCoords = myMap.convertGeoToPixel(minCoords);
 			var maxCoords = {
 				lon : maxlon,
 				lat : minlat
 			};
-			var maxPixCoords = myFirstMap.convertGeoToPixel(maxCoords);
+			var maxPixCoords = myMap.convertGeoToPixel(maxCoords);
 
 			minAbsoluteX = Math.floor((minPixCoords.x + d)
 					/ layer.configuration.tileWidth);
@@ -157,27 +157,27 @@ function getTile(x, y, layer) {
 
 	var fBG = new ViaMichelin.Api.Map.Point(px, py
 			+ layer.configuration.tileHeight);
-	fBG = myFirstMap.convertPixelToGeo(fBG);
+	fBG = myMap.convertPixelToGeo(fBG);
 
 	tile.push(fBG.lon);
 	tile.push(fBG.lat);
 
 	var fBD = new ViaMichelin.Api.Map.Point(px + layer.configuration.tileWidth,
 			py + layer.configuration.tileHeight);
-	fBD = myFirstMap.convertPixelToGeo(fBD);
+	fBD = myMap.convertPixelToGeo(fBD);
 
 	tile.push(fBD.lon);
 	tile.push(fBD.lat);
 
 	var fHD = new ViaMichelin.Api.Map.Point(px + layer.configuration.tileWidth,
 			py);
-	fHD = myFirstMap.convertPixelToGeo(fHD);
+	fHD = myMap.convertPixelToGeo(fHD);
 
 	tile.push(fHD.lon);
 	tile.push(fHD.lat);
 
 	var fHG = new ViaMichelin.Api.Map.Point(px, py);
-	fHG = myFirstMap.convertPixelToGeo(fHG);
+	fHG = myMap.convertPixelToGeo(fHG);
 
 	tile.push(fHG.lon);
 	tile.push(fHG.lat);
@@ -209,21 +209,21 @@ function addTile(x, y, layer) {
 
 	var fBG = new ViaMichelin.Api.Map.Point(px, py
 			+ layer.configuration.tileHeight);
-	fBG = myFirstMap.convertPixelToGeo(fBG);
+	fBG = myMap.convertPixelToGeo(fBG);
 	result = result + fBG.lon + "," + fBG.lat + " ";
 
 	var fBD = new ViaMichelin.Api.Map.Point(px + layer.configuration.tileWidth,
 			py + layer.configuration.tileHeight);
-	fBD = myFirstMap.convertPixelToGeo(fBD);
+	fBD = myMap.convertPixelToGeo(fBD);
 	result = result + fBD.lon + "," + fBD.lat + " ";
 
 	var fHD = new ViaMichelin.Api.Map.Point(px + layer.configuration.tileWidth,
 			py);
-	fHD = myFirstMap.convertPixelToGeo(fHD);
+	fHD = myMap.convertPixelToGeo(fHD);
 	result = result + fHD.lon + "," + fHD.lat + " ";
 
 	var fHG = new ViaMichelin.Api.Map.Point(px, py);
-	fHG = myFirstMap.convertPixelToGeo(fHG);
+	fHG = myMap.convertPixelToGeo(fHG);
 	result = result + fHG.lon + "," + fHG.lat;
 
 	var minLod = layer.configuration.tileWidth / 2;
@@ -253,7 +253,7 @@ function getKml() {
 			+ 'xmlns:gx="http://www.google.com/kml/ext/2.2">\n' + '<Folder>\n'
 			+ '<name>Michelin</name>\n';
 
-	layer = myFirstMap.tileLayers[myFirstMap.masterTile];
+	layer = myMap.tileLayers[myMap.masterTile];
 
 	if (layer.HTMLElement && layer.HTMLElement.parentNode) {
 		var c = -parseInt(layer.HTMLElement.parentNode.style.top)
