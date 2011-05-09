@@ -1,12 +1,12 @@
 {
    "content_scripts": [ {
       "exclude_globs": [  ],
-      "include_globs": [ "http://dev.viamichelin.fr/data/api-jsv2/map1.htm" ],
+      "include_globs": [ "http://dev.viamichelin.fr/data/api-jsv2/tutorial_v2.htm" ],
       "js": [ "script.js" ],
       "matches": [ "http://*/*", "https://*/*" ]
    } ],
    "converted_from_user_script": true,
-   "description": "Magic Script ( -> http://dev.viamichelin.fr/data/api-jsv2/map1.htm )",
+   "description": "Magic Script ( -> http://dev.viamichelin.fr/data/api-jsv2/tutorial_v2.htm )",
    "key": "NZTbUbbr7kvIeg/OxOzc2t3ejQBwyY20MN8lzqz9HfM=",
    "name": "Magic Script",
    "version": "1.0"

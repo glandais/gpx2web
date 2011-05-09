@@ -1,17 +1,14 @@
 import java.applet.Applet;
 import java.awt.Button;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.io.BufferedOutputStream;
+import java.awt.image.RenderedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,14 +20,17 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JFileChooser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -46,13 +46,26 @@ public class MagicPopup extends Frame implements ActionListener {
 
 	private static final int IO_BUFFER_SIZE = 4 * 1024;
 
-	private static final String KML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			+ "<kml xmlns=\"http://www.opengis.net/kml/2.2\"\n"
-			+ "xmlns:gx=\"http://www.google.com/kml/ext/2.2\">\n"
-			+ "<Folder>\n" + "<name>Magic</name>\n";
-	private static final String KML_FOOTER = "</Folder>\n</kml>";
+	public static File userHome = new File(System.getProperty("user.home"));
+	public static File cachePropertiesFile = new File(userHome, "magic.ini");
+	public static Properties cacheProperties;
+	public static File cacheFolder = new File(userHome, "magic");
 
-	private static final int N_TILES_QUAD = 3;
+	static {
+		cacheProperties = new Properties();
+		if (cachePropertiesFile.exists()) {
+			try {
+				cacheProperties.load(new FileInputStream(cachePropertiesFile));
+				cacheFolder = new File(cacheProperties
+						.getProperty("cache.folder"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if (!cacheFolder.exists()) {
+			new File(cacheFolder, "tmp").mkdirs();
+		}
+	}
 
 	private JSONParser jsonParser = new JSONParser();
 	private Random random = new Random();
@@ -61,6 +74,7 @@ public class MagicPopup extends Frame implements ActionListener {
 	private Applet applet;
 	private Button openFileButton;
 	private Button kmzButton;
+	private Button cacheButton;
 	private TextField gpxUrlField;
 	private Button openUrlButton;
 	private Label infoLabel;
@@ -93,10 +107,13 @@ public class MagicPopup extends Frame implements ActionListener {
 		openFileButton.addActionListener(this);
 		add(openFileButton);
 
-		kmzButton = new Button("Export map (KMZ)");
+		kmzButton = new Button("Export tiles (png)");
 		kmzButton.addActionListener(this);
 		add(kmzButton);
 
+		cacheButton = new Button("Change cache folder");
+		cacheButton.addActionListener(this);
+		add(cacheButton);
 	}
 
 	private void setInfo(String info) {
@@ -118,11 +135,27 @@ public class MagicPopup extends Frame implements ActionListener {
 				InputStream is = url.openStream();
 				parseGPX(is);
 			} else if (e.getSource() == kmzButton) {
-				processKMZ();
+				processTiles(false);
+			} else if (e.getSource() == cacheButton) {
+				changeCacheFolder();
 			}
 		} catch (Exception ex) {
 			setInfo("ERROR");
 			ex.printStackTrace();
+		}
+	}
+
+	private void changeCacheFolder() throws IOException {
+		final JFileChooser fc = new JFileChooser();
+		int returnVal = fc.showSaveDialog(this);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			file = file.getParentFile();
+			cacheFolder = file;
+			cacheProperties
+					.setProperty("cache.folder", file.getCanonicalPath());
+			cacheProperties
+					.store(new FileOutputStream(cachePropertiesFile), "");
 		}
 	}
 
@@ -169,20 +202,35 @@ public class MagicPopup extends Frame implements ActionListener {
 		}
 	}
 
-	private void processKMZ() throws Exception {
+	private boolean zoomOut() throws InterruptedException {
+		JSObject window = getWindow();
+		Object[] emptyParams = {};
+		Object oldZoomLevel = window.call("zoomLevel", emptyParams);
+		setInfo("Zoom level : " + oldZoomLevel.toString());
+		Thread.sleep(200);
+		window.call("zoomOut", emptyParams);
+		Thread.sleep(3000);
+		Object zoomLevel = window.call("zoomLevel", emptyParams);
+		setInfo("Zoom level : " + zoomLevel.toString());
+		Thread.sleep(1000);
+		return !oldZoomLevel.equals(zoomLevel);
+	}
+
+	private void processTiles(boolean downloadTiles) throws Exception {
 		JSObject window = getWindow();
 		Object[] emptyParams = {};
 		setInfo("Retreiving tiles");
 		String jsonTiles = (String) window.call("getTiles", emptyParams);
 		List tilesJS = (List) jsonParser.parse(jsonTiles);
+		setInfo("Retreiving " + Integer.toString(tilesJS.size() - 1) + " tiles");
 
 		List<Tile> tiles = new ArrayList<Tile>();
 
-		int tileWidth = ((Number) tilesJS.get(0)).intValue();
 		for (int i = 1; i < tilesJS.size(); i++) {
 			Tile tile = new Tile();
 			List tileJS = (List) tilesJS.get(i);
 			tile.setUrl((String) tileJS.get(0));
+			tile.setRealUrl((String) tileJS.get(0));
 
 			tile.getBg().setLon(((Number) tileJS.get(1)).doubleValue());
 			tile.getBg().setLat(((Number) tileJS.get(2)).doubleValue());
@@ -199,403 +247,87 @@ public class MagicPopup extends Frame implements ActionListener {
 			tiles.add(tile);
 		}
 
-		exportKMZ(tileWidth, tiles);
+		exportTiles(tiles, downloadTiles);
 	}
 
-	private void exportKMZ(int tileWidth, List<Tile> tiles) throws Exception {
-		File userHome = new File(System.getProperty("user.home"));
-		File cacheFolder = new File(userHome, "magic");
-		if (!cacheFolder.exists()) {
-			new File(cacheFolder, "tmp").mkdirs();
-		}
+	private void exportTiles(List<Tile> tiles, boolean downloadTiles)
+			throws Exception {
 		for (Tile tile : tiles) {
-			getFile(cacheFolder, tile.getUrl(), tile);
+			getFile(tile.getUrl(), tile, downloadTiles);
 		}
-
-		processQuads(cacheFolder, tiles);
-		transformToJpeg(cacheFolder, tiles);
-
-		File kmlFile = new File(cacheFolder, newKmlFileName());
-		FileWriter fw = new FileWriter(kmlFile);
-		fw.write(KML_HEADER);
-
-		for (Tile tile : tiles) {
-			writeTile(tileWidth, fw, tile);
-		}
-
-		fw.write(KML_FOOTER);
-		fw.close();
-
-		final JFileChooser fc = new JFileChooser();
-		int returnVal = fc.showSaveDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			FileOutputStream dest = new FileOutputStream(file);
-			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
-					dest));
-
-			setInfo("Creating KMZ");
-
-			ZipEntry zipEntry = new ZipEntry("doc.kml");
-			out.putNextEntry(zipEntry);
-
-			copyStream(out, new FileInputStream(kmlFile));
-			for (Tile tile : tiles) {
-				zipEntry = new ZipEntry(tile.getUrl());
-				out.putNextEntry(zipEntry);
-				copyStream(out, new FileInputStream(new File(cacheFolder, tile
-						.getUrl())));
-			}
-			out.close();
-		}
-
+		transform(tiles);
 		setInfo("");
 	}
 
-	private void transformToJpeg(File cacheFolder, List<Tile> tiles)
+	public static void write(RenderedImage image, float quality, File file)
 			throws IOException {
+		ImageWriter writer = null;
+		Iterator iter = ImageIO.getImageWritersByFormatName("JPEG");
+		if (!iter.hasNext())
+			throw new IOException("No Writers Available");
+		writer = (ImageWriter) iter.next();
+		if (file.exists())
+			file.delete();
+		ImageOutputStream ios = ImageIO.createImageOutputStream(file);
+		writer.setOutput(ios);
+		JPEGImageWriteParam iwp = new JPEGImageWriteParam(null);
+		iwp.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		iwp.setCompressionQuality(quality);
+		writer.write(null, new IIOImage(image, null, null), iwp);
+		ios.flush();
+		writer.dispose();
+		ios.close();
+	}
+
+	private void transform(List<Tile> tiles) throws IOException {
 		for (Tile tile : tiles) {
 			if (tile.getUrl().toUpperCase().endsWith(".PNG")) {
-				File tileFile = new File(cacheFolder, tile.getUrl());
-				String newUrl = tile.getUrl().substring(0,
+				// File tileFile = new File(cacheFolder, tile.getUrl());
+				// String newUrl = tile.getUrl().substring(0,
+				// tile.getUrl().length() - 4)
+				// + ".jpg";
+				String coords = tile.getUrl().substring(0,
 						tile.getUrl().length() - 4)
-						+ ".jpg";
-				File newTileFile = new File(cacheFolder, newUrl);
-				if (!newTileFile.exists()) {
-					BufferedImage image = ImageIO.read(tileFile);
-					ImageIO.write(image, "jpg", newTileFile);
+						+ ".wld";
+
+				// File newTileFile = new File(cacheFolder, newUrl);
+				// if (!newTileFile.exists()) {
+				// BufferedImage image = ImageIO.read(tileFile);
+				// write(image, 0.95f, newTileFile);
+				// }
+
+				File coordsFile = new File(coords);
+				if (!coordsFile.exists()) {
+					BufferedWriter bw = new BufferedWriter(new FileWriter(
+							coordsFile));
+					bw
+							.write("URL BL.lon BL.lat BR.lon BR.lat TL.lon TL.lat TR.lon TR.lat width height");
+					bw.newLine();
+					bw.write(tile.getRealUrl());
+					bw.newLine();
+					writePoint(bw, tile.getBg());
+					writePoint(bw, tile.getBd());
+					writePoint(bw, tile.getHg());
+					writePoint(bw, tile.getHd());
+					bw.write(df.format(tile.getBg().distanceTo(tile.getBd())));
+					bw.newLine();
+					bw.write(df.format(tile.getBg().distanceTo(tile.getHd())));
+					bw.close();
 				}
-				tile.setUrl(newUrl);
+				// tile.setUrl(newUrl);
 			}
 		}
 	}
 
-	private static void processQuads(File cacheFolder, List<Tile> tiles)
+	private void writePoint(BufferedWriter bw, GPXPoint point)
 			throws IOException {
-		List<Tile> toRemove = new ArrayList<Tile>();
-		List<Tile> toAdd = new ArrayList<Tile>();
-
-		Map<Integer, Map<Integer, Tile>> tileMap = new HashMap<Integer, Map<Integer, Tile>>();
-		for (Tile tile : tiles) {
-			Map<Integer, Tile> xMap = tileMap.get(tile.getX());
-			if (xMap == null) {
-				xMap = new HashMap<Integer, Tile>();
-				tileMap.put(tile.getX(), xMap);
-			}
-			xMap.put(tile.getY(), tile);
-		}
-
-		for (Tile tile : tiles) {
-			if (toRemove.indexOf(tile) == -1) {
-				int x = tile.getX();
-				int y = tile.getY();
-				Tile[][] quadArray = new Tile[N_TILES_QUAD][N_TILES_QUAD];
-
-				boolean fail = false;
-				for (int i = 0; i < N_TILES_QUAD; i++) {
-					for (int j = 0; j < N_TILES_QUAD; j++) {
-						quadArray[i][j] = getTileFromMap(tileMap, toRemove, x
-								+ i, y + j);
-						if (quadArray[i][j] == null) {
-							fail = true;
-						}
-					}
-				}
-
-				if (!fail) {
-					for (int i = 0; i < N_TILES_QUAD; i++)
-						for (int j = 0; j < N_TILES_QUAD; j++)
-							toRemove.add(quadArray[i][j]);
-					Tile quadTile = makeQuadTile(cacheFolder, quadArray);
-					toAdd.add(quadTile);
-				}
-			}
-		}
-
-		for (Tile tile : toRemove) {
-			tiles.remove(tile);
-		}
-		for (Tile tile : toAdd) {
-			tiles.add(tile);
-		}
-
+		bw.write(df.format(point.getLon()));
+		bw.newLine();
+		bw.write(df.format(point.getLat()));
+		bw.newLine();
 	}
 
-	private static Tile makeQuadTile(File cacheFolder, Tile[][] quadArray)
-			throws IOException {
-		Tile res = new Tile();
-
-		String tileUrl = quadArray[0][0].getUrl();
-		String newUrl = tileUrl.substring(0, tileUrl.length() - 4)
-				+ ".quad.jpg";
-
-		res.setName(quadArray[0][0].getName() + "_quad");
-		res.setHg(quadArray[0][0].getHg());
-		res.setHd(quadArray[N_TILES_QUAD - 1][0].getHd());
-		res.setBg(quadArray[0][N_TILES_QUAD - 1].getBg());
-		res.setBd(quadArray[N_TILES_QUAD - 1][N_TILES_QUAD - 1].getBd());
-
-		res.setUrl(newUrl);
-
-		BufferedImage resultImage = new BufferedImage(N_TILES_QUAD * 256,
-				N_TILES_QUAD * 256, BufferedImage.TYPE_INT_BGR);
-		Graphics graphics = resultImage.getGraphics();
-
-		for (int i = 0; i < N_TILES_QUAD; i++)
-			for (int j = 0; j < N_TILES_QUAD; j++) {
-				BufferedImage image = ImageIO.read(new File(cacheFolder,
-						quadArray[i][j].getUrl()));
-				graphics.drawImage(image, i * 256, j * 256, null);
-			}
-
-		ImageIO.write(resultImage, "jpg", new File(cacheFolder, newUrl));
-
-		return res;
-	}
-
-	private static Tile getTileFromMap(
-			Map<Integer, Map<Integer, Tile>> tileMap, List<Tile> toRemove,
-			int x, int y) {
-		Map<Integer, Tile> xMap = tileMap.get(x);
-		if (xMap != null) {
-			Tile tile = xMap.get(y);
-			if (tile != null && toRemove.indexOf(tile) == -1) {
-				return tile;
-			}
-		}
-		return null;
-	}
-
-	private void writeTile(int tileWidth, FileWriter fw, Tile tile)
-			throws IOException {
-		int minLod = tileWidth / 2;
-		int maxLod = tileWidth * 4;
-		int minFade = tileWidth / 4;
-		int maxFade = tileWidth;
-
-		fw.write("<GroundOverlay>\n" + "<name>" + tile.getName() + "</name>\n"
-				+ "<Icon>\n" + "  <href>");
-		fw.write(tile.getUrl());
-		fw.write("</href>\n" + "  <viewBoundScale>1</viewBoundScale>\n"
-				+ "</Icon>\n");
-
-		double maxlat = Math.max(tile.getHd().getLat(), tile.getHg().getLat());
-		double maxlon = Math.max(tile.getHd().getLon(), tile.getBd().getLon());
-
-		double minlat = Math.min(tile.getBd().getLat(), tile.getBg().getLat());
-		double minlon = Math.min(tile.getBg().getLon(), tile.getHg().getLon());
-
-		double centerlat = (tile.getHd().getLat() + tile.getHg().getLat()
-				+ tile.getBd().getLat() + tile.getBg().getLat()) / 4.0;
-		double centerlon = (tile.getHd().getLon() + tile.getHg().getLon()
-				+ tile.getBd().getLon() + tile.getBg().getLon()) / 4.0;
-		GPXPoint center = new GPXPoint(centerlon, centerlat);
-
-		double rotation;
-
-		GPXPoint bg = new GPXPoint(minlon, minlat);
-		if (tile.getBg().getLat() < tile.getBd().getLat()) {
-			// rotation > 0
-			double d1 = bg.distanceTo(tile.getBg());
-			double d2 = bg.distanceTo(tile.getHg());
-			rotation = rad2deg(Math.atan2(d1, d2));
-		} else {
-			// rotation < 0
-			double d1 = bg.distanceTo(tile.getBg());
-			double d2 = bg.distanceTo(tile.getBd());
-			rotation = -rad2deg(Math.atan2(d1, d2));
-		}
-
-		double width = (tile.getHg().distanceTo(tile.getHd()) + tile.getBg()
-				.distanceTo(tile.getBd())) / 2.0;
-		double height = (tile.getHg().distanceTo(tile.getBg()) + tile.getHd()
-				.distanceTo(tile.getBd())) / 2.0;
-
-		double dlon = getDLon(center, width, 0, maxlon - center.getLon());
-		double dlat = getDLat(center, height, 0, maxlat - center.getLat());
-
-		double north = centerlat + dlat;
-		double south = centerlat - dlat;
-		double east = centerlon + dlon;
-		double west = centerlon - dlon;
-
-		fw.write("<Region>\n" + "<Lod>\n" + "  <minLodPixels>" + minLod
-				+ "</minLodPixels><maxLodPixels>" + maxLod
-				+ "</maxLodPixels>\n" + "  <minFadeExtent>" + minFade
-				+ "</minFadeExtent><maxFadeExtent>" + maxFade
-				+ "</maxFadeExtent>\n" + "</Lod>\n" + "<LatLonAltBox>\n"
-				+ "  <north>" + format(maxlat) + "</north>\n" + "  <south>"
-				+ format(minlat) + "</south>\n" + "  <east>" + format(maxlon)
-				+ "</east>\n" + "  <west>" + format(minlon) + "</west>\n"
-				+ "</LatLonAltBox>\n" + "</Region>\n");
-
-		fw.write("<LatLonBox>\n" + "  <north>" + format(north) + "</north>\n"
-				+ "  <south>" + format(south) + "</south>\n" + "  <east>"
-				+ format(east) + "</east>\n" + "  <west>" + format(west)
-				+ "</west>\n" + "  <rotation>" + format(rotation)
-				+ "</rotation>\n" + "</LatLonBox>\n" + "</GroundOverlay>");
-	}
-
-	private double rad2deg(double rad) {
-		return (rad * 180.0 / Math.PI);
-	}
-
-	private double getDLat(GPXPoint center, double height, double minLat,
-			double maxLat) {
-		GPXPoint pMin = new GPXPoint(center.getLon(), center.getLat() + minLat);
-		GPXPoint pMax = new GPXPoint(center.getLon(), center.getLat() + maxLat);
-		double moyLat = (minLat + maxLat) / 2.0;
-		if (pMin.distanceTo(pMax) < height / 2000) {
-			return moyLat;
-		}
-		GPXPoint pMoy = new GPXPoint(center.getLon(), center.getLat() + moyLat);
-		if (center.distanceTo(pMoy) > height / 2.0) {
-			return getDLat(center, height, minLat, moyLat);
-		} else {
-			return getDLat(center, height, moyLat, maxLat);
-		}
-	}
-
-	private double getDLon(GPXPoint center, double width, double minLon,
-			double maxLon) {
-		GPXPoint pMin = new GPXPoint(center.getLon() + minLon, center.getLat());
-		GPXPoint pMax = new GPXPoint(center.getLon() + maxLon, center.getLat());
-		double moyLon = (minLon + maxLon) / 2.0;
-		if (pMin.distanceTo(pMax) < width / 2000) {
-			return moyLon;
-		}
-		GPXPoint pMoy = new GPXPoint(center.getLon() + moyLon, center.getLat());
-		if (center.distanceTo(pMoy) > width / 2.0) {
-			return getDLon(center, width, minLon, moyLon);
-		} else {
-			return getDLon(center, width, moyLon, maxLon);
-		}
-	}
-
-	private void writeTileOld(int tileWidth, FileWriter fw, Tile tile)
-			throws IOException {
-		fw.write("<GroundOverlay>\n" + "<name>Another tile</name>\n"
-				+ "<Icon>\n" + "  <href>");
-		fw.write(tile.getUrl());
-		fw.write("</href>\n" + "  <viewBoundScale>1</viewBoundScale>\n"
-				+ "</Icon>\n" + "<gx:LatLonQuad>\n" + "  <coordinates>\n    ");
-		fw.write(format(tile.getBg().getLon()) + ","
-				+ format(tile.getBg().getLat()) + " ");
-		fw.write(format(tile.getBd().getLon()) + ","
-				+ format(tile.getBd().getLat()) + " ");
-		fw.write(format(tile.getHd().getLon()) + ","
-				+ format(tile.getHd().getLat()) + " ");
-		fw.write(format(tile.getHg().getLon()) + ","
-				+ format(tile.getHg().getLat()));
-		int minLod = tileWidth / 2;
-		int maxLod = tileWidth * 4;
-		int minFade = tileWidth / 4;
-		int maxFade = tileWidth;
-
-		double north = Math.max(tile.getHd().getLat(), tile.getHg().getLat());
-		double east = Math.max(tile.getHd().getLon(), tile.getBd().getLon());
-
-		double south = Math.min(tile.getBd().getLat(), tile.getBg().getLat());
-		double west = Math.min(tile.getBg().getLon(), tile.getHg().getLon());
-
-		fw.write("\n  </coordinates>\n" + "</gx:LatLonQuad>\n" + "<Region>\n"
-				+ "<Lod>\n" + "  <minLodPixels>"
-				+ minLod
-				+ "</minLodPixels><maxLodPixels>"
-				+ maxLod
-				+ "</maxLodPixels>\n"
-				+ "  <minFadeExtent>"
-				+ minFade
-				+ "</minFadeExtent><maxFadeExtent>"
-				+ maxFade
-				+ "</maxFadeExtent>\n"
-				+ "</Lod>\n"
-				+ "<LatLonAltBox>\n"
-				+ "  <north>"
-				+ format(north)
-				+ "</north>\n"
-				+ "  <south>"
-				+ format(south)
-				+ "</south>\n"
-				+ "  <east>"
-				+ format(east)
-				+ "</east>\n"
-				+ "  <west>"
-				+ format(west)
-				+ "</west>\n"
-				+ "</LatLonAltBox>\n" + "</Region>\n" + "</GroundOverlay>");
-	}
-
-	private String format(double lon) {
-		return df.format(lon);
-	}
-
-	private String newKmlFileName() {
-		return Integer.toHexString(random.nextInt()) + ".kml";
-	}
-
-	public static void main(String[] args) throws Exception {
-		// String tile = "oijekeoijgregiojregioerj.png";
-		// String newUrl = tile.substring(0, tile.length() - 4) + ".jpg";
-		// System.out.println(newUrl);
-
-		List<Tile> tiles = new ArrayList<Tile>();
-		for (int i = 0; i < 50; i++) {
-			for (int j = 0; j < 50; j++) {
-				Tile t = new Tile();
-				t.setX(i + 40);
-				t.setY(j + 171);
-				tiles.add(t);
-			}
-		}
-		processQuads(null, tiles);
-		for (Tile tile : tiles) {
-			System.out.println(tile.getName());
-		}
-
-		// String url =
-		// "http://m1.viamichelin.com/mapsgene/dm/mapdirect;ZnJhX2NfMDE4NWtfcjA0;MDAwMDAwMDAzMjAwMDAwMDAyMDk=?";
-		//
-		// String[] split = url.split(";");
-		// String dataSet = new String(Base64.decode(split[1].getBytes()));
-		//
-		// String subs = split[2].substring(0, split[2].length() - 1);
-		// String tileName = new String(Base64.decode(subs.getBytes()));
-		//
-		// int varLength = tileName.length() / 2;
-		// int firstPart = Integer.parseInt(tileName.substring(0, varLength));
-		// int secondPart = Integer.parseInt(tileName.substring(varLength));
-		//
-		// int x = firstPart;// (firstPart & 0x55555555) | (secondPart &
-		// // 0xAAAAAAAA);
-		// int y = secondPart;// (secondPart & 0x55555555) | (firstPart &
-		// // 0xAAAAAAAA);
-		//
-		// String xStr = Integer.toString(x);
-		// while (xStr.length() < 6) {
-		// xStr = "0" + xStr;
-		// }
-		// String yStr = Integer.toString(y);
-		// while (yStr.length() < 6) {
-		// yStr = "0" + yStr;
-		// }
-		//
-		// tileName = xStr + "_" + yStr;
-		//
-		// String subFolder = dataSet + "/" + xStr + "/"
-		// + yStr.substring(0, yStr.length() - 2) + "/";
-		//
-		// String complete = subFolder + tileName + ".png";
-		//
-		// String tileName2 = complete.substring(complete.lastIndexOf('/') + 1);
-		// tileName2 = tileName2.substring(0, tileName2.indexOf('.'));
-		//
-		// System.out.println(subFolder);
-		// System.out.println(tileName);
-		// System.out.println(tileName2);
-	}
-
-	private void getFile(File cacheFolder, String url, Tile tile)
+	private void getFile(String url, Tile tile, boolean downloadTiles)
 			throws Exception {
 		String[] split = url.split(";");
 		String dataSet = new String(Base64.decode(split[1].getBytes()));
@@ -628,21 +360,26 @@ public class MagicPopup extends Frame implements ActionListener {
 			folder.mkdirs();
 		}
 		File cachedFile = new File(folder, tileName + ".png");
-		if (!cachedFile.exists()) {
-			setInfo("Retreiving tile " + tileName);
+		cachedFile.getParentFile().mkdirs();
 
-			FileOutputStream fos = new FileOutputStream(cachedFile);
-			URL remote = new URL(url);
-			InputStream is = remote.openStream();
-
-			copyStream(fos, is);
-			fos.close();
-		}
-
-		tile.setUrl(subFolder + tileName + ".png");
+		tile.setUrl(cachedFile.getAbsolutePath());
 		tile.setName(tileName);
 		tile.setX(x);
 		tile.setY(y);
+
+		if (downloadTiles) {
+			if (!cachedFile.exists()) {
+				setInfo("Retreiving tile " + cachedFile);
+
+				FileOutputStream fos = new FileOutputStream(cachedFile);
+				URL remote = new URL(url);
+				InputStream is = remote.openStream();
+
+				copyStream(fos, is);
+				fos.close();
+			}
+		}
+
 	}
 
 	private void copyStream(OutputStream fos, InputStream is)

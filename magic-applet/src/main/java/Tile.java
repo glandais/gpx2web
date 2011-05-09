@@ -1,6 +1,13 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
 public class Tile {
 
 	private String url;
+	private String realUrl;
 	private String name;
 	private int x;
 	private int y;
@@ -8,6 +15,8 @@ public class Tile {
 	private GPXPoint bd = new GPXPoint(0, 0);
 	private GPXPoint hd = new GPXPoint(0, 0);
 	private GPXPoint hg = new GPXPoint(0, 0);
+	private int width = -1;
+	private int height = -1;
 
 	public String getUrl() {
 		return url;
@@ -71,6 +80,49 @@ public class Tile {
 
 	public void setY(int y) {
 		this.y = y;
+	}
+
+	public int getWidth() {
+		if (width == -1) {
+			loadWidthAndHeight();
+		}
+		return width;
+	}
+
+	private void loadWidthAndHeight() {
+		try {
+			BufferedImage image = ImageIO.read(new File(MagicPopup.cacheFolder,
+					getUrl()));
+			width = image.getWidth();
+			height = image.getHeight();
+		} catch (IOException e) {
+			width = 256;
+			height = 256;
+			e.printStackTrace();
+		}
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		if (height == -1) {
+			loadWidthAndHeight();
+		}
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public void setRealUrl(String realUrl) {
+		this.realUrl = realUrl;
+	}
+
+	public String getRealUrl() {
+		return realUrl;
 	}
 
 }
