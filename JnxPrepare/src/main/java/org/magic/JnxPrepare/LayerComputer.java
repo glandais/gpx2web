@@ -38,7 +38,8 @@ public class LayerComputer {
 		if (cachePropertiesFile.exists()) {
 			try {
 				cacheProperties.load(new FileInputStream(cachePropertiesFile));
-				cacheFolder = new File(cacheProperties.getProperty("cache.folder"));
+				cacheFolder = new File(cacheProperties
+						.getProperty("cache.folder"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -74,18 +75,31 @@ public class LayerComputer {
 		double minLat = gpxProcessor.getMinLat();
 		double maxLat = gpxProcessor.getMaxLat();
 
+		// minLon = 0;
+		// maxLon = 0.1;
+		// minLat = 47;
+		// maxLat = 47.1;
+
 		File[] layerFolders = cacheFolder.listFiles();
 		for (File file : layerFolders) {
 			if (!file.getName().startsWith(".")) {
-				processLayer(file, minLon, maxLon, minLat, maxLat, contour);
+				// processLayer(file, minLon, maxLon, minLat, maxLat, contour);
 			}
 		}
+
+		// WMSLayer layer = new WMSLayer(13, "SCAN250_IGN");
+		// layer.computeLayers(minLon, maxLon, minLat, maxLat, contour);
+
+		WMSLayer layer = new WMSLayer(15, "SCAN25");
+		layer.computeLayers(minLon, maxLon, minLat, maxLat, contour);
+
 	}
 
-	private static void processLayer(File file, double minLon, double maxLon, double minLat, double maxLat,
-			Contour contour) {
+	private static void processLayer(File file, double minLon, double maxLon,
+			double minLat, double maxLat, Contour contour) {
 		System.out.println(file.toString());
-		MagicTiles tiles = new MagicTiles(MagicPower2MapSpace.INSTANCE_256, file);
+		MagicTiles tiles = new MagicTiles(MagicPower2MapSpace.INSTANCE_256,
+				file);
 		tiles.computeLayers(minLon, maxLon, minLat, maxLat, contour);
 	}
 

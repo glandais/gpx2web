@@ -142,7 +142,7 @@ public class MagicTiles {
 					}
 				}
 
-				writeImage(image, zoom, x, y, imageFile);
+				writeImage(image, imageFile);
 			} catch (IOException e) {
 				e.printStackTrace();
 				imageFile.delete();
@@ -152,7 +152,7 @@ public class MagicTiles {
 		}
 	}
 
-	private void writeImage(BufferedImage image, int zoom, int x, int y, File imageFile) throws IOException {
+	private void writeImage(BufferedImage image, File imageFile) throws IOException {
 		FileOutputStream fos = new FileOutputStream(imageFile);
 
 		ImageWriter writer = null;
