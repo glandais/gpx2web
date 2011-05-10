@@ -19,12 +19,17 @@ package org.magic.JnxPrepare;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Properties;
 
+import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 public class LayerComputer {
 
@@ -32,6 +37,8 @@ public class LayerComputer {
 	public static File cachePropertiesFile = new File(userHome, "magic.ini");
 	public static Properties cacheProperties;
 	public static File cacheFolder = new File(userHome, "magic");
+
+	public static WorkQueue workQueue = new WorkQueue(6);
 
 	static {
 		cacheProperties = new Properties();
@@ -50,7 +57,12 @@ public class LayerComputer {
 	}
 
 	public static void main(String[] args) throws Exception {
+		// validateTiles(new File(LayerComputer.cacheFolder, "magicCache"));
+		downloadTiles();
+	}
 
+	private static void downloadTiles() throws FileNotFoundException,
+			ParserConfigurationException, SAXException, IOException, Exception {
 		// TRUE in a first phase
 		// boolean downloading = true;
 		// Then delete all tiles without data (blank, ...) manually
@@ -66,7 +78,7 @@ public class LayerComputer {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(fis);
-		GPXProcessor gpxProcessor = new GPXProcessor(gpxFile);
+		GPXProcessor gpxProcessor = new GPXProcessor(gpxFile, 5.0);
 		gpxProcessor.parse();
 
 		contour = gpxProcessor;
@@ -90,9 +102,53 @@ public class LayerComputer {
 		// WMSLayer layer = new WMSLayer(13, "SCAN250_IGN");
 		// layer.computeLayers(minLon, maxLon, minLat, maxLat, contour);
 
-		WMSLayer layer = new WMSLayer(15, "SCAN25");
-		layer.computeLayers(minLon, maxLon, minLat, maxLat, contour);
+		File departements = new File("D:\\viamichelin\\departements\\todo");
+		File[] listFiles = departements.listFiles();
+		for (File file : listFiles) {
+			if (!file.getName().startsWith(".")) {
+				fis = new FileInputStream(file);
+				gpxFile = db.parse(fis);
+				gpxProcessor = new GPXProcessor(gpxFile, 3.0);
+				gpxProcessor.parse();
 
+				contour = gpxProcessor;
+				minLon = gpxProcessor.getMinLon();
+				maxLon = gpxProcessor.getMaxLon();
+				minLat = gpxProcessor.getMinLat();
+				maxLat = gpxProcessor.getMaxLat();
+
+				WMSLayer layer = new WMSLayer(15, "SCAN25");
+				String setName = file.getName().replaceAll(".gpx", "");
+				if (setName.indexOf('-') != -1) {
+					setName = setName.substring(0, setName.indexOf('-') - 1);
+				}
+				layer.computeLayers(minLon, maxLon, minLat, maxLat, contour,
+						setName);
+			}
+		}
+	}
+
+	private static void validateTiles(File file) {
+		if (file.isFile() && file.getName().toLowerCase().endsWith(".jpg")) {
+			try {
+				ImageIO.read(file);
+			} catch (Throwable e) {
+				System.out.println(file.getAbsolutePath());
+				file.deleteOnExit();
+			}
+		} else if (file.isFile()
+				&& file.getName().toLowerCase().endsWith(".png")) {
+			file.deleteOnExit();
+		} else {
+			if (file.isDirectory()) {
+				File[] files = file.listFiles();
+				for (File file2 : files) {
+					if (!file2.getName().startsWith(".")) {
+						validateTiles(file2);
+					}
+				}
+			}
+		}
 	}
 
 	private static void processLayer(File file, double minLon, double maxLon,

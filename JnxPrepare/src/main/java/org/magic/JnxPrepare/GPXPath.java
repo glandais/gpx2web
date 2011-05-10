@@ -48,11 +48,11 @@ public class GPXPath {
 		return points;
 	}
 
-	public boolean includes(double lon, double lat) {
+	public boolean includes(GPXPoint p) {
 		if (polygon == null) {
 			computePolygon();
 		}
-		return polygon.contains(lon, lat);
+		return polygon.contains(p.getLon(), p.getLat());
 	}
 
 	private void computePolygon() {
@@ -60,5 +60,42 @@ public class GPXPath {
 		for (GPXPoint point : points) {
 			polygon.addPoint((float) point.getLon(), (float) point.getLat());
 		}
+	}
+
+	public boolean inBuffer(GPXPoint p, double dmax) {
+		GPXPoint s1;
+		GPXPoint s2;
+		double dmin = 1000;
+
+		for (int i = 1; i < points.size(); i++) {
+			s1 = points.get(i - 1);
+			s2 = points.get(i);
+
+			try {
+				double d = s1.distanceTo(s2);
+				double d1 = s1.distanceTo(p);
+				double d2 = s2.distanceTo(p);
+
+				// Al-Kashi
+				// d2² = d² + d1² + 2*d*d1*cos a
+				double cosa1 = (d2 * d2 - d * d - d1 * d1) / (2.0 * d * d1);
+				double a1 = Math.acos(cosa1);
+
+				double cosa2 = (d1 * d1 - d * d - d2 * d2) / (2.0 * d * d2);
+				double a2 = Math.acos(cosa2);
+
+				if (a1 < Math.PI / 1.9 && a2 < Math.PI / 1.9) {
+					// sin a = d / d1
+					double dist = d1 * Math.sin(a1);
+					dmin = Math.min(dmin, dist);
+					if (dist < dmax) {
+						return true;
+					}
+				}
+			} catch (Throwable e) {
+			}
+
+		}
+		return false;
 	}
 }

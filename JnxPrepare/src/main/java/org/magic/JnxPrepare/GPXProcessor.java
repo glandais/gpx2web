@@ -25,9 +25,12 @@ public class GPXProcessor implements Contour {
 
 	private double maxLat = -200;
 
-	public GPXProcessor(Document gpxDocument) {
+	private double extraBuffer;
+
+	public GPXProcessor(Document gpxDocument, double extraBuffer) {
 		super();
 		this.gpxDocument = gpxDocument;
+		this.extraBuffer = extraBuffer;
 	}
 
 	public Document getGpxDocument() {
@@ -46,7 +49,8 @@ public class GPXProcessor implements Contour {
 		processElement(gpxDocument, gpxDocument.getDocumentElement());
 	}
 
-	private void processElement(Document document, Element element) throws Exception {
+	private void processElement(Document document, Element element)
+			throws Exception {
 		String tagName = element.getTagName().toLowerCase();
 
 		if (tagName.equals("trk") || tagName.equals("rte")) {
@@ -83,7 +87,8 @@ public class GPXProcessor implements Contour {
 		}
 	}
 
-	private void processPoint(Document document, Element element) throws Exception {
+	private void processPoint(Document document, Element element)
+			throws Exception {
 		double lon = Double.parseDouble(element.getAttribute("lon"));
 		double lat = Double.parseDouble(element.getAttribute("lat"));
 
@@ -150,21 +155,41 @@ public class GPXProcessor implements Contour {
 	}
 
 	public boolean includes(double[] coords) {
+		GPXPoint p1 = new GPXPoint(coords[0], coords[1]);
+		GPXPoint p2 = new GPXPoint(coords[0], coords[3]);
+		GPXPoint p3 = new GPXPoint(coords[2], coords[1]);
+		GPXPoint p4 = new GPXPoint(coords[2], coords[3]);
 		// one of the coords must be inside a track
 		for (GPXPath path : paths) {
-			if (path.includes(coords[0], coords[1])) {
+			if (path.includes(p1)) {
 				return true;
 			}
-			if (path.includes(coords[0], coords[3])) {
+			if (path.includes(p2)) {
 				return true;
 			}
-			if (path.includes(coords[2], coords[1])) {
+			if (path.includes(p3)) {
 				return true;
 			}
-			if (path.includes(coords[2], coords[3])) {
+			if (path.includes(p4)) {
 				return true;
 			}
 		}
+
+		for (GPXPath path : paths) {
+			if (path.inBuffer(p1, extraBuffer)) {
+				return true;
+			}
+			if (path.inBuffer(p2, extraBuffer)) {
+				return true;
+			}
+			if (path.inBuffer(p3, extraBuffer)) {
+				return true;
+			}
+			if (path.inBuffer(p4, extraBuffer)) {
+				return true;
+			}
+		}
+
 		return false;
 	}
 
