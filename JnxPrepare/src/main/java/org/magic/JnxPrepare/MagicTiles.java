@@ -1,19 +1,3 @@
-/*******************************************************************************
- * Copyright (c) MOBAC developers
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
 package org.magic.JnxPrepare;
 
 import java.awt.Color;
@@ -22,7 +6,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,7 +27,8 @@ public class MagicTiles {
 
 	private List<MagicTile> tiles = new ArrayList<MagicTile>();
 
-	private Map<MagicTile, LoadedTile> loadedTiles = Collections.synchronizedMap(new HashMap<MagicTile, LoadedTile>());
+	private Map<MagicTile, LoadedTile> loadedTiles = Collections
+			.synchronizedMap(new HashMap<MagicTile, LoadedTile>());
 
 	private MagicPower2MapSpace mapSpace;
 
@@ -58,7 +42,8 @@ public class MagicTiles {
 		addTiles(searchFolder);
 	}
 
-	public void computeLayers(double minLon, double maxLon, double minLat, double maxLat, Contour contour) {
+	public void computeLayers(double minLon, double maxLon, double minLat,
+			double maxLat, GPXProcessor contour) {
 		zooms = new HashSet<Integer>();
 
 		for (MagicTile tile : tiles) {
@@ -70,13 +55,18 @@ public class MagicTiles {
 			zoom = Math.max(zoom, curZoom);
 		}
 
-		int minX = (int) Math.floor((1.0 * mapSpace.cLonToX(minLon, zoom)) / 256.0);
-		int minY = (int) Math.floor((1.0 * mapSpace.cLatToY(minLat, zoom)) / 256.0);
+		int minX = (int) Math
+				.floor((1.0 * mapSpace.cLonToX(minLon, zoom)) / 256.0);
+		int minY = (int) Math
+				.floor((1.0 * mapSpace.cLatToY(minLat, zoom)) / 256.0);
 
-		int maxX = (int) Math.ceil((1.0 * mapSpace.cLonToX(maxLon, zoom)) / 256.0);
-		int maxY = (int) Math.ceil((1.0 * mapSpace.cLatToY(maxLat, zoom)) / 256.0);
+		int maxX = (int) Math
+				.ceil((1.0 * mapSpace.cLonToX(maxLon, zoom)) / 256.0);
+		int maxY = (int) Math
+				.ceil((1.0 * mapSpace.cLatToY(maxLat, zoom)) / 256.0);
 
-		System.out.println(zoom + " : " + minX + "->" + maxX + " ; " + maxY + "->" + minY);
+		System.out.println(zoom + " : " + minX + "->" + maxX + " ; " + maxY
+				+ "->" + minY);
 
 		for (MagicTile magicTile : tiles) {
 			magicTile.computePixelBounds(zoom);
@@ -92,7 +82,8 @@ public class MagicTiles {
 		}
 	}
 
-	public static double[] calculateLatLon(MagicPower2MapSpace mapSpace, int zoom, int tilex, int tiley) {
+	public static double[] calculateLatLon(MagicPower2MapSpace mapSpace,
+			int zoom, int tilex, int tiley) {
 		int tileSize = mapSpace.getTileSize();
 		double[] result = new double[4];
 		tilex *= tileSize;
@@ -105,7 +96,8 @@ public class MagicTiles {
 	}
 
 	private void computeTile(int x, int y, int zoom) {
-		File imageFile = new File(LayerComputer.cacheFolder, "magicCache/" + zoom + "/" + x + "/" + y + ".jpg");
+		File imageFile = new File(LayerComputer.cacheFolder, "magicCache/"
+				+ zoom + "/" + x + "/" + y + ".jpg");
 		if (!imageFile.exists()) {
 			System.out.println(imageFile.getAbsolutePath());
 			imageFile.getParentFile().mkdirs();
@@ -120,7 +112,8 @@ public class MagicTiles {
 
 			int tileSize = 256;
 
-			BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
+			BufferedImage image = new BufferedImage(tileSize, tileSize,
+					BufferedImage.TYPE_INT_RGB);
 			Graphics2D g2 = image.createGraphics();
 
 			List<MagicTile> matchingTiles = new ArrayList<MagicTile>();
@@ -135,10 +128,14 @@ public class MagicTiles {
 				g2.fillRect(0, 0, tileSize - 1, tileSize - 1);
 
 				for (int xi = 0; xi < tileSize; xi++) {
-					double lon = coords[0] + (xi / (1.0 * tileSize)) * (coords[2] - coords[0]);
+					double lon = coords[0] + (xi / (1.0 * tileSize))
+							* (coords[2] - coords[0]);
 					for (int yi = 0; yi < tileSize; yi++) {
-						double lat = coords[3] + (yi / (1.0 * tileSize)) * (coords[1] - coords[3]);
-						image.setRGB(xi, yi, getColorTiles(matchingTiles, lon, lat, zoom).getRGB());
+						double lat = coords[3] + (yi / (1.0 * tileSize))
+								* (coords[1] - coords[3]);
+						image.setRGB(xi, yi,
+								getColorTiles(matchingTiles, lon, lat, zoom)
+										.getRGB());
 					}
 				}
 
@@ -152,7 +149,8 @@ public class MagicTiles {
 		}
 	}
 
-	private void writeImage(BufferedImage image, File imageFile) throws IOException {
+	private void writeImage(BufferedImage image, File imageFile)
+			throws IOException {
 		FileOutputStream fos = new FileOutputStream(imageFile);
 
 		ImageWriter writer = null;
@@ -183,11 +181,8 @@ public class MagicTiles {
 		if (file.isFile() && file.getName().endsWith(".wld")) {
 			try {
 				MagicTile magicTile = new MagicTile(mapSpace, file);
-				// System.out.println("loaded " + magicTile.getImageFile());
 				tiles.add(magicTile);
-			} catch (ParseException e) {
-				System.err.println(e.getMessage());
-			} catch (IOException e) {
+			} catch (Exception e) {
 				System.err.println(e.getMessage());
 			}
 
@@ -203,7 +198,8 @@ public class MagicTiles {
 		}
 	}
 
-	public Color getColorTiles(List<MagicTile> matchingTiles, double lon, double lat, int zoom) throws IOException {
+	public Color getColorTiles(List<MagicTile> matchingTiles, double lon,
+			double lat, int zoom) throws IOException {
 		Color result = Color.WHITE;
 		if (lastTile != null && lastTile.contains(lon, lat)) {
 			return getColorTile(lastTile, lon, lat, zoom);
@@ -218,7 +214,8 @@ public class MagicTiles {
 		return result;
 	}
 
-	private Color getColorTile(MagicTile magicTile, double lon, double lat, int zoom) throws IOException {
+	private Color getColorTile(MagicTile magicTile, double lon, double lat,
+			int zoom) throws IOException {
 		Color result = Color.WHITE;
 		LoadedTile loadedTile = getLoadTile(magicTile);
 		result = magicTile.getColor(loadedTile, lon, lat);
@@ -238,7 +235,8 @@ public class MagicTiles {
 
 	private void removeOldest() {
 		while (loadedTiles.size() > 100) {
-			List<LoadedTile> values = new ArrayList<LoadedTile>(loadedTiles.values());
+			List<LoadedTile> values = new ArrayList<LoadedTile>(
+					loadedTiles.values());
 			Collections.sort(values, new Comparator<LoadedTile>() {
 				public int compare(LoadedTile o1, LoadedTile o2) {
 					return o1.getLastAccess().compareTo(o2.getLastAccess());

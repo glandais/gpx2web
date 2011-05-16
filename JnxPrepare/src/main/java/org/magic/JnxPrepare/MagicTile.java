@@ -1,22 +1,7 @@
-/*******************************************************************************
- * Copyright (c) MOBAC developers
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
 package org.magic.JnxPrepare;
 
 import java.awt.Color;
+import java.awt.geom.Point2D.Double;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +14,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Set;
+
+import javax.media.jai.PerspectiveTransform;
 
 public class MagicTile {
 
@@ -47,14 +34,6 @@ public class MagicTile {
 	private String url;
 	private File imageFile;
 	private MagicPower2MapSpace mapSpace;
-	private double x0;
-	private double y0;
-	private double x_x;
-	private double x_y;
-	private double x_l;
-	private double y_x;
-	private double y_y;
-	private double y_l;
 
 	private Number bl_lon;
 
@@ -88,16 +67,21 @@ public class MagicTile {
 
 	private double y_tr;
 
-	public MagicTile(MagicPower2MapSpace mapSpace, File file) throws ParseException, IOException {
+	private PerspectiveTransform perspectiveTransform;
+
+	public MagicTile(MagicPower2MapSpace mapSpace, File file)
+			throws ParseException, IOException {
 		super();
 
 		this.mapSpace = mapSpace;
 
 		String fileName = file.getName();
-		imageFile = new File(file.getParentFile(), fileName.substring(0, fileName.length() - 4) + ".png");
+		imageFile = new File(file.getParentFile(), fileName.substring(0,
+				fileName.length() - 4) + ".png");
 
 		BufferedReader reader = new BufferedReader(new FileReader(file));
-		// URL BL.lon BL.lat BR.lon BR.lat TL.lon TL.lat TR.lon TR.lat width height
+		// URL BL.lon BL.lat BR.lon BR.lat TL.lon TL.lat TR.lon TR.lat width
+		// height
 		reader.readLine();
 		url = reader.readLine();
 		bl_lon = df.parse(reader.readLine());
@@ -111,33 +95,20 @@ public class MagicTile {
 
 		reader.close();
 
-		x0 = mapSpace.cLonToX(tl_lon.doubleValue(), COMPUTING_ZOOM);
-		y0 = mapSpace.cLatToY(tl_lat.doubleValue(), COMPUTING_ZOOM);
+		double x0 = mapSpace.cLonToX(bl_lon.doubleValue(), COMPUTING_ZOOM);
+		double y0 = mapSpace.cLatToY(bl_lat.doubleValue(), COMPUTING_ZOOM);
 
-		double tr_x = mapSpace.cLonToX(tr_lon.doubleValue(), COMPUTING_ZOOM);
-		double tr_y = mapSpace.cLatToY(tr_lat.doubleValue(), COMPUTING_ZOOM);
+		double x1 = mapSpace.cLonToX(br_lon.doubleValue(), COMPUTING_ZOOM);
+		double y1 = mapSpace.cLatToY(br_lat.doubleValue(), COMPUTING_ZOOM);
 
-		x_x = tr_x - x0;
-		x_y = tr_y - y0;
+		double x2 = mapSpace.cLonToX(tr_lon.doubleValue(), COMPUTING_ZOOM);
+		double y2 = mapSpace.cLatToY(tr_lat.doubleValue(), COMPUTING_ZOOM);
 
-		x_l = Math.sqrt(x_x * x_x + x_y * x_y);
-		x_x = x_x / x_l;
-		x_y = x_y / x_l;
+		double x3 = mapSpace.cLonToX(tl_lon.doubleValue(), COMPUTING_ZOOM);
+		double y3 = mapSpace.cLatToY(tl_lat.doubleValue(), COMPUTING_ZOOM);
 
-		double bl_x = mapSpace.cLonToX(bl_lon.doubleValue(), COMPUTING_ZOOM);
-		double bl_y = mapSpace.cLatToY(bl_lat.doubleValue(), COMPUTING_ZOOM);
-
-		y_x = bl_x - x0;
-		y_y = bl_y - y0;
-
-		y_l = Math.sqrt(y_x * y_x + y_y * y_y);
-		y_x = y_x / y_l;
-		y_y = y_y / y_l;
-
-		// if (downloading && (!imageFile.exists() || imageFile.length() == 0)) {
-		// downloadImageFile();
-		// }
-
+		perspectiveTransform = PerspectiveTransform.getQuadToSquare(x3, y3, x2,
+				y2, x1, y1, x0, y0);
 	}
 
 	public File getImageFile() {
@@ -145,37 +116,33 @@ public class MagicTile {
 	}
 
 	public boolean contains(double lon, double lat) {
-		double x = mapSpace.cLonToX(lon, COMPUTING_ZOOM);
-		double y = mapSpace.cLatToY(lat, COMPUTING_ZOOM);
+		Double res = getRelativePos(lon, lat);
 
-		double dx = x - x0;
-		double dy = y - y0;
-
-		double vx = x_x * dx + x_y * dy;
-		double vy = y_x * dx + y_y * dy;
-
-		if (vx >= 0 && vx <= x_l && vy >= 0 && vy <= y_l) {
+		if (res.getX() >= 0 && res.getX() <= 1.0 && res.getY() >= 0
+				&& res.getY() <= 1.0) {
 			return true;
 		}
 
 		return false;
 	}
 
-	public Color getColor(LoadedTile loadedTile, double lon, double lat) {
+	private Double getRelativePos(double lon, double lat) {
 		double x = mapSpace.cLonToX(lon, COMPUTING_ZOOM);
 		double y = mapSpace.cLatToY(lat, COMPUTING_ZOOM);
 
-		double dx = x - x0;
-		double dy = y - y0;
+		Double res = new Double();
+		perspectiveTransform.transform(new Double(x, y), res);
+		return res;
+	}
 
-		double vx = x_x * dx + x_y * dy;
-		double vy = y_x * dx + y_y * dy;
+	public Color getColor(LoadedTile loadedTile, double lon, double lat) {
+		Double res = getRelativePos(lon, lat);
 
-		int w = loadedTile.getTileImage().getWidth();
-		int h = loadedTile.getTileImage().getHeight();
+		double vx = res.getX();
+		double vy = res.getY();
 
-		double rx = Math.max(0, Math.min(w - 1, (w - 1) * vx / x_l));
-		double ry = Math.max(0, Math.min(h - 1, (h - 1) * vy / y_l));
+		double rx = Math.max(0, Math.min(256, 256 * vx));
+		double ry = Math.max(0, Math.min(256, 256 * vy));
 
 		int ix = (int) Math.floor(rx);
 		int iy = (int) Math.floor(ry);
@@ -188,9 +155,12 @@ public class MagicTile {
 		Color cy = getColorI(loadedTile, ix, iy + 1);
 		Color cxy = getColorI(loadedTile, ix + 1, iy + 1);
 
-		int r = composite(c.getRed(), cx.getRed(), cy.getRed(), cxy.getRed(), coefx, coefy);
-		int g = composite(c.getGreen(), cx.getGreen(), cy.getGreen(), cxy.getGreen(), coefx, coefy);
-		int b = composite(c.getBlue(), cx.getBlue(), cy.getBlue(), cxy.getBlue(), coefx, coefy);
+		int r = composite(c.getRed(), cx.getRed(), cy.getRed(), cxy.getRed(),
+				coefx, coefy);
+		int g = composite(c.getGreen(), cx.getGreen(), cy.getGreen(),
+				cxy.getGreen(), coefx, coefy);
+		int b = composite(c.getBlue(), cx.getBlue(), cy.getBlue(),
+				cxy.getBlue(), coefx, coefy);
 
 		return new Color(r, g, b);
 	}
@@ -201,7 +171,8 @@ public class MagicTile {
 		return new Color(loadedTile.getTileImage().getRGB(x, y));
 	}
 
-	private int composite(int c, int cx, int cy, int cxy, double coefx, double coefy) {
+	private int composite(int c, int cx, int cy, int cxy, double coefx,
+			double coefy) {
 		double ct = (1.0 * c) * (1.0 - coefx) + (1.0 * cx) * coefx;
 		double cb = (1.0 * cy) * (1.0 - coefx) + (1.0 * cxy) * coefx;
 
@@ -216,7 +187,8 @@ public class MagicTile {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((imageFile == null) ? 0 : imageFile.hashCode());
+		result = prime * result
+				+ ((imageFile == null) ? 0 : imageFile.hashCode());
 		return result;
 	}
 
@@ -249,7 +221,8 @@ public class MagicTile {
 
 	}
 
-	private double pixDist(int z, Number lon1, Number lat1, Number lon2, Number lat2) {
+	private double pixDist(int z, Number lon1, Number lat1, Number lon2,
+			Number lat2) {
 		double x1 = mapSpace.cLonToX(lon1.doubleValue(), z);
 		double x2 = mapSpace.cLonToX(lon2.doubleValue(), z);
 
@@ -304,7 +277,8 @@ public class MagicTile {
 		System.out.println("downloaded " + url);
 	}
 
-	private void copyStream(OutputStream fos, InputStream is) throws IOException {
+	private void copyStream(OutputStream fos, InputStream is)
+			throws IOException {
 		byte[] b = new byte[IO_BUFFER_SIZE];
 		int read;
 		while ((read = is.read(b)) != -1) {
@@ -348,7 +322,8 @@ public class MagicTile {
 		return x_intersect && y_intersect;
 	}
 
-	private boolean intersectInterval(double xa1, double xa2, double xb1, double xb2) {
+	private boolean intersectInterval(double xa1, double xa2, double xb1,
+			double xb2) {
 		if (xb1 < xb2 && xa1 < xb1 && xa2 < xb1)
 			return false;
 		if (xb2 < xb1 && xa1 < xb2 && xa2 < xb2)

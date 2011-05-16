@@ -1,4 +1,5 @@
 package org.magic.JnxPrepare;
+
 public class GPXPoint {
 
 	private double lon;

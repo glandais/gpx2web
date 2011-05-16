@@ -1,6 +1,5 @@
 package org.magic.JnxPrepare;
 
-import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +64,6 @@ public class GPXPath {
 	public boolean inBuffer(GPXPoint p, double dmax) {
 		GPXPoint s1;
 		GPXPoint s2;
-		double dmin = 1000;
 
 		for (int i = 1; i < points.size(); i++) {
 			s1 = points.get(i - 1);
@@ -76,18 +74,21 @@ public class GPXPath {
 				double d1 = s1.distanceTo(p);
 				double d2 = s2.distanceTo(p);
 
+				if (d1 < dmax || d2 < dmax) {
+					return true;
+				}
+
 				// Al-Kashi
-				// d2² = d² + d1² + 2*d*d1*cos a
-				double cosa1 = (d2 * d2 - d * d - d1 * d1) / (2.0 * d * d1);
+				// d2ï¿½ = dï¿½ + d1ï¿½ + 2*d*d1*cos a
+				double cosa1 = (d2 * d2 - d * d - d1 * d1) / (-2.0 * d * d1);
 				double a1 = Math.acos(cosa1);
 
-				double cosa2 = (d1 * d1 - d * d - d2 * d2) / (2.0 * d * d2);
+				double cosa2 = (d1 * d1 - d * d - d2 * d2) / (-2.0 * d * d2);
 				double a2 = Math.acos(cosa2);
 
 				if (a1 < Math.PI / 1.9 && a2 < Math.PI / 1.9) {
 					// sin a = d / d1
 					double dist = d1 * Math.sin(a1);
-					dmin = Math.min(dmin, dist);
 					if (dist < dmax) {
 						return true;
 					}

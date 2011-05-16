@@ -1,7 +1,6 @@
 package org.magic.JnxPrepare;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,7 +37,8 @@ public class WMSLayer {
 	}
 
 	public void computeLayers(double minLon, double maxLon, double minLat,
-			double maxLat, Contour contour, String area) throws IOException {
+			double maxLat, GPXProcessor contour, String area)
+			throws IOException {
 		File tileList = new File(LayerComputer.cacheFolder, "magicCache/"
 				+ area + ".list");
 		BufferedWriter bw = new BufferedWriter(new FileWriter(tileList));
@@ -67,7 +67,7 @@ public class WMSLayer {
 		}
 
 		bw.close();
-		
+
 		System.out.println("Finished " + area);
 	}
 
