@@ -9,6 +9,7 @@ public class CheckPoint extends Point implements Comparable<CheckPoint> {
 	private double coefRef = 0;
 	private long tmin = 0;
 	private long tmax = 0;
+	private double deniv = 0;
 
 	public Point getpRef() {
 		return pRef;
@@ -56,6 +57,14 @@ public class CheckPoint extends Point implements Comparable<CheckPoint> {
 
 	public int compareTo(CheckPoint o) {
 		return Double.compare(getDist(), o.getDist());
+	}
+
+	public double getDeniv() {
+		return deniv;
+	}
+
+	public void setDeniv(double deniv) {
+		this.deniv = deniv;
 	}
 
 }
