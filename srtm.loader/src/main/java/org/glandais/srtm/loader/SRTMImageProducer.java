@@ -99,7 +99,11 @@ public class SRTMImageProducer {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				double z = zs[i][j];
-				image.setRGB(i, j, getRgb(getRelativeZ(z, minz, maxz)));
+				if (z <= 0) {
+					
+				}
+				int rgb = getRgb(getRelativeZ(z, minz, maxz));
+				image.setRGB(i, j, rgb);
 			}
 		}
 	}
