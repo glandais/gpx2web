@@ -1,12 +1,14 @@
 package org.glandais.gpx.elevation.fixer;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.glandais.srtm.loader.Point;
+import org.glandais.srtm.loader.SRTMException;
+import org.glandais.srtm.loader.SRTMHelper;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Document;
@@ -150,14 +152,17 @@ public class GPXProcessor {
 		for (GPXPath path : paths) {
 			System.out.println("chart " + path.getName());
 			path.createChart(string);
-			System.out.println("map " + path.getName());
-			path.createMap(string, maxsize);
+			// path.createChartDeriv(string);
+			if (maxsize > 0) {
+				System.out.println("map " + path.getName());
+				path.createMap(string, maxsize);
+			}
 		}
 
 	}
 
 	public void postProcess(StringBuilder timeSheet) {
-		NumberFormat nf = NumberFormat.getNumberInstance();
+		DecimalFormat nf = new DecimalFormat("0.00");
 
 		List<Point> pointsTime = new ArrayList<Point>();
 		for (GPXPath path : paths) {
@@ -169,15 +174,78 @@ public class GPXProcessor {
 
 			List<CheckPoint> wptsPath = path.getWptsPath();
 			Collections.sort(wptsPath);
+			CheckPoint prevCP = null;
 			for (CheckPoint checkPoint : wptsPath) {
+				double elevation = -1;
+				try {
+					elevation = SRTMHelper.getInstance().getElevation(
+							checkPoint.getLon(), checkPoint.getLat());
+				} catch (SRTMException e) {
+					e.printStackTrace();
+				}
+
 				timeSheet.append(checkPoint.getCaption());
 				timeSheet.append(";");
 				timeSheet.append(nf.format(checkPoint.getDist()));
 				timeSheet.append(";");
+				String formatedEle = nf.format(elevation);
+				formatedEle = formatedEle.replaceAll(" ", "");
+				timeSheet.append(formatedEle);
+				timeSheet.append(";");
+				String formatedDeniv = nf.format(checkPoint.getDeniv());
+				formatedDeniv = formatedDeniv.replaceAll(" ", "");
+				timeSheet.append(formatedDeniv);
+				timeSheet.append(";");
 				timeSheet.append(fmt3.print(checkPoint.getTmin()));
 				timeSheet.append(";");
 				timeSheet.append(fmt3.print(checkPoint.getTmax()));
+				timeSheet.append(";");
+
+				String minSpeed = "";
+				String maxSpeed = "";
+				if (prevCP != null) {
+					double time = checkPoint.getTmin() - prevCP.getTmin();
+					if (time > 1000) {
+						minSpeed = nf.format((checkPoint.getDist() - prevCP
+								.getDist())
+								/ (time / (1000 * 60 * 60)));
+					}
+					time = checkPoint.getTmax() - prevCP.getTmax();
+					if (time > 1000) {
+						maxSpeed = nf.format((checkPoint.getDist() - prevCP
+								.getDist())
+								/ (time / (1000 * 60 * 60)));
+					}
+				}
+				timeSheet.append(minSpeed);
+				timeSheet.append(";");
+				timeSheet.append(maxSpeed);
+
+				timeSheet.append(";");
+
+				minSpeed = "";
+				maxSpeed = "";
+				if (prevCP != null) {
+					double time = checkPoint.getTmin() - prevCP.getTmin();
+					if (time > 1000) {
+						minSpeed = nf.format((checkPoint.getDeniv() - prevCP
+								.getDeniv())
+								/ (time / (1000 * 60 * 60)));
+					}
+					time = checkPoint.getTmax() - prevCP.getTmax();
+					if (time > 1000) {
+						maxSpeed = nf.format((checkPoint.getDeniv() - prevCP
+								.getDeniv())
+								/ (time / (1000 * 60 * 60)));
+					}
+				}
+				timeSheet.append(minSpeed);
+				timeSheet.append(";");
+				timeSheet.append(maxSpeed);
+
 				timeSheet.append("\r\n");
+
+				prevCP = checkPoint;
 			}
 
 		}

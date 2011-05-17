@@ -2,6 +2,8 @@ package org.glandais.gpx.elevation.fixer;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,7 +26,20 @@ public class App {
 		File fin = new File(args[0]);
 		File fout = new File(args[1]);
 		File[] listFiles = fin.listFiles();
-		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(110, 130, 160);
+		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(100, 130, 130);
+
+		// GregorianCalendar[] starts = getTmpStarts();
+		GregorianCalendar[] starts = getCorsicaStarts();
+		// Calendar instance = Calendar.getInstance();
+		// instance.add(Calendar.DATE, 1);
+		// instance.set(Calendar.HOUR_OF_DAY, 5);
+		// instance.set(Calendar.MINUTE, 30);
+		// instance.set(Calendar.SECOND, 0);
+		// instance.set(Calendar.MILLISECOND, 0);
+		// Calendar[] starts = new Calendar[] { instance };
+
+		bikeTimeEval.setStarts(starts);
+
 		for (File file : listFiles) {
 			if (!file.getName().startsWith(".")
 					&& file.getName().toLowerCase().endsWith(".gpx")) {
@@ -36,6 +51,72 @@ public class App {
 			}
 		}
 
+	}
+
+	private static GregorianCalendar[] getCorsicaStarts() {
+		GregorianCalendar[] starts = new GregorianCalendar[1];
+
+		GregorianCalendar start = new GregorianCalendar();
+		start.set(Calendar.DAY_OF_MONTH, 21);
+		start.set(Calendar.MONTH, 4); // Jan. = 0!
+		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.HOUR_OF_DAY, 7);
+		start.set(Calendar.MINUTE, 15);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
+		starts[0] = start;
+
+		return starts;
+	}
+
+	private static GregorianCalendar[] getTmpStarts() {
+		GregorianCalendar[] starts = new GregorianCalendar[2];
+
+		GregorianCalendar start = new GregorianCalendar();
+		start.set(Calendar.DAY_OF_MONTH, 30);
+		start.set(Calendar.MONTH, 3); // Jan. = 0!
+		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.HOUR_OF_DAY, 4);
+		start.set(Calendar.MINUTE, 30);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
+		starts[0] = start;
+
+		start = new GregorianCalendar();
+		start.set(Calendar.DAY_OF_MONTH, 30);
+		start.set(Calendar.MONTH, 3); // Jan. = 0!
+		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.HOUR_OF_DAY, 6);
+		start.set(Calendar.MINUTE, 0);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
+		starts[1] = start;
+		return starts;
+	}
+
+	private static GregorianCalendar[] getPBP2011Starts() {
+		GregorianCalendar[] starts = new GregorianCalendar[2];
+
+		GregorianCalendar start = new GregorianCalendar();
+		start.set(Calendar.DAY_OF_MONTH, 20);
+		start.set(Calendar.MONTH, 7); // Jan. = 0!
+		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.HOUR_OF_DAY, 20);
+		start.set(Calendar.MINUTE, 0);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
+		starts[0] = start;
+
+		start = new GregorianCalendar();
+		start.set(Calendar.DAY_OF_MONTH, 22);
+		start.set(Calendar.MONTH, 7); // Jan. = 0!
+		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.HOUR_OF_DAY, 4);
+		start.set(Calendar.MINUTE, 0);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
+		starts[1] = start;
+		return starts;
 	}
 
 	private static void processfile(File file, File fout,
@@ -60,8 +141,8 @@ public class App {
 		Result outputTarget = new StreamResult(fileOut);
 		transformer.transform(xmlSource, outputTarget);
 
-		// processor.createCharts(fout.getAbsolutePath() + "/" + file.getName(),
-		// 10);
+		processor
+				.createCharts(fout.getAbsolutePath() + "/" + file.getName(), 0);
 
 		File outFile = new File(pathName + ".txt");
 		FileWriter out = new FileWriter(outFile);

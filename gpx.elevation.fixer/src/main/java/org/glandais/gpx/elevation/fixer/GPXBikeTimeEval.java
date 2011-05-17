@@ -1,5 +1,8 @@
 package org.glandais.gpx.elevation.fixer;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 public class GPXBikeTimeEval {
 
 	// poids en kg
@@ -18,6 +21,10 @@ public class GPXBikeTimeEval {
 	private int nPentes;
 	private double[] vitessesMin;
 	private double[] vitessesMax;
+
+	private Calendar[] starts = { Calendar.getInstance() };
+	private int counter = 0;
+	private int dday = 0;
 
 	public GPXBikeTimeEval(double m, double puissanceMin, double puissanceMax) {
 		super();
@@ -90,5 +97,23 @@ public class GPXBikeTimeEval {
 			iPente = nPentes - 1;
 		}
 		return iPente;
+	}
+
+	public void setStarts(Calendar[] starts) {
+		this.starts = starts;
+	}
+
+	public Calendar getNextStart() {
+		if (counter < starts.length) {
+			Calendar start = starts[counter];
+			counter++;
+			return start;
+		} else {
+			dday++;
+			GregorianCalendar start = (GregorianCalendar) starts[starts.length - 1]
+					.clone();
+			start.add(Calendar.DAY_OF_YEAR, dday);
+			return start;
+		}
 	}
 }
