@@ -85,22 +85,26 @@ public class App {
 
 	private static void processWms(String wmsURL, File gpxFile,
 			File destFolder, double bufferDistance, int zoom, String layers)
-			throws FileNotFoundException, SAXException, IOException, Exception {
+			throws Exception {
 		WMSLayer wmsLayer = new WMSLayer(wmsURL, layers, zoom, destFolder);
 
-		FileInputStream fis = new FileInputStream(gpxFile);
-		Document gpxDocument = DOCUMENT_BUILDER.parse(fis);
-		GPXProcessor gpxProcessor = new GPXProcessor(gpxDocument,
-				bufferDistance);
-		gpxProcessor.parse();
+		try {
+			FileInputStream fis = new FileInputStream(gpxFile);
+			Document gpxDocument = DOCUMENT_BUILDER.parse(fis);
+			GPXProcessor gpxProcessor = new GPXProcessor(gpxDocument,
+					bufferDistance);
+			gpxProcessor.parse();
 
-		String setName = gpxFile.getName().toLowerCase().replaceAll(".gpx", "");
-		if (setName.indexOf('-') != -1) {
-			setName = setName.substring(0, setName.indexOf('-') - 1);
+			String setName = gpxFile.getName().toLowerCase()
+					.replaceAll(".gpx", "");
+			if (setName.indexOf('-') != -1) {
+				setName = setName.substring(0, setName.indexOf('-') - 1);
+			}
+			wmsLayer.computeLayers(gpxProcessor, setName);
+		} finally {
+			wmsLayer.done();
 		}
-		wmsLayer.computeLayers(gpxProcessor, setName);
 
-		wmsLayer.done();
 	}
 
 	private static void printHelp(Options options) {

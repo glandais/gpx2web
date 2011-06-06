@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -18,9 +19,13 @@ import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+
 import com.thebuzzmedia.imgscalr.Scalr;
 
 public class WMSLayer {
+
+	private static final int POOL_SIZE = 6;
 
 	private static final int IO_BUFFER_SIZE = 4 * 1024;
 
@@ -32,7 +37,10 @@ public class WMSLayer {
 
 	private File destFolder;
 
-	private WorkQueue workQueue;
+	static PooledExecutor threadPool = new PooledExecutor(POOL_SIZE);
+
+	final ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(
+			5);
 
 	private String wmsURL;
 
@@ -42,7 +50,6 @@ public class WMSLayer {
 		this.layer = layer;
 		this.destFolder = destFolder;
 		this.wmsURL = wmsURL;
-		this.workQueue = new WorkQueue(6);
 	}
 
 	public void computeLayers(GPXProcessor contour, String area)
@@ -53,7 +60,7 @@ public class WMSLayer {
 		double minLat = contour.getMinLat();
 		double maxLat = contour.getMaxLat();
 
-		File tileList = new File(destFolder, "magicCache/" + area + ".list");
+		File tileList = new File(destFolder, area + ".list");
 		BufferedWriter bw = new BufferedWriter(new FileWriter(tileList));
 
 		int minX = (int) Math
@@ -85,10 +92,10 @@ public class WMSLayer {
 
 	private void computeTile(final int x, final int y, final int zoom,
 			BufferedWriter bw) throws IOException {
-		final File imageFile = new File(destFolder, "magicCache/" + zoom + "/"
-				+ x + "/" + y + ".jpg");
-		final File downloadedFile = new File(destFolder, "magicCache/" + zoom
-				+ "/" + x + "/" + y + ".png");
+		final File imageFile = new File(destFolder, zoom + "/" + x + "/" + y
+				+ ".jpg");
+		final File downloadedFile = new File(destFolder, zoom + "/" + x + "/"
+				+ y + ".png");
 		bw.write(".\\" + zoom + "\\" + x + "\\" + y + ".jpg");
 		bw.newLine();
 
@@ -96,14 +103,14 @@ public class WMSLayer {
 			System.out.println(imageFile.getAbsolutePath());
 			imageFile.getParentFile().mkdirs();
 
-			while (workQueue.queueSize() > 7) {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException ignored) {
-				}
-			}
+			// while (threadPool.getPoolSize() > 5) {
+			// try {
+			// Thread.sleep(50);
+			// } catch (InterruptedException ignored) {
+			// }
+			// }
 
-			workQueue.execute(new Runnable() {
+			Runnable runnable = new Runnable() {
 
 				public void run() {
 					try {
@@ -130,7 +137,13 @@ public class WMSLayer {
 					}
 					downloadedFile.delete();
 				}
-			});
+			};
+			try {
+				threadPool.execute(runnable);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 		}
 	}
@@ -178,7 +191,7 @@ public class WMSLayer {
 	}
 
 	public void done() {
-		workQueue.done();
+		threadPool.shutdownAfterProcessingCurrentlyQueuedTasks();
 	}
 
 }
