@@ -61,7 +61,6 @@ public class GPXPath {
 	private double[] dists;
 	private double[] zs;
 	private long[] timeMin;
-	private long[] timeMax;
 
 	public GPXPath(String name, GPXBikeTimeEval bikeTimeEval, List<Point> wpts) {
 		super();
@@ -343,7 +342,6 @@ public class GPXPath {
 		dists = new double[points.size()];
 		zs = new double[points.size()];
 		timeMin = new long[points.size()];
-		timeMax = new long[points.size()];
 		Point previousPoint = null;
 		int i = 0;
 		double d = 0;
@@ -370,9 +368,9 @@ public class GPXPath {
 		Calendar today = bikeTimeEval.getNextStart();
 
 		long currentTimeMin = today.getTimeInMillis();
-		long currentTimeMax = today.getTimeInMillis();
 		double totdist = 0;
 		double toteleplus = 0;
+		double vitesse = 5.0;
 
 		for (int j = 0; j < zs.length; j++) {
 			GPXPoint p = points.get(j);
@@ -393,16 +391,15 @@ public class GPXPath {
 				if (dist > 0.005) {
 					double dz = p.getZ() - prevPoint.getZ();
 					double pente = (dz * 0.1) / dist;
+					
+					// temps en secondes
+					double time = bikeTimeEval.getTimeForDist(vitesse, dist, pente); // temps!
 					// vitesse en km/h
-					double vitesse = bikeTimeEval.getVitesseMin(pente); // temps!
-					long ts = Math.round((dist / vitesse) * 60 * 60 * 1000);
+					vitesse = dist / (time / (60 * 60));
+					long ts = Math.round(time * 1000);
 
 					double previousTimeMin = currentTimeMin;
 					currentTimeMin = currentTimeMin + ts;
-
-					vitesse = bikeTimeEval.getVitesseMax(pente); // temps!
-					ts = Math.round((dist / vitesse) * 60 * 60 * 1000);
-					currentTimeMax = currentTimeMax + ts;
 
 					int nprev = (int) Math.floor(previousTimeMin
 							/ (interval * 1.0));
@@ -418,12 +415,12 @@ public class GPXPath {
 						wpt.setTime(n * interval);
 						wpt.setDist(totdist + c * dist);
 						wpt.setCaption(fmt2.print(n * interval));
-//						wpt.setCaption(name
-//								+ " - "
-//								+ fmt2.print(n * interval)
-//								+ " ("
-//								+ getSpeedBetween(wpt, wpts
-//										.get(wpts.size() - 1)) + ")");
+						// wpt.setCaption(name
+						// + " - "
+						// + fmt2.print(n * interval)
+						// + " ("
+						// + getSpeedBetween(wpt, wpts
+						// .get(wpts.size() - 1)) + ")");
 						wpts.add(wpt);
 					}
 				}
@@ -434,7 +431,6 @@ public class GPXPath {
 				}
 			}
 			timeMin[j] = currentTimeMin;
-			timeMax[j] = currentTimeMax;
 			String time = fmt.print(currentTimeMin);
 			p.getTimeEle().setTextContent(time);
 			if (j == zs.length - 1) {
@@ -452,9 +448,6 @@ public class GPXPath {
 						long tmin = (long) (timeMin[j - 1] + checkPoint
 								.getCoefRef()
 								* (timeMin[j] - timeMin[j - 1]));
-						long tmax = (long) (timeMax[j - 1] + checkPoint
-								.getCoefRef()
-								* (timeMax[j] - timeMax[j - 1]));
 						double prevdist = totdist - dist;
 						double distcp = prevdist + checkPoint.getCoefRef()
 								* dist;
@@ -465,7 +458,6 @@ public class GPXPath {
 
 						checkPoint.setDist(distcp);
 						checkPoint.setDeniv(elecp);
-						checkPoint.setTmax(tmax);
 						checkPoint.setTmin(tmin);
 					}
 				}
