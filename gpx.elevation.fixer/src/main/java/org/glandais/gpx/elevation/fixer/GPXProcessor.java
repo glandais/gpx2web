@@ -198,11 +198,8 @@ public class GPXProcessor {
 				timeSheet.append(";");
 				timeSheet.append(fmt3.print(checkPoint.getTmin()));
 				timeSheet.append(";");
-				timeSheet.append(fmt3.print(checkPoint.getTmax()));
-				timeSheet.append(";");
 
 				String minSpeed = "";
-				String maxSpeed = "";
 				if (prevCP != null) {
 					double time = checkPoint.getTmin() - prevCP.getTmin();
 					if (time > 1000) {
@@ -210,21 +207,12 @@ public class GPXProcessor {
 								.getDist())
 								/ (time / (1000 * 60 * 60)));
 					}
-					time = checkPoint.getTmax() - prevCP.getTmax();
-					if (time > 1000) {
-						maxSpeed = nf.format((checkPoint.getDist() - prevCP
-								.getDist())
-								/ (time / (1000 * 60 * 60)));
-					}
 				}
 				timeSheet.append(minSpeed);
-				timeSheet.append(";");
-				timeSheet.append(maxSpeed);
 
 				timeSheet.append(";");
 
 				minSpeed = "";
-				maxSpeed = "";
 				if (prevCP != null) {
 					double time = checkPoint.getTmin() - prevCP.getTmin();
 					if (time > 1000) {
@@ -232,16 +220,8 @@ public class GPXProcessor {
 								.getDeniv())
 								/ (time / (1000 * 60 * 60)));
 					}
-					time = checkPoint.getTmax() - prevCP.getTmax();
-					if (time > 1000) {
-						maxSpeed = nf.format((checkPoint.getDeniv() - prevCP
-								.getDeniv())
-								/ (time / (1000 * 60 * 60)));
-					}
 				}
 				timeSheet.append(minSpeed);
-				timeSheet.append(";");
-				timeSheet.append(maxSpeed);
 
 				timeSheet.append("\r\n");
 

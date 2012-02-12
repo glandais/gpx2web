@@ -8,7 +8,6 @@ public class CheckPoint extends Point implements Comparable<CheckPoint> {
 	private Point pRefNext = null;
 	private double coefRef = 0;
 	private long tmin = 0;
-	private long tmax = 0;
 	private double deniv = 0;
 
 	public Point getpRef() {
@@ -41,14 +40,6 @@ public class CheckPoint extends Point implements Comparable<CheckPoint> {
 
 	public void setTmin(long tmin) {
 		this.tmin = tmin;
-	}
-
-	public long getTmax() {
-		return tmax;
-	}
-
-	public void setTmax(long tmax) {
-		this.tmax = tmax;
 	}
 
 	public CheckPoint(double lon, double lat) {

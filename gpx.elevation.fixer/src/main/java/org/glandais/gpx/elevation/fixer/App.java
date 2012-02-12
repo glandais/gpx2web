@@ -26,10 +26,10 @@ public class App {
 		File fin = new File(args[0]);
 		File fout = new File(args[1]);
 		File[] listFiles = fin.listFiles();
-		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(100, 130, 130);
+		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(90, 250, 100);
 
 		// GregorianCalendar[] starts = getTmpStarts();
-		GregorianCalendar[] starts = getCorsicaStarts();
+		GregorianCalendar[] starts = getTmpStarts();
 		// Calendar instance = Calendar.getInstance();
 		// instance.add(Calendar.DATE, 1);
 		// instance.set(Calendar.HOUR_OF_DAY, 5);
@@ -73,20 +73,20 @@ public class App {
 		GregorianCalendar[] starts = new GregorianCalendar[2];
 
 		GregorianCalendar start = new GregorianCalendar();
-		start.set(Calendar.DAY_OF_MONTH, 30);
-		start.set(Calendar.MONTH, 3); // Jan. = 0!
+		start.set(Calendar.DAY_OF_MONTH, 4);
+		start.set(Calendar.MONTH, 11); // Jan. = 0!
 		start.set(Calendar.YEAR, 2011);
-		start.set(Calendar.HOUR_OF_DAY, 4);
-		start.set(Calendar.MINUTE, 30);
+		start.set(Calendar.HOUR_OF_DAY, 18);
+		start.set(Calendar.MINUTE, 0);
 		start.set(Calendar.SECOND, 0);
 		start.set(Calendar.MILLISECOND, 0);
 		starts[0] = start;
 
 		start = new GregorianCalendar();
-		start.set(Calendar.DAY_OF_MONTH, 30);
-		start.set(Calendar.MONTH, 3); // Jan. = 0!
+		start.set(Calendar.DAY_OF_MONTH, 11);
+		start.set(Calendar.MONTH, 5); // Jan. = 0!
 		start.set(Calendar.YEAR, 2011);
-		start.set(Calendar.HOUR_OF_DAY, 6);
+		start.set(Calendar.HOUR_OF_DAY, 20);
 		start.set(Calendar.MINUTE, 0);
 		start.set(Calendar.SECOND, 0);
 		start.set(Calendar.MILLISECOND, 0);
