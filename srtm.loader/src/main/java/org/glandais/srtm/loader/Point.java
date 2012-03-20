@@ -8,6 +8,7 @@ public class Point {
 	private String caption;
 	private double dist;
 	private long time;
+	private double maxSpeed;
 
 	public double getZ() {
 		return z;
@@ -21,6 +22,22 @@ public class Point {
 		super();
 		this.lon = lon;
 		this.lat = lat;
+	}
+
+	public Point(double lon, double lat, double z) {
+		super();
+		this.lon = lon;
+		this.lat = lat;
+		this.z = z;
+	}
+
+	public Point() {
+		super();
+	}
+
+	public Point(Point point) {
+		super();
+		this.set(point);
 	}
 
 	public double getLon() {
@@ -85,6 +102,54 @@ public class Point {
 
 	public void setTime(long time) {
 		this.time = time;
+	}
+
+	public double getMaxSpeed() {
+		return maxSpeed;
+	}
+
+	public void setMaxSpeed(double maxSpeed) {
+		this.maxSpeed = maxSpeed;
+	}
+
+	public Point set(Point point) {
+		return set(point.lon, point.lat, point.z);
+	}
+
+	public Point set(double lon, double lat, double z) {
+		this.lon = lon;
+		this.lat = lat;
+		this.z = z;
+		return this;
+	}
+
+	public Point sub(Point point) {
+		return sub(point.lon, point.lat, point.z);
+	}
+
+	public Point sub(double lon, double lat, double z) {
+		return this.set(this.lon - lon, this.lat - lat, this.z - z);
+	}
+
+	public Point mul(float f) {
+		return this.set(this.lon * f, this.lat * f, this.z * f);
+	}
+
+	public Point tmp() {
+		return new Point(this);
+	}
+
+	public Point add(Point p) {
+		return this.add(p.lon, p.lat, p.z);
+	}
+
+	private Point add(double lon2, double lat2, double z2) {
+		return this.set(this.lon + lon2, this.lat + lat2, this.z + z2);
+	}
+
+	@Override
+	public String toString() {
+		return "Point [lon=" + lon + ", lat=" + lat + ", z=" + z + "]";
 	}
 
 }
