@@ -114,7 +114,7 @@ public class App {
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(file);
 
-		List<GPXPath> paths = GPXParser.parsePaths(gpxFile);
+		List<GPXPath> paths = GPXParser.parsePaths(gpxFile, true);
 		for (GPXPath gpxPath : paths) {
 			gpxPath.postProcess(bikeTimeEval);
 
