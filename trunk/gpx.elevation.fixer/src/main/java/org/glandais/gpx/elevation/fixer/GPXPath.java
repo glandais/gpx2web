@@ -3,6 +3,7 @@ package org.glandais.gpx.elevation.fixer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.glandais.gpx.braquet.Braquet;
 import org.glandais.srtm.loader.Point;
 import org.glandais.srtm.loader.SRTMException;
 import org.glandais.srtm.loader.SRTMHelper;
@@ -78,8 +79,9 @@ public class GPXPath {
 		return maxElevation;
 	}
 
-	public void processPoint(double lon, double lat) throws SRTMException {
-		Point p = new Point(lon, lat);
+	public void processPoint(double lon, double lat, long date, boolean fixZ)
+			throws SRTMException {
+		Point p = new Point(lon, lat, 0, date);
 		boolean doAdd = true;
 		if (previousPoint == null) {
 			doAdd = true;
@@ -91,19 +93,23 @@ public class GPXPath {
 			}
 		}
 		if (doAdd) {
-			if (previousPoint == null) {
-				p.setZ(SRTMHelper.getInstance().getElevation(p.getLon(),
-						p.getLat()));
-				points.add(p);
-			} else {
-				List<Point> subPoints = SRTMHelper.getInstance()
-						.getPointsBetween(previousPoint, p);
-				for (int i = 1; i < subPoints.size(); i++) {
-					Point point = subPoints.get(i);
-					points.add(point);
+			if (fixZ) {
+				if (previousPoint == null) {
+					p.setZ(SRTMHelper.getInstance().getElevation(p.getLon(),
+							p.getLat()));
+					points.add(p);
+				} else {
+					List<Point> subPoints = SRTMHelper.getInstance()
+							.getPointsBetween(previousPoint, p);
+					for (int i = 1; i < subPoints.size(); i++) {
+						Point point = subPoints.get(i);
+						points.add(point);
+					}
 				}
+				previousPoint = p;
+			} else {
+				points.add(p);
 			}
-			previousPoint = p;
 		}
 	}
 
@@ -150,6 +156,7 @@ public class GPXPath {
 		double d = 0;
 		dists = new double[points.size()];
 		zs = new double[points.size()];
+		time = new long[points.size()];
 		int i = 0;
 		for (Point p : points) {
 			zs[i] = p.getZ();
@@ -160,6 +167,7 @@ public class GPXPath {
 			dists[i] = d;
 			p.setDist(dists[i]);
 			zs[i] = p.getZ();
+			time[i] = p.getTime();
 			previousPoint = p;
 			i++;
 		}
@@ -304,6 +312,46 @@ public class GPXPath {
 			return data[i];
 		} else {
 			return totz / totc;
+		}
+
+	}
+
+	public void tryBraquets(List<Braquet> braquets, boolean verbose) {
+		filterPoints();
+		computeArrays();
+
+		Point lastPoint = null;
+		double[] speed = new double[points.size() - 1];
+		for (int i = 0; i < points.size(); i++) {
+			Point p = points.get(i);
+			if (i == 0) {
+				lastPoint = p;
+			} else {
+				double dist = lastPoint.distanceTo(p);
+				long dt = p.getTime() - lastPoint.getTime();
+				if (dt > 0 && dist > 0.002) {
+					speed[i - 1] = (dt / 3600000.0) / dist;
+				}
+			}
+			lastPoint = p;
+		}
+		lastPoint = points.get(0);
+		for (int i = 0; i < points.size() - 1; i++) {
+			Point p = points.get(i + 1);
+			long dt = p.getTime() - lastPoint.getTime();
+			double curSpeed = 1 / computeNewValue(i, 0.5, 0.5, speed);
+			if (verbose) {
+				System.out.print(curSpeed + " ");
+			}
+			for (Braquet braquet : braquets) {
+				boolean changed = braquet.applySpeed(curSpeed, dt, verbose);
+				if (changed && verbose) {
+					System.out.println("");
+					System.out.println("NEW " + braquet.curPlateau + " x "
+							+ braquet.curPignon);
+				}
+			}
+			lastPoint = p;
 		}
 
 	}

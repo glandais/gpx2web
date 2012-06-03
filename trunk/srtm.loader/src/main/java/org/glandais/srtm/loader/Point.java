@@ -31,6 +31,14 @@ public class Point {
 		this.z = z;
 	}
 
+	public Point(double lon, double lat, double z, long time) {
+		super();
+		this.lon = lon;
+		this.lat = lat;
+		this.z = z;
+		this.time = time;
+	}
+
 	public Point() {
 		super();
 	}
