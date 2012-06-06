@@ -1,65 +1,116 @@
 package org.glandais.gpx.braquet;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.glandais.gpx.braquet.db.Cassette;
 import org.glandais.gpx.braquet.db.Pedalier;
 
 public class Braquet implements Comparable<Braquet> {
 
-	Pedalier pedalier;
+	private static final DecimalFormat SPEED_FORMAT = new DecimalFormat("#########0.0");
+	private static final DecimalFormat TIME_FORMAT = new DecimalFormat("#########0");
+	private static final double ratio_crank = 5.0;
+	private static final double ratio_cog = 2.0;
+	private static final double ratio_low = 10.0;
+	private static final double ratio_high = 5.0;
 
-	Cassette cassette;
+	public Pedalier pedalier;
 
-	public int curPlateau;
-	public int curPignon;
+	public Cassette cassette;
 
-	private long timeMissingLow;
-	private long timeMissingHigh;
-	private int pedalierChanges;
-	private int cassetteChanges;
+	public int iPlateau;
+	public int iPignon;
+
+	public long timeMissingLow;
+	public long timeMissingHigh;
+	public int pedalierChanges;
+	public int cassetteChanges;
 
 	private double[] normRatios;
+
+	public List<String> history;
+
+	private StringBuilder speeds;
+	private long timeSinceShift;
+	private double totalDist;
 
 	public Braquet(Pedalier pedalier, Cassette cassette) {
 		super();
 		this.pedalier = pedalier;
-		curPlateau = pedalier.plateaux[0];
 		this.cassette = cassette;
-		curPignon = cassette.pignons[cassette.pignons.length - 1];
+		reset();
+	}
+
+	public void reset() {
+		iPlateau = 0;
+		iPignon = cassette.pignons.length - 1;
 
 		timeMissingLow = 0;
 		timeMissingHigh = 0;
 		pedalierChanges = 0;
 		cassetteChanges = 0;
+
+		speeds = new StringBuilder();
+		timeSinceShift = 0;
+		totalDist = 0;
+		history = new ArrayList<String>();
 	}
 
-	public boolean applySpeed(double curSpeed, long dt, boolean verbose) {
-		int oldPlateau = curPlateau;
-		int oldPignon = curPignon;
-
+	public boolean applySpeed(double curSpeed, long dt, double dist, boolean verbose, BufferedWriter writer)
+			throws IOException {
+		totalDist = totalDist + dist;
 		if (curSpeed > 2.0) {
-			double rpm = getRpm(curSpeed, curPignon, curPlateau);
-			if (rpm < 70) {
+			int oldPlateau = iPlateau;
+			int oldPignon = iPignon;
+
+			speeds.append(" ").append(SPEED_FORMAT.format(curSpeed));
+			timeSinceShift = timeSinceShift + dt;
+
+			double rpm = getRpm(curSpeed, iPignon, iPlateau);
+			if (rpm < 80) {
 				if (!changeCassette(+1, curSpeed)) {
-					if (verbose) {
-						System.out.println("");
-						System.out.println("********** " + curSpeed + " - "
-								+ dt + " - " + rpm);
+					if (rpm < 70) {
+						timeMissingLow += dt / 1000;
 					}
-					timeMissingLow += dt;
 				}
 			} else if (rpm > 90) {
 				if (!changeCassette(-1, curSpeed)) {
-					timeMissingHigh += dt;
+					if (rpm > 100) {
+						timeMissingHigh += dt / 1000;
+					}
 				}
 			}
-		}
 
-		return (oldPignon != curPignon || oldPlateau != curPlateau);
+			boolean changed = oldPignon != iPignon || oldPlateau != iPlateau;
+			if (changed || history.size() == 0) {
+				String logStamp = SPEED_FORMAT.format(totalDist) + " - ";
+
+				if (history.size() != 0) {
+					history.add(logStamp + speeds.toString());
+					speeds = new StringBuilder();
+					String timeS = TIME_FORMAT.format(timeSinceShift / 1000.0);
+					timeSinceShift = 0;
+
+					history.add(logStamp + "Lasts for " + timeS + "s, changed due to speed "
+							+ SPEED_FORMAT.format(curSpeed) + " (rpm " + SPEED_FORMAT.format(rpm) + ")");
+				}
+				double newRpm = getRpm(curSpeed, iPignon, iPlateau);
+				history.add(logStamp + pedalier.plateaux[iPlateau] + " x " + cassette.pignons[iPignon] + " -> "
+						+ SPEED_FORMAT.format(newRpm));
+			}
+			return changed;
+		} else {
+			return false;
+		}
 	}
 
-	private double getRpm(double curSpeed, int pignon, int plateau) {
+	private double getRpm(double curSpeed, int iPignon, int iPlateau) {
 		// km
-		double developpement = ((1.0 * plateau) / (1.0 * pignon)) * 0.0007
+		double developpement = ((1.0 * pedalier.plateaux[iPlateau]) / (1.0 * cassette.pignons[iPignon])) * 0.0007
 				* Math.PI;
 		// RPM (tours/min)
 		// tours/h
@@ -68,15 +119,14 @@ public class Braquet implements Comparable<Braquet> {
 	}
 
 	private boolean changeCassette(int dec, double curSpeed) {
-		if (dec < 0 && curPignon == cassette.pignons[0]) {
+		if (dec < 0 && isMinPignon(iPlateau)) {
 			if (changePedalier(+1)) {
 				changeCassette(0, curSpeed);
 			} else {
 				return false;
 			}
 		}
-		if (dec > 0
-				&& curPignon == cassette.pignons[cassette.pignons.length - 1]) {
+		if (dec > 0 && isMaxPignon(iPlateau)) {
 			if (changePedalier(-1)) {
 				changeCassette(0, curSpeed);
 			} else {
@@ -87,48 +137,95 @@ public class Braquet implements Comparable<Braquet> {
 		return true;
 	}
 
-	private void trouvePignon(double curSpeed) {
-		double bestrpm = 500;
-		int bestI = -1;
-		int curI = -1;
-		for (int i = 0; i < cassette.pignons.length; i++) {
-			int pignon = cassette.pignons[i];
-			if (pignon == curPignon) {
-				curI = i;
+	private boolean isMaxPignon(int plateau) {
+		int maxPignon = getMaxPignon(plateau);
+		return iPignon >= maxPignon;
+	}
+
+	private boolean isMinPignon(int plateau) {
+		int pignonsImpossibles = getMinPignon(plateau);
+		// pignonsImpossibles = 0;
+		return iPignon <= pignonsImpossibles;
+	}
+
+	private int getMinPignon(int plateau) {
+		int pignonsImpossibles = 0;
+		if (pedalier.plateaux.length == 2) {
+			// double plateau
+
+			// petit plateau
+			if (plateau == 0) {
+				pignonsImpossibles = 1;
 			}
-			double rpm = getRpm(curSpeed, pignon, curPlateau);
+		} else {
+			// triple plateau
+
+			if (plateau == 0) {
+				// petit plateau
+				pignonsImpossibles = 2;
+			} else if (plateau == 1) {
+				// plateau intermediaire
+				pignonsImpossibles = 1;
+			}
+		}
+		if (cassette.pignons.length >= 10 && pignonsImpossibles > 0) {
+			pignonsImpossibles = pignonsImpossibles + 1;
+		}
+		return pignonsImpossibles;
+	}
+
+	private int getMaxPignon(int plateau) {
+		int pignonsImpossibles = 0;
+		// grand plateau
+		if (plateau == pedalier.plateaux.length - 1) {
+			pignonsImpossibles = 2;
+		}
+		if (cassette.pignons.length >= 10 && pignonsImpossibles > 0) {
+			pignonsImpossibles = pignonsImpossibles + 1;
+		}
+		// pignonsImpossibles = 0;
+		int maxPignon = cassette.pignons.length - 1 - pignonsImpossibles;
+		return maxPignon;
+	}
+
+	private void trouvePignon(double curSpeed) {
+		int bestI = findBestCog(curSpeed);
+		cassetteChanges = cassetteChanges + Math.abs(iPignon - bestI);
+		iPignon = bestI;
+	}
+
+	private int findBestCog(double curSpeed) {
+		double bestrpm = Double.MAX_VALUE;
+		int bestI = -1;
+		int minPignon = getMinPignon(iPlateau);
+		int maxPignon = getMaxPignon(iPlateau);
+		for (int i = minPignon; i < maxPignon + 1; i++) {
+			double rpm = getRpm(curSpeed, i, iPlateau);
 			rpm = Math.abs(80.0 - rpm);
 			if (rpm < bestrpm) {
 				bestI = i;
 				bestrpm = rpm;
 			}
 		}
-		curPignon = cassette.pignons[bestI];
-		cassetteChanges = cassetteChanges + Math.abs(curI - bestI);
+		return bestI;
 	}
 
 	private boolean changePedalier(int dec) {
-		if (dec < 0 && curPlateau == pedalier.plateaux[0]) {
+		if (dec < 0 && iPlateau == 0) {
 			return false;
 		}
-		if (dec > 0
-				&& curPlateau == pedalier.plateaux[pedalier.plateaux.length - 1]) {
+		if (dec > 0 && iPlateau == pedalier.plateaux.length - 1) {
 			return false;
 		}
-		int iPedalier = 0;
-		for (int i = 0; i < pedalier.plateaux.length; i++) {
-			if (curPlateau == pedalier.plateaux[i]) {
-				iPedalier = i;
-			}
-		}
-		curPlateau = pedalier.plateaux[iPedalier + dec];
+		iPlateau = iPlateau + dec;
 		pedalierChanges += 1;
 		return true;
 	}
 
 	public Double getScore() {
-		return normRatios[2] * 10 + normRatios[0] * 5 + normRatios[1] * 2
-				+ normRatios[3];
+		return (normRatios[2] * ratio_low + normRatios[0] * ratio_crank + normRatios[1] * ratio_cog + normRatios[3]
+				* ratio_high)
+				/ (ratio_low + ratio_crank + ratio_cog + ratio_high);
 	}
 
 	public int compareTo(Braquet o) {
@@ -137,10 +234,9 @@ public class Braquet implements Comparable<Braquet> {
 
 	@Override
 	public String toString() {
-		return "Braquet [pedalier=" + pedalier + ", cassette=" + cassette
-				+ ", timeMissingLow=" + timeMissingLow + ", timeMissingHigh="
-				+ timeMissingHigh + ", pedalierChanges=" + pedalierChanges
-				+ ", cassetteChanges=" + cassetteChanges + "]";
+		return "Braquet [score=" + getScore() + ", pedalier=" + pedalier + ", cassette=" + cassette
+				+ ", timeMissingLow=" + timeMissingLow + ", timeMissingHigh=" + timeMissingHigh + ", pedalierChanges="
+				+ pedalierChanges + ", cassetteChanges=" + cassetteChanges + "]";
 	}
 
 	public double[] getRatios() {

@@ -1,43 +1,56 @@
 package org.glandais.gpx.braquet.db;
 
+import java.util.Arrays;
+
 public enum Pedalier {
 
-	VTT_SHIMANO(Compat.SHIMANO_9, 22, 32, 42),
+	TRIPLE_VTT_1(22, 32, 44),
 
-	VTT_SRAM_XX_1(Compat.SRAM_10, 26, 39),
+	TRIPLE_VTT_2(26, 36, 48),
 
-	VTT_SRAM_XX_2(Compat.SRAM_10, 28, 42),
+	TRIPLE_ROUTE_1(24, 36, 48),
 
-//	VTT_SRAM_XX_3(Compat.SRAM_10, 30, 45), // ?
+	TRIPLE_ROUTE_2(28, 36, 48),
 
-	VTT_SRAM_X0_1(Compat.SRAM_10, 22, 36),
+	TRIPLE_ROUTE_3(30, 38, 48),
 
-	VTT_SRAM_X0_2(Compat.SRAM_10, 24, 38),
+	TRIPLE_ROUTE_4(30, 39, 52), // Shimano
 
-	VTT_SRAM_X7_3(Compat.SRAM_10, 22, 33, 44),
+	DOUBLE_VTT_1(26, 39),
 
-	VTT_SRAM_APEX_1(Compat.SRAM_10, 34, 48),
+	DOUBLE_VTT_2(28, 42),
 
-	VTT_SRAM_APEX_2(Compat.SRAM_10, 34, 50),
+	DOUBLE_VTT_3(22, 36),
 
-	VTT_SRAM_APEX_3(Compat.SRAM_10, 39, 53),
+	DOUBLE_VTT_4(24, 38),
+
+	DOUBLE_VTT_5(26, 38),
+
+	DOUBLE_VTT_6(28, 40),
+
+	DOUBLE_ROUTE_C1(34, 46),
+
+	DOUBLE_ROUTE_C2(34, 48),
+
+	DOUBLE_ROUTE_C3(34, 50),
+
+	DOUBLE_ROUTE_1(39, 53),
+
+	DOUBLE_ROUTE_1b(38, 53),
+
+	DOUBLE_ROUTE_2(42, 52),
 
 	;
 
 	public int[] plateaux;
 
-	// private Compat[] compat;
-	public Compat compat;
-
-	Pedalier(Compat compat, int... plateaux) {
-		// this.compat = new Compat[] { compat };
-		this.compat = compat;
+	Pedalier(int... plateaux) {
 		this.plateaux = plateaux;
 	}
 
-	// Pedalier(Compat[] compat, int... plateaux) {
-	// this.compat = compat;
-	// this.plateaux = plateaux;
-	// }
+	@Override
+	public String toString() {
+		return name() + " (" + Arrays.toString(plateaux) + ")";
+	}
 
 }

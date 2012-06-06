@@ -32,7 +32,7 @@ public class TrackFilter {
 		TrksegType filteredPart = new TrksegType();
 		List<WptType> points = part.getTrkpt();
 		for (WptType wptType : points) {
-			filteredPart
+//			filteredPart
 		}
 
 		return filteredPart;
