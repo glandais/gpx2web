@@ -149,7 +149,7 @@ public class GPXPath {
 		*/
 	}
 
-	private void computeArrays() {
+	public void computeArrays() {
 		previousPoint = null;
 		double d = 0;
 		dists = new double[points.size()];
@@ -261,11 +261,11 @@ public class GPXPath {
 		points = newPoints;
 	}
 
-	private void filterPoints() {
+	public void filterPoints() {
 		points = filterPoints(points);
 	}
 
-	private List<Point> filterPoints(List<Point> points) {
+	public static List<Point> filterPoints(List<Point> points) {
 		List<Point> newPoints = new ArrayList<Point>();
 		Point lastPoint = null;
 		for (int i = 0; i < points.size(); i++) {
@@ -283,7 +283,7 @@ public class GPXPath {
 		return newPoints;
 	}
 
-	private double computeNewValue(int i, double before, double after, double[] data) {
+	public double computeNewValue(int i, double before, double after, double[] data) {
 		// double dsample = 1;
 
 		double ac = dists[i];
@@ -315,7 +315,7 @@ public class GPXPath {
 
 	}
 
-	private double computeNewValueTime(int i, long timeBefore, long timeAfter, double[] data) {
+	public double computeNewValueTime(int i, long timeBefore, long timeAfter, double[] data) {
 		// double dsample = 1;
 
 		long ac = time[i];
@@ -347,115 +347,4 @@ public class GPXPath {
 
 	}
 
-	public void tryBraquets(List<Braquet> braquets, boolean verbose, BufferedWriter writer) throws IOException {
-		filterPoints();
-		computeArrays();
-
-		Point lastPoint = null;
-		double[] speed = new double[points.size() - 1];
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (i == 0) {
-				lastPoint = p;
-			} else {
-				if (i > 1) {
-					speed[i - 1] = speed[i - 2];
-				} else {
-					speed[i - 1] = 1.0;
-				}
-				double dist = lastPoint.distanceTo(p);
-				long dt = p.getTime() - lastPoint.getTime();
-				if (dt > 0 && dist > 0.002) {
-					double invSpeed = (dt / 3600000.0) / dist;
-					if (invSpeed > 0.0) {
-						speed[i - 1] = invSpeed;
-					}
-				}
-			}
-			lastPoint = p;
-		}
-		lastPoint = points.get(0);
-		for (int i = 0; i < points.size() - 1; i++) {
-			Point p = points.get(i + 1);
-			long dt = p.getTime() - lastPoint.getTime();
-			double invSpeed = computeNewValueTime(i, 15000, 15000, speed);
-			double curSpeed = 1 / invSpeed;
-			if (verbose) {
-				writer.append(curSpeed + " ");
-			}
-			double dist = lastPoint.distanceTo(p);
-			for (Braquet braquet : braquets) {
-				boolean changed = braquet.applySpeed(curSpeed, dt, dist, verbose, writer);
-				if (changed && verbose) {
-					// writer.newLine();
-					// writer.append("NEW " + braquet.curPlateau + " x " +
-					// braquet.curPignon);
-				}
-			}
-			lastPoint = p;
-		}
-
-	}
-
-	public List<GPXPath> splitWithStops() {
-		List<GPXPath> result = new ArrayList<GPXPath>();
-		int ipath = 1;
-
-		List<Point> curPoints = new ArrayList<Point>();
-		Point lastPoint = null;
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (lastPoint != null) {
-				double dist = lastPoint.distanceTo(p);
-				long time = p.getTime() - lastPoint.getTime();
-				// a stop is not moving for a long time (2m in 10s)
-				if (dist < 0.01 && time >= 5000) {
-					ipath = addPath(result, ipath, curPoints);
-					curPoints = new ArrayList<Point>();
-				} else {
-					if (curPoints.size() == 0) {
-						curPoints.add(lastPoint);
-					}
-					curPoints.add(p);
-				}
-			}
-			lastPoint = p;
-		}
-		addPath(result, ipath, curPoints);
-		// for (GPXPath path : result) {
-		// System.out.println(path.points.get(0).distanceTo(path.points.get(path.points.size()
-		// - 1)));
-		// List<Point> pathPoints = path.points;
-		// for (int i = 1; i < pathPoints.size(); i++) {
-		// Point p1 = pathPoints.get(i - 1);
-		// Point p2 = pathPoints.get(i);
-		// long dt = p2.getTime() - p1.getTime();
-		// double speed = p1.distanceTo(p2) / (dt / 3600000.0);
-		// System.out.println("- " + p1.distanceTo(p2) + " (" + dt +
-		// ") " + speed);
-		// }
-		// }
-		return result;
-	}
-
-	private int addPath(List<GPXPath> result, int ipath, List<Point> points) {
-		if (points.size() > 0) {
-			List<Point> realPoints = filterPoints(points);
-			if (realPoints.size() > 0) {
-				GPXPath curPath = new GPXPath(getName() + " - " + ipath);
-				curPath.points.addAll(realPoints);
-				curPath.computeArrays();
-
-				double dist = curPath.points.get(curPath.points.size() - 1).getDist();
-				long time = curPath.points.get(curPath.points.size() - 1).getTime() - curPath.points.get(0).getTime();
-
-				double speed = dist / (time / 3600000.0);
-				if (dist > 0.1 && speed > 3) {
-					result.add(curPath);
-					ipath++;
-				}
-			}
-		}
-		return ipath;
-	}
 }

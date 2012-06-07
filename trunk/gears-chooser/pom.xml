@@ -146,6 +146,16 @@
 			<artifactId>vaadin</artifactId>
 			<version>${vaadin.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vaadin.addons</groupId>
+			<artifactId>tableexport</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.8</version>
+		</dependency>
 <!-- 		<dependency> -->
 <!-- 			<groupId>org.vaadin.vol</groupId> -->
 <!-- 			<artifactId>openlayers-wrapper</artifactId> -->
