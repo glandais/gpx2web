@@ -1,22 +1,27 @@
 package org.glandais.gpx.braquet;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.glandais.gpx.braquet.db.Cassette;
 import org.glandais.gpx.braquet.db.Pedalier;
+import org.glandais.srtm.loader.Point;
 
-public class Braquet implements Comparable<Braquet> {
+public class Braquet {
 
-	private static final DecimalFormat SPEED_FORMAT = new DecimalFormat("#########0.0");
-	private static final DecimalFormat TIME_FORMAT = new DecimalFormat("#########0");
-	private static final double ratio_crank = 5.0;
-	private static final double ratio_cog = 2.0;
-	private static final double ratio_low = 10.0;
-	private static final double ratio_high = 5.0;
+	public static final int INDEX_CRANKSET_CHANGES = 0;
+
+	public static final int INDEX_COGSET_CHANGES = 1;
+
+	public static final int INDEX_LOW_RPM = 2;
+
+	public static final int INDEX_HIGH_RPM = 3;
+
+	// private static final double ratio_crank = 5.0;
+	// private static final double ratio_cog = 2.0;
+	// private static final double ratio_low = 10.0;
+	// private static final double ratio_high = 5.0;
 
 	public Pedalier pedalier;
 
@@ -32,9 +37,8 @@ public class Braquet implements Comparable<Braquet> {
 
 	private double[] normRatios;
 
-	public List<String> history;
+	public List<PointBraquet> history;
 
-	private StringBuilder speeds;
 	private long timeSinceShift;
 	private double totalDist;
 
@@ -54,20 +58,17 @@ public class Braquet implements Comparable<Braquet> {
 		pedalierChanges = 0;
 		cassetteChanges = 0;
 
-		speeds = new StringBuilder();
 		timeSinceShift = 0;
 		totalDist = 0;
-		history = new ArrayList<String>();
+		history = new ArrayList<PointBraquet>();
 	}
 
-	public boolean applySpeed(double curSpeed, long dt, double dist, boolean verbose, BufferedWriter writer)
-			throws IOException {
+	public void applySpeed(Point point, double curSpeed, long dt, double dist) throws IOException {
 		totalDist = totalDist + dist;
 		if (curSpeed > 2.0) {
 			int oldPlateau = iPlateau;
 			int oldPignon = iPignon;
 
-			speeds.append(" ").append(SPEED_FORMAT.format(curSpeed));
 			timeSinceShift = timeSinceShift + dt;
 
 			double rpm = getRpm(curSpeed, iPignon, iPlateau);
@@ -86,25 +87,14 @@ public class Braquet implements Comparable<Braquet> {
 			}
 
 			boolean changed = oldPignon != iPignon || oldPlateau != iPlateau;
-			if (changed || history.size() == 0) {
-				String logStamp = SPEED_FORMAT.format(totalDist) + " - ";
 
-				if (history.size() != 0) {
-					history.add(logStamp + speeds.toString());
-					speeds = new StringBuilder();
-					String timeS = TIME_FORMAT.format(timeSinceShift / 1000.0);
-					timeSinceShift = 0;
-
-					history.add(logStamp + "Lasts for " + timeS + "s, changed due to speed "
-							+ SPEED_FORMAT.format(curSpeed) + " (rpm " + SPEED_FORMAT.format(rpm) + ")");
-				}
-				double newRpm = getRpm(curSpeed, iPignon, iPlateau);
-				history.add(logStamp + pedalier.plateaux[iPlateau] + " x " + cassette.pignons[iPignon] + " -> "
-						+ SPEED_FORMAT.format(newRpm));
+			if (changed) {
+				timeSinceShift = 0;
+				rpm = getRpm(curSpeed, iPignon, iPlateau);
 			}
-			return changed;
-		} else {
-			return false;
+			PointBraquet pointBraquet = new PointBraquet(this, point, totalDist, iPlateau, iPignon, rpm, curSpeed,
+					timeSinceShift);
+			history.add(pointBraquet);
 		}
 	}
 
@@ -222,29 +212,30 @@ public class Braquet implements Comparable<Braquet> {
 		return true;
 	}
 
-	public Double getScore() {
-		return (normRatios[2] * ratio_low + normRatios[0] * ratio_crank + normRatios[1] * ratio_cog + normRatios[3]
-				* ratio_high)
-				/ (ratio_low + ratio_crank + ratio_cog + ratio_high);
+	public Double getScore(double[] ratios) {
+		return (normRatios[INDEX_CRANKSET_CHANGES] * ratios[INDEX_CRANKSET_CHANGES] + normRatios[INDEX_COGSET_CHANGES]
+				* ratios[INDEX_COGSET_CHANGES] + normRatios[INDEX_LOW_RPM] * ratios[INDEX_LOW_RPM] + normRatios[INDEX_HIGH_RPM]
+				* ratios[INDEX_HIGH_RPM])
+				/ (ratios[INDEX_CRANKSET_CHANGES] + ratios[INDEX_COGSET_CHANGES] + ratios[INDEX_LOW_RPM] + ratios[INDEX_HIGH_RPM]);
 	}
 
-	public int compareTo(Braquet o) {
-		return getScore().compareTo(o.getScore());
-	}
+	// public int compareTo(Braquet o) {
+	// return getScore().compareTo(o.getScore());
+	// }
 
 	@Override
 	public String toString() {
-		return "Braquet [score=" + getScore() + ", pedalier=" + pedalier + ", cassette=" + cassette
-				+ ", timeMissingLow=" + timeMissingLow + ", timeMissingHigh=" + timeMissingHigh + ", pedalierChanges="
-				+ pedalierChanges + ", cassetteChanges=" + cassetteChanges + "]";
+		return "Braquet [pedalier=" + pedalier + ", cassette=" + cassette + ", timeMissingLow=" + timeMissingLow
+				+ ", timeMissingHigh=" + timeMissingHigh + ", pedalierChanges=" + pedalierChanges
+				+ ", cassetteChanges=" + cassetteChanges + "]";
 	}
 
 	public double[] getRatios() {
 		double[] result = new double[4];
-		result[0] = pedalierChanges;
-		result[1] = cassetteChanges;
-		result[2] = timeMissingLow;
-		result[3] = timeMissingHigh;
+		result[INDEX_CRANKSET_CHANGES] = pedalierChanges;
+		result[INDEX_COGSET_CHANGES] = cassetteChanges;
+		result[INDEX_LOW_RPM] = timeMissingLow;
+		result[INDEX_HIGH_RPM] = timeMissingHigh;
 		return result;
 	}
 

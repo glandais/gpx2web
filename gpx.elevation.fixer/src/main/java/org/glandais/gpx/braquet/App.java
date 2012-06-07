@@ -1,8 +1,5 @@
 package org.glandais.gpx.braquet;
 
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -22,19 +19,20 @@ public class App {
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(args[0]);
 
-		List<GPXPath> parsedPaths = GPXParser.parsePaths(gpxFile, false);
-		List<GPXPath> paths = new ArrayList<GPXPath>();
-		for (GPXPath gpxPath : parsedPaths) {
-			paths.addAll(gpxPath.splitWithStops());
-		}
-		braquetComputer.parseGPX(paths, new BufferedWriter(new PrintWriter(System.out)));
+		List<GPXPath> paths = GPXParser.parsePaths(gpxFile, false);
+		braquetComputer.parseGPX(paths, new BraquetProgress() {
+
+			public void progress(int i, int size) {
+				System.out.println(i + " / " + size);
+			}
+		});
 
 		boolean first = true;
 		for (Braquet braquetDisp : braquetComputer.getBraquets()) {
 			System.out.println(braquetDisp);
 			if (first) {
-				for (String log : braquetDisp.history) {
-					System.out.println(log);
+				for (PointBraquet log : braquetDisp.history) {
+					System.out.println(log.toString());
 				}
 				first = false;
 			}
