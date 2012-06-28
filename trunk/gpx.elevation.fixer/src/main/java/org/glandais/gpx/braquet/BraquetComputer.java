@@ -71,6 +71,10 @@ public class BraquetComputer {
 		}
 
 		int k = 0;
+		for (GPXPath gpxPath : paths) {
+			gpxPath.filterPoints();
+			gpxPath.computeArrays();
+		}
 		for (Braquet braquetDisp : braquets) {
 			progress.progress(k, braquets.size());
 			braquetDisp.reset();
@@ -81,10 +85,11 @@ public class BraquetComputer {
 		}
 
 		double[][] braquetRatios = new double[braquets.size()][];
-		double[] minRatio = new double[braquets.size()];
-		double[] maxRatio = new double[braquets.size()];
+		double[] minRatio = new double[10];
+		double[] maxRatio = new double[10];
 		int b = 0;
 		for (Braquet braquetDisp : braquets) {
+			braquetDisp.computeRpmStandardDeviation();
 			braquetRatios[b] = braquetDisp.getRatios();
 			int i = 0;
 			for (double d : braquetRatios[b]) {
@@ -190,9 +195,6 @@ public class BraquetComputer {
 	}
 
 	public void tryBraquets(GPXPath gpxPath, Braquet braquet) throws IOException {
-		gpxPath.filterPoints();
-		gpxPath.computeArrays();
-
 		Point lastPoint = null;
 		double[] speed = new double[gpxPath.getPoints().size() - 1];
 		for (int i = 0; i < gpxPath.getPoints().size(); i++) {
