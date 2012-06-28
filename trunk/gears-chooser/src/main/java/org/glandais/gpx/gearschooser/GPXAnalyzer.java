@@ -58,18 +58,19 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 	private String filename;
 	private ProgressIndicator progressIndicator = null;
 	private Label progressLabel = null;
-	private Slider[] sliders = new Slider[4];
+	private Slider[] sliders = new Slider[5];
 
 	private HorizontalLayout uploadLayout;
 
 	private Upload upload;
 
 	private double[] getRatios() {
-		double[] result = new double[4];
+		double[] result = new double[6];
 		result[Braquet.INDEX_CRANKSET_CHANGES] = (Double) sliders[Braquet.INDEX_CRANKSET_CHANGES].getValue();
 		result[Braquet.INDEX_COGSET_CHANGES] = (Double) sliders[Braquet.INDEX_COGSET_CHANGES].getValue();
 		result[Braquet.INDEX_LOW_RPM] = (Double) sliders[Braquet.INDEX_LOW_RPM].getValue();
 		result[Braquet.INDEX_HIGH_RPM] = (Double) sliders[Braquet.INDEX_HIGH_RPM].getValue();
+		result[Braquet.INDEX_STD_DEV_RPM] = (Double) sliders[Braquet.INDEX_STD_DEV_RPM].getValue();
 		double total = 0;
 		for (double d : result) {
 			total = total + d;
@@ -117,11 +118,13 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 		sliders[Braquet.INDEX_COGSET_CHANGES] = new Slider("Cogset changes", 0, 100);
 		sliders[Braquet.INDEX_LOW_RPM] = new Slider("Avoid low rpm", 0, 100);
 		sliders[Braquet.INDEX_HIGH_RPM] = new Slider("Avoid high rpm", 0, 100);
+		sliders[Braquet.INDEX_STD_DEV_RPM] = new Slider("Rpm stability", 0, 100);
 		try {
 			sliders[Braquet.INDEX_CRANKSET_CHANGES].setValue(50.0);
 			sliders[Braquet.INDEX_COGSET_CHANGES].setValue(20.0);
 			sliders[Braquet.INDEX_LOW_RPM].setValue(100.0);
 			sliders[Braquet.INDEX_HIGH_RPM].setValue(50.0);
+			sliders[Braquet.INDEX_STD_DEV_RPM].setValue(0.0);
 		} catch (ValueOutOfBoundsException e) {
 			e.printStackTrace();
 		}
@@ -134,6 +137,7 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 					sliders[Braquet.INDEX_COGSET_CHANGES].setValue(20.0);
 					sliders[Braquet.INDEX_LOW_RPM].setValue(100.0);
 					sliders[Braquet.INDEX_HIGH_RPM].setValue(50.0);
+					sliders[Braquet.INDEX_STD_DEV_RPM].setValue(0.0);
 				} catch (ValueOutOfBoundsException e) {
 					e.printStackTrace();
 				}
@@ -216,20 +220,21 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 					});
 
 					final Table table = new Table();
-					table.addContainerProperty("Score", Long.class, null);
+					table.addContainerProperty("Score", Double.class, null);
 					table.addContainerProperty("Crankset", String.class, null);
 					table.addContainerProperty("Chainrings", String.class, null);
 					table.addContainerProperty("Cogset", String.class, null);
 					table.addContainerProperty("Sprockets", String.class, null);
-					table.addContainerProperty("Missing low", String.class, null);
-					table.addContainerProperty("Missing high", String.class, null);
+					table.addContainerProperty("Missing low", Long.class, null);
+					table.addContainerProperty("Missing high", Long.class, null);
 					table.addContainerProperty("Chainrings changes", Integer.class, null);
 					table.addContainerProperty("Cogset changes", Integer.class, null);
+					table.addContainerProperty("RPM Stability", Double.class, null);
 
 					int i = 0;
 					for (Braquet braquetDisp : braquetComputer.getBraquets()) {
 
-						long score = 100 - Math.round(braquetDisp.getScore(getRatios()) * 100.0);
+						Double score = 100.0 - Math.round(braquetDisp.getScore(getRatios()) * 1000.0) / 10.0;
 
 						table.addItem(new Object[] {
 
@@ -249,7 +254,9 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 
 						braquetDisp.pedalierChanges,
 
-						braquetDisp.cassetteChanges
+						braquetDisp.cassetteChanges,
+						
+						braquetDisp.rpmStandardDeviation
 
 						}, new Integer(i));
 						i++;
