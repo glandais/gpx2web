@@ -29,7 +29,7 @@ import com.drew.imaging.jpeg.JpegProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifDirectory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 /**
  * Hello world!
@@ -129,7 +129,8 @@ public class App {
 				|| cmd.hasOption("e")) {
 			// A SessionFactory is set up once for an application
 			// hibernate.cfg.xml
-			sessionFactory = new Configuration().configure().buildSessionFactory();
+			sessionFactory = new Configuration().configure()
+					.buildSessionFactory();
 		}
 
 		if (cmd.hasOption("h")) {
@@ -149,8 +150,8 @@ public class App {
 				printHelp(options);
 				return;
 			}
-			moveMovies(new File(cmd.getOptionValue("mf")), new File(cmd
-					.getOptionValue("mt")));
+			moveMovies(new File(cmd.getOptionValue("mf")),
+					new File(cmd.getOptionValue("mt")));
 		} else {
 			printHelp(options);
 		}
@@ -484,10 +485,12 @@ public class App {
 	}
 
 	private static Date getJPEGDate(File file) throws JpegProcessingException,
-			MetadataException {
+			MetadataException, IOException {
 		Metadata metadata = JpegMetadataReader.readMetadata(file);
-		Directory exifDirectory = metadata.getDirectory(ExifDirectory.class);
-		Date date = exifDirectory.getDate(ExifDirectory.TAG_DATETIME_ORIGINAL);
+		Directory exifDirectory = metadata
+				.getDirectory(ExifSubIFDDirectory.class);
+		Date date = exifDirectory
+				.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 		return date;
 	}
 
