@@ -1,13 +1,17 @@
 package org.glandais.photoindexer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,6 +20,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
+import org.glandais.photoindexer.distance.BKTree;
+import org.glandais.photoindexer.distance.ImagePHash;
 import org.glandais.photoindexer.model.Photo;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -36,6 +42,8 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
  * 
  */
 public class App {
+
+	public static ImagePHash IMAGE_P_HASH = new ImagePHash(64, 16);
 
 	public static boolean FAKE = false;
 
@@ -108,6 +116,7 @@ public class App {
 		options.addOption("i", true, "index directory");
 		options.addOption("d", true, "delete empty folders");
 		options.addOption("l", false, "list index");
+		options.addOption("s", false, "find similar images");
 		options.addOption("e", true, "export index to folder");
 		options.addOption("move", false, "move pictures during export");
 		options.addOption("mt", true, "move movies to");
@@ -126,7 +135,7 @@ public class App {
 		}
 
 		if (cmd.hasOption("c") || cmd.hasOption("i") || cmd.hasOption("l")
-				|| cmd.hasOption("e")) {
+				|| cmd.hasOption("s") || cmd.hasOption("e")) {
 			// A SessionFactory is set up once for an application
 			// hibernate.cfg.xml
 			sessionFactory = new Configuration().configure()
@@ -139,6 +148,8 @@ public class App {
 			clearIndex();
 		} else if (cmd.hasOption("l")) {
 			listIndex();
+		} else if (cmd.hasOption("l")) {
+			findSimilar();
 		} else if (cmd.hasOption("d")) {
 			deleteEmpty(new File(cmd.getOptionValue("d")));
 		} else if (cmd.hasOption("i")) {
@@ -275,15 +286,100 @@ public class App {
 		session.close();
 	}
 
-	private static void export(File folder, boolean move) {
-		// try {
-		// if (!move) {
-		// deleteDirectory(folder);
-		// }
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
+	private static void findSimilar() {
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(Photo.class);
+		criteria.addOrder(Order.asc("date"));
+		List<Photo> photos = criteria.list();
 
+		BKTree tree = new BKTree();
+		Map<String, List<Photo>> photosByHash = new HashMap<String, List<Photo>>();
+
+		for (Photo photo : photos) {
+			String hash = photo.getHash();
+			if (hash != null && !hash.equals("")) {
+				tree.add(hash);
+				addHash(photosByHash, photo);
+			}
+		}
+
+		List<Set<Photo>> similarSets = new ArrayList<Set<Photo>>();
+
+		for (Photo photo : photos) {
+			if (photo.getHash() != null && !photo.getHash().equals("")) {
+				List<String> result = tree.search(photo.getHash(), 20);
+
+				Set<Photo> allSimilarPhotos = new TreeSet<Photo>();
+				for (String hash : result) {
+					List<Photo> similarPhotos = photosByHash.get(hash);
+					if (similarPhotos != null) {
+						allSimilarPhotos.addAll(similarPhotos);
+					}
+				}
+				allSimilarPhotos.remove(photo);
+
+				if (allSimilarPhotos.size() > 0) {
+
+					Set<Photo> similarSet = null;
+					for (Set<Photo> set : similarSets) {
+						if (set.contains(photo)) {
+							similarSet = set;
+						}
+					}
+					if (similarSet == null) {
+						similarSet = new HashSet<Photo>();
+						similarSets.add(similarSet);
+					}
+
+					similarSet.add(photo);
+					for (Photo similarPhoto : allSimilarPhotos) {
+						similarSet.add(similarPhoto);
+					}
+				}
+			}
+		}
+
+		for (Set<Photo> set : similarSets) {
+			if (set.size() > 0) {
+				System.out.println("**************");
+
+				Photo refPhoto = null;
+				for (Photo photo : set) {
+					int distance = 0;
+					if (refPhoto == null) {
+						refPhoto = photo;
+					} else {
+						distance = BKTree.distance(photo.getHash(),
+								refPhoto.getHash());
+					}
+					System.out.println(distance + " " + photo.getFullPath());
+				}
+				for (Photo photo : set) {
+					System.out.println("gnome-open \"" + photo.getFullPath()
+							+ "\"&");
+				}
+
+				System.out.println("**************");
+			}
+		}
+
+		session.getTransaction().commit();
+		session.close();
+	}
+
+	private static void addHash(Map<String, List<Photo>> photosByHash,
+			Photo photo) {
+		String hashString = photo.getHash();
+		List<Photo> photos = photosByHash.get(hashString);
+		if (photos == null) {
+			photos = new ArrayList<Photo>();
+			photosByHash.put(hashString, photos);
+		}
+		photos.add(photo);
+	}
+
+	private static void export(File folder, boolean move) {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		Criteria criteria = session.createCriteria(Photo.class);
@@ -302,7 +398,6 @@ public class App {
 	private static void exportPhotos(List<Photo> photos, File folder,
 			boolean move) {
 		safeMkdirs(folder);
-
 		dupes = new ArrayList<Photo>();
 		prevDateDupe = 0;
 		prevDateFolder = 0;
@@ -333,6 +428,8 @@ public class App {
 	}
 
 	private static List<Photo> getDifferents() {
+		// FIXME hashcodes then equals!!! Instead of size
+
 		Map<Long, Photo> result = new HashMap<Long, Photo>();
 		for (Photo photo : dupes) {
 			File f = new File(photo.getFullPath());
@@ -478,10 +575,22 @@ public class App {
 			System.out.println("** ERROR ** " + file.getAbsolutePath());
 			return;
 		}
+
+		String hash = null;
+		try {
+			hash = IMAGE_P_HASH.getHash(new FileInputStream(file));
+		} catch (Exception e) {
+			hash = null;
+			e.printStackTrace();
+		}
+
 		Photo photo = new Photo();
 		photo.setFullPath(file.getAbsolutePath());
 		photo.setDate(date);
+		photo.setHash(hash);
 		photos.add(photo);
+
+		System.out.println("Indexed " + file.getAbsolutePath());
 	}
 
 	private static Date getJPEGDate(File file) throws JpegProcessingException,

@@ -20,6 +20,8 @@ public class Photo implements Comparable<Photo> {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date date;
 
+	private String hash;
+
 	public Long getId() {
 		return id;
 	}
@@ -42,6 +44,14 @@ public class Photo implements Comparable<Photo> {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
 
 	@Override
@@ -72,7 +82,8 @@ public class Photo implements Comparable<Photo> {
 
 	@Override
 	public String toString() {
-		return "Photo [date=" + date + ", fullPath=" + fullPath + "]";
+		return "Photo [hash=" + hash + ", date=" + date + ", fullPath="
+				+ fullPath + "]";
 	}
 
 	public int compareTo(Photo o) {
