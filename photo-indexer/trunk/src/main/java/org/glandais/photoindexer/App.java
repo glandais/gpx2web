@@ -270,6 +270,18 @@ public class App {
 		if (name.endsWith(".mpg")) {
 			return true;
 		}
+		if (name.endsWith(".mts")) {
+			return true;
+		}
+		if (name.endsWith(".mp4")) {
+			return true;
+		}
+		if (name.endsWith(".3gp")) {
+			return true;
+		}
+		if (name.endsWith(".m4v")) {
+			return true;
+		}
 		return false;
 	}
 
