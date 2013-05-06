@@ -1,4 +1,4 @@
-package org.glandais.photoindexer.distance;
+package org.glandais.digicamporter.distance;
 
 import static java.lang.Math.max;
 

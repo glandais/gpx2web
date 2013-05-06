@@ -3,11 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.glandais</groupId>
-	<artifactId>photo-indexer</artifactId>
+	<artifactId>digicamporter</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>photo-indexer</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -31,7 +30,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>org.glandais.photoindexer.App</mainClass>
+							<mainClass>org.glandais.digicamporter.App</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -60,7 +59,6 @@
 			<version>3.6.1.Final</version>
 		</dependency>
 
-
 		<!-- Hibernate uses slf4j for logging, for our purposes here use the simple 
 			backend -->
 		<dependency>
@@ -88,10 +86,10 @@
 			<version>2.0.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.drewnoakes</groupId>
-			<artifactId>metadata-extractor</artifactId>
-			<version>2.6.2</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>com.drewnoakes</groupId> -->
+		<!-- <artifactId>metadata-extractor</artifactId> -->
+		<!-- <version>2.6.2</version> -->
+		<!-- </dependency> -->
 	</dependencies>
 </project>

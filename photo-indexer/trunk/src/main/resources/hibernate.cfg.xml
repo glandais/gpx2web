@@ -43,7 +43,7 @@
 		<property name="hbm2ddl.auto">update</property>
 
 		<!-- Names the annotated entity class -->
-		<mapping class="org.glandais.photoindexer.model.Photo" />
+		<mapping class="org.glandais.digicamporter.model.Media" />
 
 	</session-factory>
 

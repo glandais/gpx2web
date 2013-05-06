@@ -1,8 +1,8 @@
-package org.glandais.photoindexer;
+package org.glandais.digicamporter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,9 +20,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
-import org.glandais.photoindexer.distance.BKTree;
-import org.glandais.photoindexer.distance.ImagePHash;
-import org.glandais.photoindexer.model.Photo;
+import org.glandais.digicamporter.distance.BKTree;
+import org.glandais.digicamporter.distance.ImagePHash;
+import org.glandais.digicamporter.exiftool.ExifTool;
+import org.glandais.digicamporter.exiftool.ExifTool.Feature;
+import org.glandais.digicamporter.exiftool.ExifTool.Format;
+import org.glandais.digicamporter.exiftool.ExifTool.Tag;
+import org.glandais.digicamporter.model.Media;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
@@ -30,22 +34,17 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.classic.Session;
 import org.hibernate.criterion.Order;
 
-import com.drew.imaging.jpeg.JpegMetadataReader;
-import com.drew.imaging.jpeg.JpegProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-
-/**
- * Hello world!
- * 
- */
 public class App {
 
 	public static ImagePHash IMAGE_P_HASH = new ImagePHash(64, 16);
 
 	public static boolean FAKE = false;
+
+	private static ExifTool exifTool = new ExifTool(Feature.STAY_OPEN);
+
+	// 2013:05:06 18:38:57
+	private static SimpleDateFormat sdf = new SimpleDateFormat(
+			"yyyy:MM:dd HH:mm:ss");
 
 	private static void safeDeleteDirectory(File toClear) throws IOException {
 		if (FAKE) {
@@ -81,23 +80,23 @@ public class App {
 		}
 	}
 
-	private static void safeCopyFile(File photoFile, File finalName)
+	private static void safeCopyFile(File mediaFile, File finalName)
 			throws IOException {
 		if (FAKE) {
-			System.out.println("Fake : copyFile " + photoFile.getAbsolutePath()
+			System.out.println("Fake : copyFile " + mediaFile.getAbsolutePath()
 					+ " to " + finalName.getAbsolutePath());
 		} else {
-			FileUtils.copyFile(photoFile, finalName);
+			FileUtils.copyFile(mediaFile, finalName);
 		}
 	}
 
-	private static void safeMoveFile(File photoFile, File finalName)
+	private static void safeMoveFile(File mediaFile, File finalName)
 			throws IOException {
 		if (FAKE) {
-			System.out.println("Fake : moveFile " + photoFile.getAbsolutePath()
+			System.out.println("Fake : moveFile " + mediaFile.getAbsolutePath()
 					+ " to " + finalName.getAbsolutePath());
 		} else {
-			FileUtils.moveFile(photoFile, finalName);
+			FileUtils.moveFile(mediaFile, finalName);
 		}
 	}
 
@@ -113,6 +112,11 @@ public class App {
 
 		options.addOption("h", false, "print this help");
 		options.addOption("c", false, "clear index");
+
+		options.addOption("autofrom", true, "Source folder (photos and movies)");
+		options.addOption("autopics", true, "Target folder : pictures");
+		options.addOption("automovies", true, "Target folder : movies");
+
 		options.addOption("i", true, "index directory");
 		options.addOption("d", true, "delete empty folders");
 		options.addOption("l", false, "list index");
@@ -135,7 +139,8 @@ public class App {
 		}
 
 		if (cmd.hasOption("c") || cmd.hasOption("i") || cmd.hasOption("l")
-				|| cmd.hasOption("s") || cmd.hasOption("e")) {
+				|| cmd.hasOption("s") || cmd.hasOption("e")
+				|| cmd.hasOption("autofrom")) {
 			// A SessionFactory is set up once for an application
 			// hibernate.cfg.xml
 			sessionFactory = new Configuration().configure()
@@ -144,6 +149,23 @@ public class App {
 
 		if (cmd.hasOption("h")) {
 			printHelp(options);
+		} else if (cmd.hasOption("autofrom")) {
+			if (!cmd.hasOption("autopics")) {
+				printHelp(options);
+				return;
+			}
+			if (!cmd.hasOption("automovies")) {
+				printHelp(options);
+				return;
+			}
+
+			clearIndex();
+			index(new File(cmd.getOptionValue("autofrom")));
+			export(new File(cmd.getOptionValue("autopics")),
+					cmd.hasOption("move"), true);
+			export(new File(cmd.getOptionValue("automovies")),
+					cmd.hasOption("move"), false);
+
 		} else if (cmd.hasOption("c")) {
 			clearIndex();
 		} else if (cmd.hasOption("l")) {
@@ -155,7 +177,8 @@ public class App {
 		} else if (cmd.hasOption("i")) {
 			index(new File(cmd.getOptionValue("i")));
 		} else if (cmd.hasOption("e")) {
-			export(new File(cmd.getOptionValue("e")), cmd.hasOption("move"));
+			export(new File(cmd.getOptionValue("e")), cmd.hasOption("move"),
+					true);
 		} else if (cmd.hasOption("mt")) {
 			if (!cmd.hasOption("mf")) {
 				printHelp(options);
@@ -166,6 +189,7 @@ public class App {
 		} else {
 			printHelp(options);
 		}
+		exifTool.close();
 	}
 
 	private static boolean deleteEmpty(File toClear) {
@@ -253,6 +277,14 @@ public class App {
 		}
 	}
 
+	private static boolean isPicture(File file) {
+		String name = file.getName().toLowerCase();
+		if (name.endsWith(".jpg") || name.endsWith(".jpeg")) {
+			return true;
+		}
+		return false;
+	}
+
 	private static boolean isMovie(File file) {
 		String name = file.getName().toLowerCase();
 		if (name.endsWith(".avi")) {
@@ -288,11 +320,11 @@ public class App {
 	private static void listIndex() {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Photo.class);
+		Criteria criteria = session.createCriteria(Media.class);
 		criteria.addOrder(Order.asc("date"));
-		List<Photo> photos = criteria.list();
-		for (Photo photo : photos) {
-			System.out.println(photo);
+		List<Media> medias = criteria.list();
+		for (Media media : medias) {
+			System.out.println(media);
 		}
 		session.getTransaction().commit();
 		session.close();
@@ -301,14 +333,14 @@ public class App {
 	private static void findSimilar() {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Photo.class);
+		Criteria criteria = session.createCriteria(Media.class);
 		criteria.addOrder(Order.asc("date"));
-		List<Photo> photos = criteria.list();
+		List<Media> photos = criteria.list();
 
 		BKTree tree = new BKTree();
-		Map<String, List<Photo>> photosByHash = new HashMap<String, List<Photo>>();
+		Map<String, List<Media>> photosByHash = new HashMap<String, List<Media>>();
 
-		for (Photo photo : photos) {
+		for (Media photo : photos) {
 			String hash = photo.getHash();
 			if (hash != null && !hash.equals("")) {
 				tree.add(hash);
@@ -316,15 +348,15 @@ public class App {
 			}
 		}
 
-		List<Set<Photo>> similarSets = new ArrayList<Set<Photo>>();
+		List<Set<Media>> similarSets = new ArrayList<Set<Media>>();
 
-		for (Photo photo : photos) {
+		for (Media photo : photos) {
 			if (photo.getHash() != null && !photo.getHash().equals("")) {
 				List<String> result = tree.search(photo.getHash(), 20);
 
-				Set<Photo> allSimilarPhotos = new TreeSet<Photo>();
+				Set<Media> allSimilarPhotos = new TreeSet<Media>();
 				for (String hash : result) {
-					List<Photo> similarPhotos = photosByHash.get(hash);
+					List<Media> similarPhotos = photosByHash.get(hash);
 					if (similarPhotos != null) {
 						allSimilarPhotos.addAll(similarPhotos);
 					}
@@ -333,31 +365,31 @@ public class App {
 
 				if (allSimilarPhotos.size() > 0) {
 
-					Set<Photo> similarSet = null;
-					for (Set<Photo> set : similarSets) {
+					Set<Media> similarSet = null;
+					for (Set<Media> set : similarSets) {
 						if (set.contains(photo)) {
 							similarSet = set;
 						}
 					}
 					if (similarSet == null) {
-						similarSet = new HashSet<Photo>();
+						similarSet = new HashSet<Media>();
 						similarSets.add(similarSet);
 					}
 
 					similarSet.add(photo);
-					for (Photo similarPhoto : allSimilarPhotos) {
+					for (Media similarPhoto : allSimilarPhotos) {
 						similarSet.add(similarPhoto);
 					}
 				}
 			}
 		}
 
-		for (Set<Photo> set : similarSets) {
+		for (Set<Media> set : similarSets) {
 			if (set.size() > 0) {
 				System.out.println("**************");
 
-				Photo refPhoto = null;
-				for (Photo photo : set) {
+				Media refPhoto = null;
+				for (Media photo : set) {
 					int distance = 0;
 					if (refPhoto == null) {
 						refPhoto = photo;
@@ -367,7 +399,7 @@ public class App {
 					}
 					System.out.println(distance + " " + photo.getFullPath());
 				}
-				for (Photo photo : set) {
+				for (Media photo : set) {
 					System.out.println("gnome-open \"" + photo.getFullPath()
 							+ "\"&");
 				}
@@ -380,101 +412,105 @@ public class App {
 		session.close();
 	}
 
-	private static void addHash(Map<String, List<Photo>> photosByHash,
-			Photo photo) {
+	private static void addHash(Map<String, List<Media>> photosByHash,
+			Media photo) {
 		String hashString = photo.getHash();
-		List<Photo> photos = photosByHash.get(hashString);
+		List<Media> photos = photosByHash.get(hashString);
 		if (photos == null) {
-			photos = new ArrayList<Photo>();
+			photos = new ArrayList<Media>();
 			photosByHash.put(hashString, photos);
 		}
 		photos.add(photo);
 	}
 
-	private static void export(File folder, boolean move) {
+	private static void export(File folder, boolean move, boolean photoMode) {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Photo.class);
+		Criteria criteria = session.createCriteria(Media.class);
 		criteria.addOrder(Order.asc("date"));
-		List<Photo> photos = criteria.list();
-		exportPhotos(photos, folder, move);
+		List<Media> medias = criteria.list();
+		exportMedias(medias, folder, move, photoMode);
 		session.getTransaction().commit();
 		session.close();
 	}
 
-	private static List<Photo> dupes = new ArrayList<Photo>();
+	private static List<Media> dupes = new ArrayList<Media>();
 	private static long prevDateFolder = 0;
 	private static long prevDateDupe = 0;
 	private static File prevFolder = null;
 
-	private static void exportPhotos(List<Photo> photos, File folder,
-			boolean move) {
+	private static void exportMedias(List<Media> medias, File folder,
+			boolean move, boolean photoMode) {
 		safeMkdirs(folder);
-		dupes = new ArrayList<Photo>();
+		dupes = new ArrayList<Media>();
 		prevDateDupe = 0;
 		prevDateFolder = 0;
 		prevFolder = null;
-		for (Photo photo : photos) {
-			long time = photo.getDate().getTime();
-			if (Math.abs(prevDateDupe - time) == 0) {
-				dupes.add(photo);
-			} else {
-				processQueue(folder, move);
-				dupes = new ArrayList<Photo>();
-				dupes.add(photo);
+		for (Media media : medias) {
+			File mediaFile = new File(media.getFullPath());
+			if ((photoMode && isPicture(mediaFile))
+					|| (!photoMode && isMovie(mediaFile))) {
+				long time = media.getDate().getTime();
+				if (Math.abs(prevDateDupe - time) == 0) {
+					dupes.add(media);
+				} else {
+					processQueue(folder, move);
+					dupes = new ArrayList<Media>();
+					dupes.add(media);
+				}
+				prevDateDupe = time;
 			}
-			prevDateDupe = time;
 		}
 		processQueue(folder, move);
 	}
 
 	private static void processQueue(File folder, boolean move) {
 		if (dupes.size() > 1) {
-			List<Photo> differents = getDifferents();
-			for (Photo different : differents) {
-				exportPhoto(folder, different, move);
+			List<Media> differents = getDifferents();
+			for (Media different : differents) {
+				exportMedia(folder, different, move);
 			}
 		} else if (dupes.size() == 1) {
-			exportPhoto(folder, dupes.get(0), move);
+			exportMedia(folder, dupes.get(0), move);
 		}
 	}
 
-	private static List<Photo> getDifferents() {
+	private static List<Media> getDifferents() {
 		// FIXME hashcodes then equals!!! Instead of size
 
-		Map<Long, Photo> result = new HashMap<Long, Photo>();
-		for (Photo photo : dupes) {
-			File f = new File(photo.getFullPath());
+		Map<Long, Media> result = new HashMap<Long, Media>();
+		for (Media media : dupes) {
+			File f = new File(media.getFullPath());
 			Long length = new Long(f.length());
 			if (!result.containsKey(length)) {
-				result.put(length, photo);
+				result.put(length, media);
 			}
 		}
-		return new ArrayList<Photo>(result.values());
+		return new ArrayList<Media>(result.values());
 	}
 
-	private static void exportPhoto(File folder, Photo photo, boolean move) {
-		File photoFolder = null;
-		long time = photo.getDate().getTime();
+	private static void exportMedia(File folder, Media media, boolean move) {
+		File mediaFolder = null;
+		long time = media.getDate().getTime();
 		if (time - prevDateFolder < MAX_LENGTH) {
-			photoFolder = prevFolder;
+			mediaFolder = prevFolder;
 		}
-		if (photoFolder == null) {
-			photoFolder = getFolder(folder, photo);
+		if (mediaFolder == null) {
+			mediaFolder = getFolder(folder, media);
 		}
 		try {
-			copyPhoto(photo, photoFolder, move);
+			copyMedia(media, mediaFolder, move);
 		} catch (IOException e) {
-			System.out.println("** ERROR ** " + photo + " (" + e.getMessage()
+			System.out.println("** ERROR ** " + media + " (" + e.getMessage()
 					+ ")");
 		}
-		prevFolder = photoFolder;
+		prevFolder = mediaFolder;
 		prevDateFolder = time;
 	}
 
-	private static File getFolder(File folder, Photo photo) {
+	private static File getFolder(File folder, Media media) {
 		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(photo.getDate());
+		calendar.setTime(media.getDate());
 		int year = calendar.get(Calendar.YEAR);
 		int month = calendar.get(Calendar.MONTH) + 1;
 		int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -496,14 +532,20 @@ public class App {
 		}
 	}
 
-	private static void copyPhoto(Photo photo, File photoFolder, boolean move)
+	private static void copyMedia(Media media, File mediaFolder, boolean move)
 			throws IOException {
-		File photoFile = new File(photo.getFullPath());
+		String fullPath = media.getFullPath();
+		int point = fullPath.lastIndexOf('.');
+		String fileExtension = "jpg";
+		if (point >= 0) {
+			fileExtension = fullPath.substring(point + 1);
+		}
+		File mediaFile = new File(fullPath);
 
-		safeMkdirs(photoFolder);
+		safeMkdirs(mediaFolder);
 
 		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(photo.getDate());
+		calendar.setTime(media.getDate());
 		int year = calendar.get(Calendar.YEAR);
 		int month = calendar.get(Calendar.MONTH) + 1;
 		int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -511,114 +553,131 @@ public class App {
 		int minutes = calendar.get(Calendar.MINUTE);
 		int seconds = calendar.get(Calendar.SECOND);
 
-		String photoName = Integer.toString(year) + "-" + padDate(month) + "-"
+		String mediaName = Integer.toString(year) + "-" + padDate(month) + "-"
 				+ padDate(day);
-		photoName = photoName + "_" + padDate(hour) + "-" + padDate(minutes)
+		mediaName = mediaName + "_" + padDate(hour) + "-" + padDate(minutes)
 				+ "-" + padDate(seconds);
-		File finalName = new File(photoFolder, photoName + ".jpg");
+		File finalName = new File(mediaFolder, mediaName + "." + fileExtension);
 		if (finalName.exists()) {
 			int i = 2;
 			while (finalName.exists()) {
-				if (move && finalName.length() == photoFile.length()) {
-					System.out.println("** " + photoFile + " == " + finalName);
-					safeDeleteFile(photoFile);
+				if (move && finalName.length() == mediaFile.length()) {
+					if (!mediaFile.equals(finalName)) {
+						System.out.println("** " + mediaFile + " == "
+								+ finalName);
+						safeDeleteFile(mediaFile);
+					}
 					return;
 				}
-				finalName = new File(photoFolder, photoName + "(" + i + ").jpg");
+				finalName = new File(mediaFolder, mediaName + "(" + i + ")."
+						+ fileExtension);
 				i++;
 			}
 		}
 
 		if (move) {
-			safeMoveFile(photoFile, finalName);
+			safeMoveFile(mediaFile, finalName);
 		} else {
-			safeCopyFile(photoFile, finalName);
+			safeCopyFile(mediaFile, finalName);
 		}
 	}
 
 	private static void index(File folder) {
 		if (folder.exists()) {
-			List<Photo> photos = new ArrayList<Photo>();
+			List<Media> medias = new ArrayList<Media>();
 			File[] listFiles = folder.listFiles();
 			if (listFiles != null) {
 				for (File file : listFiles) {
 					if (file.isDirectory()) {
 						index(file);
 					} else {
-						indexFile(file, photos);
+						indexFile(file, medias);
 					}
 				}
 			}
-			if (photos.size() > 0) {
-				savePhotos(photos);
+			if (medias.size() > 0) {
+				saveMedias(medias);
 			}
 		}
 	}
 
-	private static void savePhotos(List<Photo> photos) {
+	private static void saveMedias(List<Media> medias) {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		for (Photo photo : photos) {
-			session.persist(photo);
+		for (Media media : medias) {
+			session.persist(media);
 		}
 		session.getTransaction().commit();
 		session.close();
 	}
 
-	private static void indexFile(File file, List<Photo> photos) {
-		String lc = file.getName().toLowerCase();
-		if (lc.endsWith(".jpg") || lc.endsWith(".jpeg")) {
-			indexJPEG(file, photos);
+	private static void indexFile(File file, List<Media> media) {
+		if (isPicture(file) || isMovie(file)) {
+			indexMedia(file, media);
 		} else {
 			System.out.println("** IGNORED ** " + file.getAbsolutePath());
 		}
 	}
 
-	private static void indexJPEG(File file, List<Photo> photos) {
+	private static void indexMedia(File file, List<Media> medias) {
 		Date date;
 		try {
-			date = getJPEGDate(file);
+			date = getMediaDate(file);
+			if (date == null) {
+				return;
+			}
 			Calendar c = Calendar.getInstance();
 			c.setTime(date);
 			if (c.get(Calendar.YEAR) < 2000) {
 				return;
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			System.out.println("** ERROR ** " + file.getAbsolutePath());
 			return;
 		}
 
 		String hash = null;
 		try {
-			hash = IMAGE_P_HASH.getHash(new FileInputStream(file));
+			// hash = IMAGE_P_HASH.getHash(new FileInputStream(file));
 		} catch (Exception e) {
 			hash = null;
 			e.printStackTrace();
 		}
 
-		Photo photo = new Photo();
-		photo.setFullPath(file.getAbsolutePath());
-		photo.setDate(date);
-		photo.setHash(hash);
-		photos.add(photo);
+		Media media = new Media();
+		media.setFullPath(file.getAbsolutePath());
+		media.setDate(date);
+		media.setHash(hash);
+		medias.add(media);
 
-		System.out.println("Indexed " + file.getAbsolutePath());
+		System.out.println("Indexed " + file.getAbsolutePath() + " - "
+				+ media.getDate());
 	}
 
-	private static Date getJPEGDate(File file) throws JpegProcessingException,
-			MetadataException, IOException {
-		Metadata metadata = JpegMetadataReader.readMetadata(file);
-		Directory exifDirectory = metadata
-				.getDirectory(ExifSubIFDDirectory.class);
-		Date date = exifDirectory
-				.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-		return date;
+	// private static Date getMediaDate(File file) throws
+	// JpegProcessingException,
+	// MetadataException, IOException {
+	// Metadata metadata = JpegMetadataReader.readMetadata(file);
+	// Directory exifDirectory = metadata
+	// .getDirectory(ExifSubIFDDirectory.class);
+	// Date date = exifDirectory
+	// .getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+	// return date;
+	// }
+
+	private static Date getMediaDate(File file)
+			throws IllegalArgumentException, SecurityException, IOException,
+			java.text.ParseException {
+		Map<Tag, String> imageMeta = exifTool.getImageMeta(file,
+				Format.NUMERIC, Tag.DATE_TIME_ORIGINAL);
+		String dateString = imageMeta.get(Tag.DATE_TIME_ORIGINAL);
+		return sdf.parse(dateString);
 	}
 
 	private static void clearIndex() {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Query query = session.createQuery("DELETE FROM Photo");
+		Query query = session.createQuery("DELETE FROM Media");
 		query.executeUpdate();
 		session.getTransaction().commit();
 		session.close();
@@ -627,6 +686,7 @@ public class App {
 	private static void printHelp(Options options) {
 		// automatically generate the help statement
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("photoindexer", options);
+		formatter.printHelp("digicamporter", options);
+		exifTool.close();
 	}
 }

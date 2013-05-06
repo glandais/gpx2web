@@ -1,4 +1,4 @@
-package org.glandais.photoindexer.model;
+package org.glandais.digicamporter.model;
 
 import java.util.Date;
 
@@ -9,7 +9,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-public class Photo implements Comparable<Photo> {
+public class Media implements Comparable<Media> {
 
 	@Id
 	@GeneratedValue
@@ -71,7 +71,7 @@ public class Photo implements Comparable<Photo> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Photo other = (Photo) obj;
+		Media other = (Media) obj;
 		if (fullPath == null) {
 			if (other.fullPath != null)
 				return false;
@@ -82,11 +82,11 @@ public class Photo implements Comparable<Photo> {
 
 	@Override
 	public String toString() {
-		return "Photo [hash=" + hash + ", date=" + date + ", fullPath="
+		return "Media [hash=" + hash + ", date=" + date + ", fullPath="
 				+ fullPath + "]";
 	}
 
-	public int compareTo(Photo o) {
+	public int compareTo(Media o) {
 		long thisVal = this.date.getTime();
 		long anotherVal = o.date.getTime();
 		return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
