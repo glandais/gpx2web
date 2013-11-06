@@ -1,4 +1,4 @@
-package org.glandais.digicamporter.model;
+package org.glandais.digicamtools.model;
 
 import java.util.Date;
 

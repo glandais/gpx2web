@@ -1,4 +1,4 @@
-package org.glandais.digicamporter.distance;
+package org.glandais.digicamtools.distance;
 
 import java.awt.Graphics2D;
 import java.awt.color.ColorSpace;

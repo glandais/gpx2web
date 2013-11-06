@@ -1,4 +1,4 @@
-package org.glandais.digicamporter;
+package org.glandais.digicamtools;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,13 +20,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FileUtils;
-import org.glandais.digicamporter.distance.BKTree;
-import org.glandais.digicamporter.distance.ImagePHash;
-import org.glandais.digicamporter.exiftool.ExifTool;
-import org.glandais.digicamporter.exiftool.ExifTool.Feature;
-import org.glandais.digicamporter.exiftool.ExifTool.Format;
-import org.glandais.digicamporter.exiftool.ExifTool.Tag;
-import org.glandais.digicamporter.model.Media;
+import org.glandais.digicamtools.distance.BKTree;
+import org.glandais.digicamtools.distance.ImagePHash;
+import org.glandais.digicamtools.exiftool.ExifTool;
+import org.glandais.digicamtools.exiftool.ExifTool.Feature;
+import org.glandais.digicamtools.exiftool.ExifTool.Format;
+import org.glandais.digicamtools.exiftool.ExifTool.Tag;
+import org.glandais.digicamtools.model.Media;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
@@ -34,7 +34,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.classic.Session;
 import org.hibernate.criterion.Order;
 
-public class App {
+public class Importer {
 
 	public static ImagePHash IMAGE_P_HASH = new ImagePHash(64, 16);
 
@@ -46,29 +46,12 @@ public class App {
 	private static SimpleDateFormat sdf = new SimpleDateFormat(
 			"yyyy:MM:dd HH:mm:ss");
 
-	private static void safeDeleteDirectory(File toClear) throws IOException {
-		if (FAKE) {
-			System.out.println("Fake : deleting " + toClear.getAbsolutePath());
-		} else {
-			FileUtils.deleteDirectory(toClear);
-		}
-	}
-
 	private static void safeDeleteFile(File file) {
 		if (FAKE) {
 			System.out.println("Fake : deleting " + file.getAbsolutePath());
 		} else {
+			System.out.println("Deleting " + file.getAbsolutePath());
 			file.delete();
-		}
-	}
-
-	private static void safeMoveFileToDirectory(File file, File mt)
-			throws IOException {
-		if (FAKE) {
-			System.out.println("Fake : moving " + file.getAbsolutePath()
-					+ " to " + mt.getAbsolutePath());
-		} else {
-			FileUtils.moveFileToDirectory(file, mt, true);
 		}
 	}
 
@@ -76,6 +59,7 @@ public class App {
 		if (FAKE) {
 			System.out.println("Fake : mkdirs " + folder.getAbsolutePath());
 		} else {
+			System.out.println("mkdirs " + folder.getAbsolutePath());
 			folder.mkdirs();
 		}
 	}
@@ -86,6 +70,8 @@ public class App {
 			System.out.println("Fake : copyFile " + mediaFile.getAbsolutePath()
 					+ " to " + finalName.getAbsolutePath());
 		} else {
+			System.out.println("CopyFile " + mediaFile.getAbsolutePath()
+					+ " to " + finalName.getAbsolutePath());
 			FileUtils.copyFile(mediaFile, finalName);
 		}
 	}
@@ -96,6 +82,8 @@ public class App {
 			System.out.println("Fake : moveFile " + mediaFile.getAbsolutePath()
 					+ " to " + finalName.getAbsolutePath());
 		} else {
+			System.out.println("MoveFile " + mediaFile.getAbsolutePath()
+					+ " to " + finalName.getAbsolutePath());
 			FileUtils.moveFile(mediaFile, finalName);
 		}
 	}
@@ -105,26 +93,18 @@ public class App {
 	private static SessionFactory sessionFactory;
 
 	public static void main(String[] args) {
-
 		Options options = new Options();
 
 		options.addOption("fake", false, "do not do anything on real files");
 
 		options.addOption("h", false, "print this help");
-		options.addOption("c", false, "clear index");
 
-		options.addOption("autofrom", true, "Source folder (photos and movies)");
-		options.addOption("autopics", true, "Target folder : pictures");
-		options.addOption("automovies", true, "Target folder : movies");
+		options.addOption("from", true, "Source folder (photos and movies)");
+		options.addOption("targetpics", true, "Target folder : pictures");
+		options.addOption("targetmovies", true, "Target folder : movies");
 
-		options.addOption("i", true, "index directory");
-		options.addOption("d", true, "delete empty folders");
-		options.addOption("l", false, "list index");
 		options.addOption("s", false, "find similar images");
-		options.addOption("e", true, "export index to folder");
 		options.addOption("move", false, "move pictures during export");
-		options.addOption("mt", true, "move movies to");
-		options.addOption("mf", true, "move movies from");
 
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
@@ -138,146 +118,36 @@ public class App {
 			FAKE = true;
 		}
 
-		if (cmd.hasOption("c") || cmd.hasOption("i") || cmd.hasOption("l")
-				|| cmd.hasOption("s") || cmd.hasOption("e")
-				|| cmd.hasOption("autofrom")) {
-			// A SessionFactory is set up once for an application
-			// hibernate.cfg.xml
-			sessionFactory = new Configuration().configure()
-					.buildSessionFactory();
-		}
+		// A SessionFactory is set up once for an application
+		// hibernate.cfg.xml
+		sessionFactory = new Configuration().configure().buildSessionFactory();
 
 		if (cmd.hasOption("h")) {
 			printHelp(options);
-		} else if (cmd.hasOption("autofrom")) {
-			if (!cmd.hasOption("autopics")) {
+		} else if (cmd.hasOption("from")) {
+			if (!cmd.hasOption("targetpics")) {
 				printHelp(options);
 				return;
 			}
-			if (!cmd.hasOption("automovies")) {
+			if (!cmd.hasOption("targetmovies")) {
 				printHelp(options);
 				return;
 			}
 
 			clearIndex();
-			index(new File(cmd.getOptionValue("autofrom")));
-			export(new File(cmd.getOptionValue("autopics")),
+			index(new File(cmd.getOptionValue("from")));
+			export(new File(cmd.getOptionValue("targetpics")),
 					cmd.hasOption("move"), true);
-			export(new File(cmd.getOptionValue("automovies")),
+			export(new File(cmd.getOptionValue("targetmovies")),
 					cmd.hasOption("move"), false);
 
-		} else if (cmd.hasOption("c")) {
-			clearIndex();
-		} else if (cmd.hasOption("l")) {
-			listIndex();
-		} else if (cmd.hasOption("l")) {
-			findSimilar();
-		} else if (cmd.hasOption("d")) {
-			deleteEmpty(new File(cmd.getOptionValue("d")));
-		} else if (cmd.hasOption("i")) {
-			index(new File(cmd.getOptionValue("i")));
-		} else if (cmd.hasOption("e")) {
-			export(new File(cmd.getOptionValue("e")), cmd.hasOption("move"),
-					true);
-		} else if (cmd.hasOption("mt")) {
-			if (!cmd.hasOption("mf")) {
-				printHelp(options);
-				return;
-			}
-			moveMovies(new File(cmd.getOptionValue("mf")),
-					new File(cmd.getOptionValue("mt")));
 		} else {
 			printHelp(options);
 		}
 		exifTool.close();
 	}
 
-	private static boolean deleteEmpty(File toClear) {
-		boolean toRemove = true;
-		if (toClear.exists()) {
-			File[] listFiles = toClear.listFiles();
-			if (listFiles != null) {
-				for (File file : listFiles) {
-					if (file.isDirectory()) {
-						if (!deleteEmpty(file)) {
-							toRemove = false;
-						}
-					} else {
-						if (isEssential(file)) {
-							toRemove = false;
-						} else {
-							safeDeleteFile(file);
-						}
-					}
-				}
-			} else {
-				toRemove = true;
-			}
-			if (toRemove) {
-				try {
-					safeDeleteDirectory(toClear);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return toRemove;
-	}
-
-	private static boolean isEssential(File file) {
-		if (file.getName().equals(".picasa.ini")) {
-			return false;
-		}
-		if (file.getName().equals("Picasa.ini")) {
-			return false;
-		}
-		if (file.getName().equals("desktop.ini")) {
-			return false;
-		}
-		if (file.getName().endsWith(".url")) {
-			return false;
-		}
-		if (file.getName().equals("Thumbs.db")) {
-			return false;
-		}
-		return true;
-	}
-
-	private static void moveMovies(File mf, File mt) {
-		if (mf.exists()) {
-			File[] listFiles = mf.listFiles();
-			if (listFiles != null) {
-				for (File file : listFiles) {
-					if (file.isDirectory()) {
-						moveMovies(file, new File(mt, file.getName()));
-					} else {
-						if (isMovie(file)) {
-							File newFile = new File(mt, file.getName());
-							if (newFile.exists()) {
-								if (newFile.length() != file.length()) {
-									System.out
-											.println("** ERROR ** Can't move "
-													+ file.getAbsolutePath()
-													+ " to "
-													+ newFile.getAbsolutePath());
-								} else {
-									safeDeleteFile(file);
-								}
-							} else {
-								try {
-									safeMoveFileToDirectory(file, mt);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private static boolean isPicture(File file) {
+	public static boolean isPicture(File file) {
 		String name = file.getName().toLowerCase();
 		if (name.endsWith(".jpg") || name.endsWith(".jpeg")) {
 			return true;
@@ -315,19 +185,6 @@ public class App {
 			return true;
 		}
 		return false;
-	}
-
-	private static void listIndex() {
-		Session session = sessionFactory.openSession();
-		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Media.class);
-		criteria.addOrder(Order.asc("date"));
-		List<Media> medias = criteria.list();
-		for (Media media : medias) {
-			System.out.println(media);
-		}
-		session.getTransaction().commit();
-		session.close();
 	}
 
 	private static void findSimilar() {
@@ -428,6 +285,7 @@ public class App {
 		session.beginTransaction();
 		Criteria criteria = session.createCriteria(Media.class);
 		criteria.addOrder(Order.asc("date"));
+		criteria.addOrder(Order.asc("fullPath"));
 		List<Media> medias = criteria.list();
 		exportMedias(medias, folder, move, photoMode);
 		session.getTransaction().commit();
@@ -561,11 +419,13 @@ public class App {
 		if (finalName.exists()) {
 			int i = 2;
 			while (finalName.exists()) {
-				if (move && finalName.length() == mediaFile.length()) {
+				if (FileUtils.contentEquals(finalName, mediaFile)) {
 					if (!mediaFile.equals(finalName)) {
 						System.out.println("** " + mediaFile + " == "
 								+ finalName);
-						safeDeleteFile(mediaFile);
+						if (move) {
+							safeDeleteFile(mediaFile);
+						}
 					}
 					return;
 				}
@@ -633,6 +493,7 @@ public class App {
 			}
 		} catch (Throwable e) {
 			System.out.println("** ERROR ** " + file.getAbsolutePath());
+			e.printStackTrace();
 			return;
 		}
 
@@ -669,8 +530,11 @@ public class App {
 			throws IllegalArgumentException, SecurityException, IOException,
 			java.text.ParseException {
 		Map<Tag, String> imageMeta = exifTool.getImageMeta(file,
-				Format.NUMERIC, Tag.DATE_TIME_ORIGINAL);
+				Format.NUMERIC, Tag.DATE_TIME_ORIGINAL, Tag.FILE_MODIFY_DATE);
 		String dateString = imageMeta.get(Tag.DATE_TIME_ORIGINAL);
+		if (dateString == null) {
+			dateString = imageMeta.get(Tag.FILE_MODIFY_DATE);
+		}
 		return sdf.parse(dateString);
 	}
 

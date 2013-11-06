@@ -30,7 +30,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>org.glandais.digicamporter.App</mainClass>
+							<mainClass>org.glandais.digicamtools.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -80,16 +80,48 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.0.1</version>
-		</dependency>
 
 		<!-- <dependency> -->
 		<!-- <groupId>com.drewnoakes</groupId> -->
 		<!-- <artifactId>metadata-extractor</artifactId> -->
 		<!-- <version>2.6.2</version> -->
 		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.commons</groupId> -->
+		<!-- <artifactId>commons-vfs2</artifactId> -->
+		<!-- <version>2.0</version> -->
+		<!-- </dependency> -->
+
+
+		<dependency>
+			<groupId>com.googlecode.flickrj-android</groupId>
+			<artifactId>flickrj-android</artifactId>
+			<version>2.0.9.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>org.json</artifactId>
+			<version>chargebee-1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.im4java</groupId>
+			<artifactId>im4java</artifactId>
+			<version>1.4.0</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.glandais.digicamporter.exiftool;
+package org.glandais.digicamtools.exiftool;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -735,6 +735,7 @@ public class ExifTool {
 				"XPKeywords", String.class), COMMENT("XPComment", String.class), RATING(
 				"Rating", Integer.class), RATING_PERCENT("RatingPercent",
 				Integer.class), DATE_TIME_ORIGINAL("DateTimeOriginal",
+				String.class), FILE_MODIFY_DATE("FileModifyDate",
 				String.class), CREATION_DATE("CreationDate", String.class), GPS_LATITUDE(
 				"GPSLatitude", Double.class), GPS_LATITUDE_REF(
 				"GPSLatitudeRef", String.class), GPS_LONGITUDE("GPSLongitude",
