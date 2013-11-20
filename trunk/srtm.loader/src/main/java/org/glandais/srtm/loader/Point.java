@@ -66,8 +66,11 @@ public class Point {
 
 	public double distanceTo(Point otherPoint) {
 		double theta = lon - otherPoint.getLon();
-		double dist = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(otherPoint.getLat())) + Math.cos(deg2rad(lat))
-				* Math.cos(deg2rad(otherPoint.getLat())) * Math.cos(deg2rad(theta));
+		double dist = Math.sin(deg2rad(lat))
+				* Math.sin(deg2rad(otherPoint.getLat()))
+				+ Math.cos(deg2rad(lat))
+				* Math.cos(deg2rad(otherPoint.getLat()))
+				* Math.cos(deg2rad(theta));
 		dist = Math.max(-1.0, Math.min(1.0, dist));
 		dist = Math.acos(dist);
 		dist = rad2deg(dist);
@@ -141,7 +144,7 @@ public class Point {
 		return this.set(this.lon * f, this.lat * f, this.z * f);
 	}
 
-	public Point tmp() {
+	public Point copy() {
 		return new Point(this);
 	}
 

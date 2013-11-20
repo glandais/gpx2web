@@ -24,14 +24,18 @@ public class App {
 				50, 0.1);
 
 		// GregorianCalendar[] starts = getTmpStarts();
-		GregorianCalendar[] starts = getSwissStarts();
-		// Calendar instance = Calendar.getInstance();
-		// instance.add(Calendar.DATE, 1);
-		// instance.set(Calendar.HOUR_OF_DAY, 5);
-		// instance.set(Calendar.MINUTE, 30);
-		// instance.set(Calendar.SECOND, 0);
-		// instance.set(Calendar.MILLISECOND, 0);
-		// Calendar[] starts = new Calendar[] { instance };
+		// GregorianCalendar[] starts = getSwissStarts();
+		Calendar instance = Calendar.getInstance();
+//		instance.set(Calendar.DAY_OF_MONTH, 6);
+//		instance.set(Calendar.MONTH, 7); // Jan. = 0!
+		instance.set(Calendar.DAY_OF_MONTH, 21);
+		instance.set(Calendar.MONTH, 7); // Jan. = 0!
+		instance.set(Calendar.YEAR, 2013);
+		instance.set(Calendar.HOUR_OF_DAY, 15);
+		instance.set(Calendar.MINUTE, 0);
+		instance.set(Calendar.SECOND, 0);
+		instance.set(Calendar.MILLISECOND, 0);
+		Calendar[] starts = new Calendar[] { instance };
 
 		bikeTimeEval.setStarts(starts);
 
@@ -54,7 +58,7 @@ public class App {
 		GregorianCalendar start = new GregorianCalendar();
 		start.set(Calendar.DAY_OF_MONTH, 4);
 		start.set(Calendar.MONTH, 4); // Jan. = 0!
-		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.YEAR, 2013);
 		start.set(Calendar.HOUR_OF_DAY, 7);
 		start.set(Calendar.MINUTE, 0);
 		start.set(Calendar.SECOND, 0);
@@ -63,8 +67,8 @@ public class App {
 
 		start = new GregorianCalendar();
 		start.set(Calendar.DAY_OF_MONTH, 5);
-		start.set(Calendar.MONTH, 4); // Jan. = 0!
-		start.set(Calendar.YEAR, 2011);
+		start.set(Calendar.MONTH, 5); // Jan. = 0!
+		start.set(Calendar.YEAR, 2013);
 		start.set(Calendar.HOUR_OF_DAY, 7);
 		start.set(Calendar.MINUTE, 0);
 		start.set(Calendar.SECOND, 0);

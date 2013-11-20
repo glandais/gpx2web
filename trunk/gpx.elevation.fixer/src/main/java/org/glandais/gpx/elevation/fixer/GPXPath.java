@@ -1,12 +1,8 @@
 package org.glandais.gpx.elevation.fixer;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import org.glandais.gpx.braquet.Braquet;
 import org.glandais.srtm.loader.Point;
 import org.glandais.srtm.loader.SRTMException;
 import org.glandais.srtm.loader.SRTMHelper;
@@ -116,63 +112,6 @@ public class GPXPath {
 		}
 	}
 
-	public void fixZ() {
-		double[] newZs = new double[zs.length];
-		for (int j = 0; j < newZs.length; j++) {
-			newZs[j] = computeNewValue(j, 1, 1, zs);
-			Point p = points.get(j);
-			p.setZ(newZs[j]);
-			p.setDist(dists[j]);
-		}
-		zs = newZs;
-	}
-
-	public void fixMaxSpeed(GPXBikeTimeEval bikeTimeEval) {
-		for (int i = points.size() - 1; i > 0; i--) {
-			double maxSpeed = points.get(i).getMaxSpeed();
-			double maxSpeedPrevious = points.get(i - 1).getMaxSpeed();
-			// we have to brake!
-			if (maxSpeed < maxSpeedPrevious) {
-				double dist = points.get(i).getDist()
-						- points.get(i - 1).getDist();
-				double newMaxSpeedPrevious = bikeTimeEval.getMaxSpeed(maxSpeed,
-						dist);
-				points.get(i - 1).setMaxSpeed(newMaxSpeedPrevious);
-			}
-		}
-		/*
-		 * double[] maxSpeeds = new double[points.size()]; for (int i = 0; i <
-		 * maxSpeeds.length; i++) { maxSpeeds[i] = points.get(i).getMaxSpeed();
-		 * }
-		 * 
-		 * for (int j = 0; j < maxSpeeds.length; j++) { double newMaxSpeed =
-		 * computeNewValue(j, 0.1, 0.1, maxSpeeds); Point p = points.get(j);
-		 * p.setMaxSpeed(newMaxSpeed); }
-		 */
-	}
-
-	public void computeArrays() {
-		previousPoint = null;
-		double d = 0;
-		dists = new double[points.size()];
-		zs = new double[points.size()];
-		time = new long[points.size()];
-		int i = 0;
-		for (Point p : points) {
-			zs[i] = p.getZ();
-			if (previousPoint != null) {
-				double dist = previousPoint.distanceTo(p);
-				d += dist;
-			}
-			dists[i] = d;
-			p.setDist(dists[i]);
-			zs[i] = p.getZ();
-			time[i] = p.getTime();
-			previousPoint = p;
-			i++;
-		}
-	}
-
 	public void postProcess(GPXBikeTimeEval bikeTimeEval) throws SRTMException {
 		System.out.println("Post process " + name);
 		filterPoints();
@@ -180,21 +119,11 @@ public class GPXPath {
 		fixZ();
 		// addInterPoints(0.01);
 		computeArrays();
-		computeMaxSpeeds(bikeTimeEval);
-		fixMaxSpeed(bikeTimeEval);
+
+		bikeTimeEval.computeMaxSpeeds(points);
+
 		// points = new GPXInterpolator().getInterpolatedPath(points);
 
-		computeMinMax();
-
-		bikeTimeEval.computeTrack(points);
-
-		for (int j = 0; j < points.size(); j++) {
-			time[j] = points.get(j).getTime();
-		}
-
-	}
-
-	private void computeMinMax() {
 		double previousElevation = -9999;
 		time = new long[points.size()];
 		previousPoint = null;
@@ -227,53 +156,49 @@ public class GPXPath {
 			}
 			previousElevation = elevation;
 		}
+
+		bikeTimeEval.computeTrack(points);
+
+		for (int j = 0; j < points.size(); j++) {
+			time[j] = points.get(j).getTime();
+		}
+
 	}
 
-	private void computeMaxSpeeds(GPXBikeTimeEval bikeTimeEval) {
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (i == 0 || i == points.size() - 1) {
-				p.setMaxSpeed(bikeTimeEval.getMaxSpeed());
-			} else {
-				Point pm1 = points.get(i - 1);
-				Point pp1 = points.get(i + 1);
-				p.setMaxSpeed(bikeTimeEval.getMaxSpeed(pm1, p, pp1));
+	private void fixZ() {
+		double[] newZs = new double[zs.length];
+		for (int j = 0; j < newZs.length; j++) {
+			newZs[j] = computeNewValue(j, 1, 1, zs);
+			Point p = points.get(j);
+			p.setZ(newZs[j]);
+			p.setDist(dists[j]);
+		}
+		zs = newZs;
+	}
+
+	private void computeArrays() {
+		previousPoint = null;
+		double d = 0;
+		dists = new double[points.size()];
+		zs = new double[points.size()];
+		time = new long[points.size()];
+		int i = 0;
+		for (Point p : points) {
+			zs[i] = p.getZ();
+			if (previousPoint != null) {
+				double dist = previousPoint.distanceTo(p);
+				d += dist;
 			}
+			dists[i] = d;
+			p.setDist(dists[i]);
+			zs[i] = p.getZ();
+			time[i] = p.getTime();
+			previousPoint = p;
+			i++;
 		}
 	}
 
-	private void addInterPoints(double d) {
-		List<Point> newPoints = new ArrayList<Point>();
-		Point lastPoint = null;
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (i == 0 || i == points.size() - 1) {
-				newPoints.add(p);
-				lastPoint = p;
-			} else {
-				double dist = lastPoint.distanceTo(p);
-				if (dist > d) {
-					long n = 1 + Math.round(Math
-							.floor((dist * 1.0) / (d * 1.0)));
-					for (int j = 1; j < n; j++) {
-						float c = (j * 1.0f) / (n * 1.0f);
-						Point np = new Point(p).mul(c).add(
-								new Point(lastPoint).mul(1 - c));
-						newPoints.add(np);
-					}
-				}
-				newPoints.add(p);
-				lastPoint = p;
-			}
-		}
-		points = newPoints;
-	}
-
-	public void filterPoints() {
-		points = filterPoints(points);
-	}
-
-	public static List<Point> filterPoints(List<Point> points) {
+	private void filterPoints() {
 		List<Point> newPoints = new ArrayList<Point>();
 		Point lastPoint = null;
 		for (int i = 0; i < points.size(); i++) {
@@ -288,10 +213,10 @@ public class GPXPath {
 				}
 			}
 		}
-		return newPoints;
+		points = newPoints;
 	}
 
-	public double computeNewValue(int i, double before, double after,
+	private double computeNewValue(int i, double before, double after,
 			double[] data) {
 		// double dsample = 1;
 
@@ -320,154 +245,6 @@ public class GPXPath {
 			return data[i];
 		} else {
 			return totz / totc;
-		}
-
-	}
-
-	public double computeNewValueTime(int i, long timeBefore, long timeAfter,
-			double[] data) {
-		// double dsample = 1;
-
-		long ac = time[i];
-
-		int mini = i - 1;
-		while (mini >= 0 && (ac - time[mini]) <= timeBefore) {
-			mini--;
-		}
-		mini++;
-
-		int maxi = i + 1;
-		while (maxi < data.length && (time[maxi] - ac) <= timeAfter) {
-			maxi++;
-		}
-
-		double totc = 0;
-		double totz = 0;
-		for (int j = mini; j < maxi; j++) {
-			double c = 1 - (Math.abs(time[j] - ac) / Math.max(timeBefore,
-					timeAfter));
-			totc = totc + c;
-			totz = totz + data[j] * c;
-		}
-
-		if (totc == 0) {
-			return data[i];
-		} else {
-			return totz / totc;
-		}
-
-	}
-
-	public void amplify() {
-		double[] speeds = getSpeeds();
-
-		double totDist = 0;
-		double totTime = 0;
-
-		Point lastPoint = getPoints().get(0);
-		for (int i = 0; i < getPoints().size() - 1; i++) {
-			Point p = getPoints().get(i + 1);
-			long dt = p.getTime() - lastPoint.getTime();
-			double invSpeed = computeNewValueTime(i, 15000, 15000, speeds);
-			double curSpeed = 1 / invSpeed;
-			double dist = lastPoint.distanceTo(p);
-			if (curSpeed > 2.0) {
-				totDist = totDist + dist;
-				totTime = totTime + dt;
-			}
-			// braquet.applySpeed(p, curSpeed, dt, dist);
-			lastPoint = p;
-		}
-
-		double average = totDist / (totTime / 3600000);
-
-		long newTime = adjustSpeedAmplify(average, speeds);
-		double ratio = (totTime * 1.0) / (newTime * 1.0);
-		adjustSpeedSameLength(ratio);
-
-		System.out.println(average);
-	}
-
-	private double[] getSpeeds() {
-		Point lastPoint = null;
-		double[] speed = new double[getPoints().size() - 1];
-		for (int i = 0; i < getPoints().size(); i++) {
-			Point p = getPoints().get(i);
-			if (i == 0) {
-				lastPoint = p;
-			} else {
-				if (i > 1) {
-					speed[i - 1] = speed[i - 2];
-				} else {
-					speed[i - 1] = 1.0;
-				}
-				double dist = lastPoint.distanceTo(p);
-				long dt = p.getTime() - lastPoint.getTime();
-				if (dt > 0 && dist > 0.002) {
-					double invSpeed = (dt / 3600000.0) / dist;
-					if (invSpeed > 0.0) {
-						speed[i - 1] = invSpeed;
-					}
-				}
-			}
-			lastPoint = p;
-		}
-		return speed;
-	}
-
-	private long adjustSpeedAmplify(double average, double[] speeds) {
-		long time = getPoints().get(0).getTime();
-		long startTime = time;
-		Point lastPoint = getPoints().get(0);
-
-		for (int i = 0; i < getPoints().size() - 1; i++) {
-			Point p = getPoints().get(i + 1);
-			long dt = p.getTime() - lastPoint.getTime();
-			double invSpeed = computeNewValueTime(i, 15000, 15000, speeds);
-
-			double curSpeed = 1 / invSpeed;
-			double dist = lastPoint.distanceTo(p);
-			if (curSpeed > 2.0) {
-
-				double relSpeed = curSpeed / average;
-
-				relSpeed = relSpeed * relSpeed * relSpeed * relSpeed;
-
-				relSpeed = relSpeed * average;
-
-				double dtDouble = dist / relSpeed;
-				dtDouble = dtDouble * 3600 * 1000;
-				dt = Math.round(dtDouble);
-
-			}
-
-			time = time + dt;
-
-			p.setTime(time);
-
-			lastPoint = p;
-		}
-
-		return time - startTime;
-	}
-
-	private void adjustSpeedSameLength(double ratio) {
-		long time = getPoints().get(0).getTime();
-
-		long[] times = new long[points.size()];
-		for (int i = 0; i < getPoints().size(); i++) {
-			times[i] = getPoints().get(i).getTime();
-		}
-
-		for (int i = 0; i < getPoints().size() - 1; i++) {
-
-			double dtDouble = times[i + 1] - times[i];
-			dtDouble = dtDouble * ratio;
-			long dt = Math.round(dtDouble);
-			Point p = getPoints().get(i + 1);
-			time = time + dt;
-			p.setTime(time);
-
 		}
 
 	}

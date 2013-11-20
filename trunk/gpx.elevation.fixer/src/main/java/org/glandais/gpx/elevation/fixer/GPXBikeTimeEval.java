@@ -80,6 +80,122 @@ public class GPXBikeTimeEval {
 		}
 	}
 
+	public void computeTrack(List<Point> points) {
+		Calendar start = getNextStart();
+		long currentTime = start.getTimeInMillis();
+
+		// m/h
+		double v = 5.0 / 3.6;
+		double time = 0;
+		for (int j = 0; j < points.size(); j++) {
+			Point p = points.get(j);
+			double dist = 0;
+			if (j > 0) {
+				Point prevPoint = points.get(j - 1);
+				// en km double
+				dist = prevPoint.distanceTo(p);
+				double dz = p.getZ() - prevPoint.getZ();
+				double pente = (dz * 0.1) / dist;
+
+				// max speeds
+				double pms = prevPoint.getMaxSpeed();
+				double ms = p.getMaxSpeed();
+
+				// temps en secondes
+				Double timeSpeed = getTimeForDist(v, dist, pente, pms, ms);
+
+				time = timeSpeed.x;
+				v = timeSpeed.y;
+
+				// System.out.println(p.getDist() + " - " + (v * 3.6) + " ("
+				// + p.getMaxSpeed() * 3.6 + ")");
+
+				// ms ellapsed time
+				long ts = Math.round(time * 1000);
+				currentTime = currentTime + ts;
+			}
+			p.setTime(currentTime);
+		}
+	}
+
+	public void computeMaxSpeeds(List<Point> points) {
+		for (int i = 0; i < points.size(); i++) {
+			Point p = points.get(i);
+			if (i == 0 || i == points.size() - 1) {
+				p.setMaxSpeed(getMaxSpeed());
+			} else {
+				Point pm1 = points.get(i - 1);
+				Point pp1 = points.get(i + 1);
+				p.setMaxSpeed(getMaxSpeedByIncline(pm1, p, pp1));
+			}
+		}
+
+		for (int i = points.size() - 1; i > 0; i--) {
+			double maxSpeed = points.get(i).getMaxSpeed();
+			double maxSpeedPrevious = points.get(i - 1).getMaxSpeed();
+			// we have to brake!
+			if (maxSpeed < maxSpeedPrevious) {
+				double dist = points.get(i).getDist()
+						- points.get(i - 1).getDist();
+				double newMaxSpeedPrevious = getMaxSpeedByBraking(maxSpeed,
+						dist);
+				points.get(i - 1).setMaxSpeed(newMaxSpeedPrevious);
+			}
+		}
+	}
+
+	private double getMaxSpeedByIncline(Point pm1, Point p, Point pp1) {
+		lonRef = p.getLon();
+		latRef = p.getLat();
+		cRef = CIRC * Math.cos(latRef * (Math.PI / 180.0));
+
+		Point tpm1 = transform(pm1);
+		Point tp = transform(p);
+		Point tpp1 = transform(pp1);
+
+		Point circleCenter = getCircleCenter(tpm1, tp, tpp1);
+		if (circleCenter == null) {
+			return maxSpeed;
+		}
+		Point rad = circleCenter.copy().sub(tp);
+		// m
+		double radius = Math.sqrt(rad.getLon() * rad.getLon() + rad.getLat()
+				* rad.getLat());
+
+		if (radius > 1000) {
+			return maxSpeed;
+		}
+		double vmax = Math.sqrt(g * radius * tanMaxAngle);
+		return Math.min(maxSpeed, vmax);
+	}
+
+	private double getMaxSpeedByBraking(double maxSpeed, double dist) {
+		// discrete resolution, i'm so lazy...
+		double dmax = dist * 1000;
+		// m
+		double d = 0.0;
+		// s
+		double t = 0.0;
+		// s
+		double dt = 0.01;
+		double v = maxSpeed;
+		while (true) {
+			double dv = maxBrake * dt;
+			v = v + dv;
+
+			double dx = dt * v;
+			d = d + dx;
+			t = t + dt;
+			if (v > this.maxSpeed) {
+				return this.maxSpeed;
+			}
+			if (d > dmax) {
+				double ratio = (dmax - (d - dx)) / dx;
+				return Math.min(this.maxSpeed, v - dv + dv * ratio);
+			}
+		}
+	}
+
 	/**
 	 * @param speed
 	 *            m/h
@@ -144,70 +260,7 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	public void computeTrack(List<Point> points) {
-		Calendar start = getNextStart();
-		long currentTime = start.getTimeInMillis();
-
-		// m/h
-		double v = 5.0 / 3.6;
-		double time = 0;
-		for (int j = 0; j < points.size(); j++) {
-			Point p = points.get(j);
-			double dist = 0;
-			if (j > 0) {
-				Point prevPoint = points.get(j - 1);
-				// en km double
-				dist = prevPoint.distanceTo(p);
-				double dz = p.getZ() - prevPoint.getZ();
-				double pente = (dz * 0.1) / dist;
-
-				// max speeds
-				double pms = prevPoint.getMaxSpeed();
-				double ms = p.getMaxSpeed();
-
-				// temps en secondes
-				Double timeSpeed = getTimeForDist(v, dist, pente, pms, ms);
-
-				time = timeSpeed.x;
-				v = timeSpeed.y;
-
-//				System.out.println(p.getDist() + " - " + (v * 3.6) + " ("
-//						+ p.getMaxSpeed() * 3.6 + ")");
-
-				// ms ellapsed time
-				long ts = Math.round(time * 1000);
-				currentTime = currentTime + ts;
-			}
-			p.setTime(currentTime);
-		}
-	}
-
-	public double getMaxSpeed(Point pm1, Point p, Point pp1) {
-		lonRef = p.getLon();
-		latRef = p.getLat();
-		cRef = CIRC * Math.cos(latRef * (Math.PI / 180.0));
-
-		Point tpm1 = transform(pm1);
-		Point tp = transform(p);
-		Point tpp1 = transform(pp1);
-
-		Point circleCenter = getCircleCenter(tpm1, tp, tpp1);
-		if (circleCenter == null) {
-			return maxSpeed;
-		}
-		Point rad = circleCenter.tmp().sub(tp);
-		// m
-		double radius = Math.sqrt(rad.getLon() * rad.getLon() + rad.getLat()
-				* rad.getLat());
-
-		if (radius > 1000) {
-			return maxSpeed;
-		}
-		double vmax = Math.sqrt(g * radius * tanMaxAngle);
-		return Math.min(maxSpeed, vmax);
-	}
-
-	public static Point getCircleCenter(Point a, Point b, Point c) {
+	private static Point getCircleCenter(Point a, Point b, Point c) {
 		double ax = a.getLon();
 		double ay = a.getLat();
 		double bx = b.getLon();
@@ -238,33 +291,6 @@ public class GPXBikeTimeEval {
 		double x = lon * cRef / (2 * 3.14);
 		double y = lat * CIRC / (2 * 3.14);
 		return new Point(x, y);
-	}
-
-	public double getMaxSpeed(double maxSpeed, double dist) {
-		// discrete resolution, i'm so lazy...
-		double dmax = dist * 1000;
-		// m
-		double d = 0.0;
-		// s
-		double t = 0.0;
-		// s
-		double dt = 0.01;
-		double v = maxSpeed;
-		while (true) {
-			double dv = maxBrake * dt;
-			v = v + dv;
-
-			double dx = dt * v;
-			d = d + dx;
-			t = t + dt;
-			if (v > this.maxSpeed) {
-				return this.maxSpeed;
-			}
-			if (d > dmax) {
-				double ratio = (dmax - (d - dx)) / dx;
-				return Math.min(this.maxSpeed, v - dv + dv * ratio);
-			}
-		}
 	}
 
 }
