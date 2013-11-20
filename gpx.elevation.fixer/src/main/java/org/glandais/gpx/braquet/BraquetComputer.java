@@ -72,8 +72,8 @@ public class BraquetComputer {
 
 		int k = 0;
 		for (GPXPath gpxPath : paths) {
-			gpxPath.filterPoints();
-			gpxPath.computeArrays();
+//			gpxPath.filterPoints();
+//			gpxPath.computeArrays();
 		}
 		for (Braquet braquetDisp : braquets) {
 			progress.progress(k, braquets.size());
@@ -160,6 +160,7 @@ public class BraquetComputer {
 
 	private int addPath(GPXPath sourcePath, List<GPXPath> result, int ipath, List<Point> points) {
 		if (points.size() > 0) {
+			/*
 			List<Point> filteredPoints = GPXPath.filterPoints(points);
 			if (filteredPoints.size() > 0) {
 
@@ -190,6 +191,7 @@ public class BraquetComputer {
 					}
 				}
 			}
+			*/
 		}
 		return ipath;
 	}
@@ -222,11 +224,13 @@ public class BraquetComputer {
 		for (int i = 0; i < gpxPath.getPoints().size() - 1; i++) {
 			Point p = gpxPath.getPoints().get(i + 1);
 			long dt = p.getTime() - lastPoint.getTime();
+			/*
 			double invSpeed = gpxPath.computeNewValueTime(i, 15000, 15000, speed);
 			double curSpeed = 1 / invSpeed;
 			double dist = lastPoint.distanceTo(p);
 			braquet.applySpeed(p, curSpeed, dt, dist);
 			lastPoint = p;
+			*/
 		}
 
 	}

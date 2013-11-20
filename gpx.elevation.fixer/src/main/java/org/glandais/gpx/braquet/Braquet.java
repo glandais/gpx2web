@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.glandais.gpx.braquet.db.Cassette;
 import org.glandais.gpx.braquet.db.Pedalier;
 import org.glandais.srtm.loader.Point;
@@ -302,14 +301,14 @@ public class Braquet {
 				}
 			}
 
-			StandardDeviation sdComputer = new StandardDeviation();
+//			StandardDeviation sdComputer = new StandardDeviation();
 
 			double[] values = new double[valueList.size()];
 			for (int i = 0; i < values.length; i++) {
 				values[i] = valueList.get(i);
 			}
 
-			rpmStandardDeviation = sdComputer.evaluate(values);
+//			rpmStandardDeviation = sdComputer.evaluate(values);
 		}
 	}
 }

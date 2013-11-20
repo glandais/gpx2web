@@ -8,6 +8,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,13 +17,13 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.methods.GetMethod;
 
 public class SRTMHelper {
 
-	private static final String BASE_URL = "/pub/srtmV4/arcasci/";
-
-	private String dataFolder = "/media/glandais/DOCS/srtm/";
+	private String dataFolder = "D://srtm//";
 
 	private static SRTMHelper instance = new SRTMHelper();
 
@@ -35,17 +37,22 @@ public class SRTMHelper {
 
 	public static void main(String[] args) throws Exception {
 		/*
-		 * System.out.println(SRTMHelper.getInstance().getElevation(6.864167,
-		 * 45.8325));
-		 * System.out.println(SRTMHelper.getInstance().getElevation(2.35,
-		 * 48.9));
-		 * System.out.println(SRTMHelper.getInstance().getElevation(-1.55278,
-		 * 47.21806)); for (int i = 0; i < 10; i++) { for (int j = 0; j < 10;
-		 * j++) { double elevation = SRTMHelper.getInstance().getElevation( 5.05
-		 * + 0.49 * i, 45.05 + 0.49 * j); elevation = Math.round(elevation);
-		 * System.out.print(elevation); System.out.print(" "); }
-		 * System.out.println(); }
-		 */
+		System.out.println(SRTMHelper.getInstance().getElevation(6.864167,
+				45.8325));
+		System.out.println(SRTMHelper.getInstance().getElevation(2.35, 48.9));
+		System.out.println(SRTMHelper.getInstance().getElevation(-1.55278,
+				47.21806));
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				double elevation = SRTMHelper.getInstance().getElevation(
+						5.05 + 0.49 * i, 45.05 + 0.49 * j);
+				elevation = Math.round(elevation);
+				System.out.print(elevation);
+				System.out.print(" ");
+			}
+			System.out.println();
+		}
+		*/
 		System.out.println(SRTMHelper.getInstance().getElevation(-5, 45));
 		System.out.println(SRTMHelper.getInstance().getElevation(
 				-4.999999999999, 45.000000000001));
@@ -83,6 +90,8 @@ public class SRTMHelper {
 		// System.out.println(SRTMHelper.getInstance().getElevation(-179, 59));
 	}
 
+	private HttpClient client = null;
+
 	private SRTMHelper() {
 		createClient();
 		tiles = new File[72][];
@@ -98,12 +107,14 @@ public class SRTMHelper {
 	private void createClient() {
 		System.getProperties().setProperty("httpclient.useragent",
 				"Mozilla/4.0");
+		client = new HttpClient(new MultiThreadedHttpConnectionManager());
 	}
 
 	private void downloadASCIITile(String fileName) throws Exception {
+		String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
+				+ fileName + ".zip";
 		File zipFile = new File(dataFolder + fileName + ".zip");
 		if (!zipFile.exists()) {
-			String url = BASE_URL + fileName + ".zip";
 			saveFile(url, zipFile);
 		}
 		unzip(zipFile);
@@ -258,7 +269,7 @@ public class SRTMHelper {
 
 	private void downloadTile(int ilon, int ilat, File result) throws Exception {
 		String fileName = getFileName(ilon, ilat);
-		File asciiResult = new File(dataFolder + fileName + ".asc");
+		File asciiResult = new File(dataFolder + fileName + ".ASC");
 		if (!asciiResult.exists()) {
 			downloadASCIITile(fileName);
 		}
@@ -317,13 +328,65 @@ public class SRTMHelper {
 		return fileName;
 	}
 
-	private void saveFile(String remote, File file) throws Exception {
-		FTPClient client = new FTPClient();
-		client.connect("xftp.jrc.it", 21);
-		FileOutputStream fos = new FileOutputStream(file);
-		client.retrieveFile(remote, fos);
-		fos.close();
-		client.logout();
+	private void saveFile(String url, File file) throws Exception {
+		GetMethod get = new GetMethod(url);
+		get.setRequestHeader("User-Agent",
+				"Mozilla/4.0 (compatible; MSIE 6.0; Windows 2000)");
+
+		get.setFollowRedirects(true);
+		Exception tothrow = null;
+		try {
+			client.executeMethod(get);
+			if (get.getStatusCode() != 404) {
+				long grandtotal = -1;
+				long total = 0;
+				long previoustotal = 0;
+				long previousTime = System.currentTimeMillis();
+				long previouspercent = 0;
+				if (get.getResponseContentLength() > 0) {
+					grandtotal = get.getResponseContentLength();
+				}
+				InputStream in = new BufferedInputStream(
+						get.getResponseBodyAsStream());
+				OutputStream out = new BufferedOutputStream(
+						new FileOutputStream(file));
+				byte[] buffer = new byte[1024];
+				int count = -1;
+				while ((count = in.read(buffer)) != -1) {
+					out.write(buffer, 0, count);
+					if (grandtotal > -1) {
+						total += count;
+						long percent = (100 * total) / grandtotal;
+						if (previouspercent != percent) {
+							long time = System.currentTimeMillis();
+
+							long difftotal = total - previoustotal;
+							long difftime = time - previousTime;
+							long speed = -1;
+							if (difftime > 0) {
+								speed = difftotal / difftime;
+							}
+							System.out.println(file.getAbsolutePath() + " : "
+									+ percent + "% (" + speed + "kB/s)");
+
+							previouspercent = percent;
+							previoustotal = total;
+							previousTime = time;
+						}
+					}
+				}
+				out.flush();
+				out.close();
+			}
+		} catch (Exception e) {
+			tothrow = e;
+		} finally {
+			createClient();
+			get.releaseConnection();
+		}
+		if (tothrow != null) {
+			throw tothrow;
+		}
 	}
 
 	private void unzip(File zipFile) throws Exception {
