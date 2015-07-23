@@ -1,0 +1,3 @@
+Another try in converting GPX files into KML, ...
+
+This KML can then be used with Google Maps/Earth.
