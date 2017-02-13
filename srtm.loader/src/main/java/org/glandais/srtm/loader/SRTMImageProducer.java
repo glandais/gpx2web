@@ -40,8 +40,7 @@ public class SRTMImageProducer {
 		// System.out.println(SRTMHelper.getInstance().getElevation(4,
 		// 45.0003));
 
-		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999,
-				45.0001, 45.9999, 200, 0);
+		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999, 45.0001, 45.9999, 200, 0);
 		imageProducer.fillWithZ();
 		imageProducer.saveImage("/tmp/map.png");
 
@@ -51,8 +50,7 @@ public class SRTMImageProducer {
 		ImageIO.write(image, "png", new File(fileName));
 	}
 
-	public SRTMImageProducer(double minlon, double maxlon, double minlat,
-			double maxlat, int maxsize, double margin) {
+	public SRTMImageProducer(double minlon, double maxlon, double minlat, double maxlat, int maxsize, double margin) {
 		super();
 
 		double lonmiddle = (maxlon + minlon) / 2;
@@ -67,12 +65,10 @@ public class SRTMImageProducer {
 
 		if (lonwidht > latwidht) {
 			this.width = maxsize;
-			this.height = (int) Math.round((1.0 * maxsize * (maxlat - minlat))
-					/ (maxlon - minlon));
+			this.height = (int) Math.round((1.0 * maxsize * (maxlat - minlat)) / (maxlon - minlon));
 		} else {
 			this.height = maxsize;
-			this.width = (int) Math.round((1.0 * maxsize * (maxlon - minlon))
-					/ (maxlat - minlat));
+			this.width = (int) Math.round((1.0 * maxsize * (maxlon - minlon)) / (maxlat - minlat));
 		}
 
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -100,7 +96,7 @@ public class SRTMImageProducer {
 			for (int j = 0; j < height; j++) {
 				double z = zs[i][j];
 				if (z <= 0) {
-					
+
 				}
 				int rgb = getRgb(getRelativeZ(z, minz, maxz));
 				image.setRGB(i, j, rgb);
@@ -140,26 +136,22 @@ public class SRTMImageProducer {
 		return minlon + (1.0 * i * (maxlon - minlon)) / width;
 	}
 
-	public void addPoints(List<? extends Point> points, double trackminz,
-			double trackmaxz) {
+	public void addPoints(List<? extends Point> points, double trackminz, double trackmaxz) {
 		boolean first = true;
 		int previ = 0;
 		int prevj = 0;
 
 		graphics.setStroke(new BasicStroke(3));
-		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-				0.7f);
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f);
 		graphics.setComposite(ac);
 
 		for (Point point : points) {
 			int i = getI(point.getLon());
 			int j = getJ(point.getLat());
 			if (!first) {
-				int c = getColor(getRelativeZ(point.getZ(), trackminz,
-						trackmaxz));
+				int c = getColor(getRelativeZ(point.getZ(), trackminz, trackmaxz));
 				graphics.setColor(new Color(c));
 				graphics.drawLine(previ, prevj, i, j);
 			}
@@ -186,14 +178,12 @@ public class SRTMImageProducer {
 	}
 
 	private int getJ(double lat) {
-		int j = (int) Math.round(1.0 * height * (maxlat - lat)
-				/ (maxlat - minlat));
+		int j = (int) Math.round(1.0 * height * (maxlat - lat) / (maxlat - minlat));
 		return j;
 	}
 
 	private int getI(double lon) {
-		int i = (int) Math.round(1.0 * width * (lon - minlon)
-				/ (maxlon - minlon));
+		int i = (int) Math.round(1.0 * width * (lon - minlon) / (maxlon - minlon));
 		return i;
 	}
 

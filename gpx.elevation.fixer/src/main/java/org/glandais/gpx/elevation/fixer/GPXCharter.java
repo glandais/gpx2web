@@ -27,8 +27,7 @@ public class GPXCharter {
 
 	private static final DecimalFormat speedformat = new DecimalFormat("#0.0");
 
-	public static void createChartAndMap(GPXPath gpxPath, String string,
-			int maxsize) throws Exception {
+	public static void createChartAndMap(GPXPath gpxPath, String string, int maxsize) throws Exception {
 		System.out.println("chart " + gpxPath.getName());
 		createChart(gpxPath, string);
 		if (maxsize > 0) {
@@ -37,15 +36,12 @@ public class GPXCharter {
 		}
 	}
 
-	public static void createMap(GPXPath gpxPath, String outputFile, int maxsize)
-			throws Exception {
+	public static void createMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
 		String imgPath = outputFile + gpxPath.getName() + ".map.png";
-		SRTMImageProducer imageProducer = new SRTMImageProducer(
-				gpxPath.getMinlon(), gpxPath.getMaxlon(), gpxPath.getMinlat(),
-				gpxPath.getMaxlat(), maxsize, 0.2);
+		SRTMImageProducer imageProducer = new SRTMImageProducer(gpxPath.getMinlon(), gpxPath.getMaxlon(),
+				gpxPath.getMinlat(), gpxPath.getMaxlat(), maxsize, 0.2);
 		imageProducer.fillWithZ();
-		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(),
-				gpxPath.getMaxElevation());
+		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
 		imageProducer.saveImage(imgPath);
 	}
 
@@ -64,8 +60,7 @@ public class GPXCharter {
 		createChartWeb(gpxPath, imgPathWeb, dataset);
 	}
 
-	private static void createChartTime(GPXPath gpxPath, String imgPathTime,
-			long[] time) {
+	private static void createChartTime(GPXPath gpxPath, String imgPathTime, long[] time) {
 		DateAxis dateAxis = new DateAxis("");
 
 		DateTickUnit unit = null;
@@ -88,48 +83,41 @@ public class GPXCharter {
 		XYPlot plot = new XYPlot(xyDataset, dateAxis, valueAxis, null);
 		plot.setRenderer(renderer);
 
-		JFreeChart chart = new JFreeChart("", JFreeChart.DEFAULT_TITLE_FONT,
-				plot, false);
+		JFreeChart chart = new JFreeChart("", JFreeChart.DEFAULT_TITLE_FONT, plot, false);
 		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPathTime), chart, 1920,
-					1080);
+			ChartUtilities.saveChartAsPNG(new File(imgPathTime), chart, 1920, 1080);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
 	}
 
-	private static void createChartWeb(GPXPath gpxPath, String imgPathWeb,
-			DefaultXYDataset dataset) {
-		JFreeChart chart = ChartFactory.createXYAreaChart("", "", "", dataset,
-				PlotOrientation.VERTICAL, false, false, false);
+	private static void createChartWeb(GPXPath gpxPath, String imgPathWeb, DefaultXYDataset dataset) {
+		JFreeChart chart = ChartFactory.createXYAreaChart("", "", "", dataset, PlotOrientation.VERTICAL, false, false,
+				false);
 		chart.getXYPlot().getDomainAxis().setVisible(true);
 		double distance = gpxPath.getDists()[gpxPath.getDists().length - 1];
 		chart.getXYPlot().getDomainAxis().setRange(0, distance);
 		chart.getXYPlot().getRangeAxis().setVisible(true);
-		chart.getXYPlot().getRangeAxis()
-				.setRange(gpxPath.getMinElevation(), gpxPath.getMaxElevation());
+		chart.getXYPlot().getRangeAxis().setRange(gpxPath.getMinElevation(), gpxPath.getMaxElevation());
 		chart.setBackgroundPaint(Color.white);
 		chart.getXYPlot().setBackgroundPaint(Color.white);
 		chart.getXYPlot().setDomainGridlinePaint(Color.blue);
 		chart.getXYPlot().setRangeGridlinePaint(Color.blue);
 
-		chart.addSubtitle(new TextTitle(speedformat.format(distance)
-				+ " km     +"
-				+ speedformat.format(gpxPath.getTotalElevation() * 0.5) + " m"));
+		chart.addSubtitle(new TextTitle(
+				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
 
 		try {
-			ChartUtilities
-					.saveChartAsPNG(new File(imgPathWeb), chart, 640, 480);
+			ChartUtilities.saveChartAsPNG(new File(imgPathWeb), chart, 640, 480);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static void createChartSmall(GPXPath gpxPath, String imgPathSmall,
-			DefaultXYDataset dataset) {
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z",
-				dataset, PlotOrientation.VERTICAL, false, false, false);
+	private static void createChartSmall(GPXPath gpxPath, String imgPathSmall, DefaultXYDataset dataset) {
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false, false,
+				false);
 
 		chart.getXYPlot().getDomainAxis().setVisible(false);
 		chart.getXYPlot().getRangeAxis().setVisible(false);
@@ -139,17 +127,15 @@ public class GPXCharter {
 		chart.getXYPlot().setRangeGridlinePaint(Color.blue);
 
 		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPathSmall), chart, 512,
-					64);
+			ChartUtilities.saveChartAsPNG(new File(imgPathSmall), chart, 512, 64);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static void createChartBig(GPXPath gpxPath, String imgPath,
-			DefaultXYDataset dataset) {
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z",
-				dataset, PlotOrientation.VERTICAL, false, false, false);
+	private static void createChartBig(GPXPath gpxPath, String imgPath, DefaultXYDataset dataset) {
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false, false,
+				false);
 		XYPlot plot = (XYPlot) chart.getPlot();
 		XYItemRenderer rendu = new XYLineAndShapeRenderer();
 		plot.setRenderer(1, rendu);

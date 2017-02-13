@@ -3,7 +3,6 @@ package org.glandais.gpx.braquet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.glandais.gpx.braquet.db.Cassette;
@@ -72,8 +71,8 @@ public class BraquetComputer {
 
 		int k = 0;
 		for (GPXPath gpxPath : paths) {
-//			gpxPath.filterPoints();
-//			gpxPath.computeArrays();
+			//			gpxPath.filterPoints();
+			//			gpxPath.computeArrays();
 		}
 		for (Braquet braquetDisp : braquets) {
 			progress.progress(k, braquets.size());
@@ -163,10 +162,10 @@ public class BraquetComputer {
 			/*
 			List<Point> filteredPoints = GPXPath.filterPoints(points);
 			if (filteredPoints.size() > 0) {
-
+			
 				long startTime = filteredPoints.get(0).getTime() + 15000;
 				long endTime = filteredPoints.get(filteredPoints.size() - 1).getTime() - 15000;
-
+			
 				List<Point> realPoints = new ArrayList<Point>();
 				for (Point point : filteredPoints) {
 					long time = point.getTime();
@@ -174,16 +173,16 @@ public class BraquetComputer {
 						realPoints.add(point);
 					}
 				}
-
+			
 				if (realPoints.size() > 0) {
 					GPXPath curPath = new GPXPath(sourcePath.getName() + " - " + ipath);
 					curPath.getPoints().addAll(realPoints);
 					curPath.computeArrays();
-
+			
 					double dist = curPath.getPoints().get(curPath.getPoints().size() - 1).getDist();
 					long time = curPath.getPoints().get(curPath.getPoints().size() - 1).getTime()
 							- curPath.getPoints().get(0).getTime();
-
+			
 					double speed = dist / (time / 3600000.0);
 					if (dist > 0.1 && speed > 3) {
 						result.add(curPath);

@@ -23,13 +23,19 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 public class SRTMHelper {
 
+	private static final int _5999 = 6000;
+
+	private static final double DOUBLE_6000 = 6001.0;
+
+	private static final int INT_6000 = 6001;
+
 	private String dataFolder = "D://srtm//";
 
 	private static SRTMHelper instance = new SRTMHelper();
 
 	private File[][] tiles;
 
-	private static final boolean debugging = false;
+	private static final boolean debugging = true;
 
 	public static SRTMHelper getInstance() {
 		return instance;
@@ -54,21 +60,16 @@ public class SRTMHelper {
 		}
 		*/
 		System.out.println(SRTMHelper.getInstance().getElevation(-5, 45));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-4.999999999999, 45.000000000001));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-0.000000000001, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 49.999999999999));
 		System.out.println(SRTMHelper.getInstance().getElevation(0, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-4.999999999999, 49.999999999999));
+		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 49.999999999999));
 		System.out.println(SRTMHelper.getInstance().getElevation(-5, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(
-				-0.000000000001, 45.000000000001));
+		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 45.000000000001));
 		System.out.println(SRTMHelper.getInstance().getElevation(0, 45));
 		// http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
 		// http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
-		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876,
-				47.227357));
+		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876, 47.227357));
 
 		// double d = 5.0d / 6000.0d;
 		//
@@ -105,14 +106,13 @@ public class SRTMHelper {
 	}
 
 	private void createClient() {
-		System.getProperties().setProperty("httpclient.useragent",
-				"Mozilla/4.0");
+		System.getProperties().setProperty("httpclient.useragent", "Mozilla/4.0");
 		client = new HttpClient(new MultiThreadedHttpConnectionManager());
 	}
 
 	private void downloadASCIITile(String fileName) throws Exception {
-		String url = "http://srtm.geog.kcl.ac.uk/portal/srtm41/srtm_data_arcascii/"
-				+ fileName + ".zip";
+		// http://srtm.csi.cgiar.org/SRT-ZIP/SRTM_v41/SRTM_Data_ArcASCII/srtm_35_03.zip
+		String url = "http://srtm.csi.cgiar.org/SRT-ZIP/SRTM_v41/SRTM_Data_ArcASCII/" + fileName + ".zip";
 		File zipFile = new File(dataFolder + fileName + ".zip");
 		if (!zipFile.exists()) {
 			saveFile(url, zipFile);
@@ -149,23 +149,22 @@ public class SRTMHelper {
 	}
 
 	private double latToRow(double lat) {
-		return (6000 * (60 - lat)) / 5;
+		return (INT_6000 * (60 - lat)) / 5;
 	}
 
 	private double lonToCol(double lon) {
-		return (6000 * (180 + lon)) / 5;
+		return (INT_6000 * (180 + lon)) / 5;
 	}
 
 	private double rowToLat(double row) {
-		return 60 - ((row * 5.0) / 6000.0);
+		return 60 - ((row * 5.0) / DOUBLE_6000);
 	}
 
 	private double colToLon(double col) {
-		return ((col * 5.0) / 6000.0) - 180;
+		return ((col * 5.0) / DOUBLE_6000) - 180;
 	}
 
-	public List<Point> getPointsBetween(final Point p1, Point p2)
-			throws SRTMException {
+	public List<Point> getPointsBetween(final Point p1, Point p2) throws SRTMException {
 		List<Point> result = new ArrayList<Point>();
 		result.add(p1);
 		result.add(p2);
@@ -179,14 +178,10 @@ public class SRTMHelper {
 		double dcol2 = lonToCol(p2.getLon());
 		double drow2 = latToRow(p2.getLat());
 
-		int mincol = Math.min((int) Math.round(Math.floor(dcol1)),
-				(int) Math.round(Math.floor(dcol2)));
-		int maxcol = Math.max((int) Math.round(Math.floor(dcol1)),
-				(int) Math.round(Math.floor(dcol2)));
-		int minrow = Math.min((int) Math.round(Math.floor(drow1)),
-				(int) Math.round(Math.floor(drow2)));
-		int maxrow = Math.max((int) Math.round(Math.floor(drow1)),
-				(int) Math.round(Math.floor(drow2)));
+		int mincol = Math.min((int) Math.round(Math.floor(dcol1)), (int) Math.round(Math.floor(dcol2)));
+		int maxcol = Math.max((int) Math.round(Math.floor(dcol1)), (int) Math.round(Math.floor(dcol2)));
+		int minrow = Math.min((int) Math.round(Math.floor(drow1)), (int) Math.round(Math.floor(drow2)));
+		int maxrow = Math.max((int) Math.round(Math.floor(drow1)), (int) Math.round(Math.floor(drow2)));
 
 		if (Math.abs(dcol1 - dcol2) > 0.001) {
 			for (int col = mincol + 1; col <= maxcol; col++) {
@@ -219,25 +214,25 @@ public class SRTMHelper {
 	}
 
 	private short getValue(int colmin, int rowmin) throws Exception {
-		int ilon = (int) Math.round(Math.ceil(colmin / 6000.0));
-		int ilat = (int) Math.round(Math.ceil(rowmin / 6000.0));
+		int ilon = (int) Math.round(Math.ceil(colmin / DOUBLE_6000));
+		int ilat = (int) Math.round(Math.ceil(rowmin / DOUBLE_6000));
 		File tile = getTile(ilon, ilat);
-		int col = colmin - 6000 * (ilon - 1);
-		int row = rowmin - 6000 * (ilat - 1);
+		int col = colmin - INT_6000 * (ilon - 1);
+		int row = rowmin - INT_6000 * (ilat - 1);
 
 		boolean changed = false;
-		if (col > 5999) {
+		if (col > _5999) {
 			ilon = ilon + 1;
 			changed = true;
 		}
-		if (row > 5999) {
+		if (row > _5999) {
 			ilat = ilat + 1;
 			changed = true;
 		}
 		if (changed) {
 			tile = getTile(ilon, ilat);
-			col = colmin - 6000 * (ilon - 1);
-			row = rowmin - 6000 * (ilat - 1);
+			col = colmin - INT_6000 * (ilon - 1);
+			row = rowmin - INT_6000 * (ilat - 1);
 		}
 
 		short result = getValue(tile, col, row);
@@ -254,7 +249,7 @@ public class SRTMHelper {
 
 	private short getValue(File tile, int col, int row) throws Exception {
 		FileInputStream fis = new FileInputStream(tile);
-		long starti = (row * 6000) + col;
+		long starti = (row * INT_6000) + col;
 		fis.skip(2 * starti);
 		short readShort = readShort(fis);
 		fis.close();
@@ -286,8 +281,7 @@ public class SRTMHelper {
 		String line = null;
 		short sele = 0;
 
-		BufferedOutputStream bof = new BufferedOutputStream(
-				new FileOutputStream(result), 1024 * 1024);
+		BufferedOutputStream bof = new BufferedOutputStream(new FileOutputStream(result), 1024 * 1024);
 
 		int l = 0;
 		while ((line = reader.readLine()) != null) {
@@ -309,8 +303,7 @@ public class SRTMHelper {
 		}
 	}
 
-	private void writeShort(short dele, BufferedOutputStream bof)
-			throws IOException {
+	private void writeShort(short dele, BufferedOutputStream bof) throws IOException {
 		bof.write((dele >>> 8) & 0xFF);
 		bof.write((dele >>> 0) & 0xFF);
 	}
@@ -330,8 +323,7 @@ public class SRTMHelper {
 
 	private void saveFile(String url, File file) throws Exception {
 		GetMethod get = new GetMethod(url);
-		get.setRequestHeader("User-Agent",
-				"Mozilla/4.0 (compatible; MSIE 6.0; Windows 2000)");
+		get.setRequestHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows 2000)");
 
 		get.setFollowRedirects(true);
 		Exception tothrow = null;
@@ -346,10 +338,8 @@ public class SRTMHelper {
 				if (get.getResponseContentLength() > 0) {
 					grandtotal = get.getResponseContentLength();
 				}
-				InputStream in = new BufferedInputStream(
-						get.getResponseBodyAsStream());
-				OutputStream out = new BufferedOutputStream(
-						new FileOutputStream(file));
+				InputStream in = new BufferedInputStream(get.getResponseBodyAsStream());
+				OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 				byte[] buffer = new byte[1024];
 				int count = -1;
 				while ((count = in.read(buffer)) != -1) {
@@ -366,8 +356,7 @@ public class SRTMHelper {
 							if (difftime > 0) {
 								speed = difftotal / difftime;
 							}
-							System.out.println(file.getAbsolutePath() + " : "
-									+ percent + "% (" + speed + "kB/s)");
+							System.out.println(file.getAbsolutePath() + " : " + percent + "% (" + speed + "kB/s)");
 
 							previouspercent = percent;
 							previoustotal = total;
@@ -397,8 +386,7 @@ public class SRTMHelper {
 		while ((entry = zis.getNextEntry()) != null) {
 			int count;
 			byte data[] = new byte[2048];
-			FileOutputStream fos = new FileOutputStream(dataFolder
-					+ entry.getName());
+			FileOutputStream fos = new FileOutputStream(dataFolder + entry.getName());
 			dest = new BufferedOutputStream(fos, 2048);
 			while ((count = zis.read(data, 0, 2048)) != -1) {
 				dest.write(data, 0, count);

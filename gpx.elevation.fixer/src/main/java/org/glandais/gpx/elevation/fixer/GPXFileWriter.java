@@ -37,11 +37,9 @@ public class GPXFileWriter {
 	/**
 	 * Date format for a point timestamp.
 	 */
-	private static final DateTimeFormatter POINT_DATE_FORMATTER = ISODateTimeFormat
-			.dateHourMinuteSecondFraction();
-	private static final DecimalFormat df = new DecimalFormat(
-			"0.00#########################", new DecimalFormatSymbols(
-					Locale.ENGLISH));
+	private static final DateTimeFormatter POINT_DATE_FORMATTER = ISODateTimeFormat.dateHourMinuteSecondFraction();
+	private static final DecimalFormat df = new DecimalFormat("0.00#########################",
+			new DecimalFormatSymbols(Locale.ENGLISH));
 
 	/**
 	 * Writes the GPX file
@@ -56,8 +54,7 @@ public class GPXFileWriter {
 	 *            Target GPX file
 	 * @throws IOException
 	 */
-	public static void writeGpxFile(List<GPXPath> cTrackPoints, File target)
-			throws IOException {
+	public static void writeGpxFile(List<GPXPath> cTrackPoints, File target) throws IOException {
 		FileWriter fw = new FileWriter(target);
 
 		fw.write(XML_HEADER + "\n");
@@ -83,8 +80,7 @@ public class GPXFileWriter {
 	 *            Cursor to track points.
 	 * @throws IOException
 	 */
-	public static void writeTrackPoints(FileWriter fw, GPXPath gpxPath)
-			throws IOException {
+	public static void writeTrackPoints(FileWriter fw, GPXPath gpxPath) throws IOException {
 		fw.write("\t" + "<trk>");
 		fw.write("\t\t" + "<name>" + gpxPath.getName() + "</name>" + "\n");
 
@@ -93,11 +89,10 @@ public class GPXFileWriter {
 		List<Point> points = gpxPath.getPoints();
 		for (Point point : points) {
 			StringBuffer out = new StringBuffer();
-			out.append("\t\t\t" + "<trkpt lat=\"" + df.format(point.getLat())
-					+ "\" " + "lon=\"" + df.format(point.getLon()) + "\">");
+			out.append("\t\t\t" + "<trkpt lat=\"" + df.format(point.getLat()) + "\" " + "lon=\""
+					+ df.format(point.getLon()) + "\">");
 			out.append("<ele>" + df.format(point.getZ()) + "</ele>");
-			out.append("<time>" + POINT_DATE_FORMATTER.print(point.getTime())
-					+ "</time>");
+			out.append("<time>" + POINT_DATE_FORMATTER.print(point.getTime()) + "</time>");
 			// out.append("<extensions><gpxx:Depth>8</gpxx:Depth></extensions>");
 			out.append("</trkpt>" + "\n");
 			fw.write(out.toString());

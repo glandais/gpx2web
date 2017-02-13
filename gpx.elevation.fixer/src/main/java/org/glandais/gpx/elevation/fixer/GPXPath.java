@@ -34,6 +34,10 @@ public class GPXPath {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public double getMinlon() {
 		return minlon;
 	}
@@ -78,9 +82,8 @@ public class GPXPath {
 		return maxElevation;
 	}
 
-	public void processPoint(double lon, double lat, long date, boolean fixZ)
-			throws SRTMException {
-		Point p = new Point(lon, lat, 0, date);
+	public void processPoint(double lon, double lat, double ele, long date, boolean fixZ) throws SRTMException {
+		Point p = new Point(lon, lat, ele, date);
 		boolean doAdd = true;
 		if (previousPoint == null) {
 			doAdd = true;
@@ -94,12 +97,10 @@ public class GPXPath {
 		if (doAdd) {
 			if (fixZ) {
 				if (previousPoint == null) {
-					p.setZ(SRTMHelper.getInstance().getElevation(p.getLon(),
-							p.getLat()));
+					p.setZ(SRTMHelper.getInstance().getElevation(p.getLon(), p.getLat()));
 					points.add(p);
 				} else {
-					List<Point> subPoints = SRTMHelper.getInstance()
-							.getPointsBetween(previousPoint, p);
+					List<Point> subPoints = SRTMHelper.getInstance().getPointsBetween(previousPoint, p);
 					for (int i = 1; i < subPoints.size(); i++) {
 						Point point = subPoints.get(i);
 						points.add(point);
@@ -216,8 +217,7 @@ public class GPXPath {
 		points = newPoints;
 	}
 
-	private double computeNewValue(int i, double before, double after,
-			double[] data) {
+	private double computeNewValue(int i, double before, double after, double[] data) {
 		// double dsample = 1;
 
 		double ac = dists[i];

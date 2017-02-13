@@ -19,7 +19,7 @@ public class App {
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxFile = db.parse(args[0]);
 
-		List<GPXPath> paths = GPXParser.parsePaths(gpxFile, false);
+		List<GPXPath> paths = GPXParser.parsePaths(gpxFile, false, null);
 		braquetComputer.parseGPX(paths, new BraquetProgress() {
 
 			public void progress(int i, int size) {

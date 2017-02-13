@@ -102,8 +102,8 @@ public class Braquet {
 					timeSinceShift = 0;
 				}
 			}
-			PointBraquet pointBraquet = new PointBraquet(this, point, totalDist, iPlateau, iPignon, getRpm(curSpeed,
-					iPignon, iPlateau), curSpeed, timeSinceShift);
+			PointBraquet pointBraquet = new PointBraquet(this, point, totalDist, iPlateau, iPignon,
+					getRpm(curSpeed, iPignon, iPlateau), curSpeed, timeSinceShift);
 			history.add(pointBraquet);
 		}
 	}
@@ -245,10 +245,11 @@ public class Braquet {
 	}
 
 	public Double getScore(double[] ratios) {
-		return (normRatios[INDEX_CRANKSET_CHANGES] * ratios[INDEX_CRANKSET_CHANGES] + normRatios[INDEX_COGSET_CHANGES]
-				* ratios[INDEX_COGSET_CHANGES] + normRatios[INDEX_LOW_RPM] * ratios[INDEX_LOW_RPM]
-				+ normRatios[INDEX_HIGH_RPM] * ratios[INDEX_HIGH_RPM] + normRatios[INDEX_STD_DEV_RPM]
-				* ratios[INDEX_STD_DEV_RPM])
+		return (normRatios[INDEX_CRANKSET_CHANGES] * ratios[INDEX_CRANKSET_CHANGES]
+				+ normRatios[INDEX_COGSET_CHANGES] * ratios[INDEX_COGSET_CHANGES]
+				+ normRatios[INDEX_LOW_RPM] * ratios[INDEX_LOW_RPM]
+				+ normRatios[INDEX_HIGH_RPM] * ratios[INDEX_HIGH_RPM]
+				+ normRatios[INDEX_STD_DEV_RPM] * ratios[INDEX_STD_DEV_RPM])
 				/ (ratios[INDEX_CRANKSET_CHANGES] + ratios[INDEX_COGSET_CHANGES] + ratios[INDEX_LOW_RPM]
 						+ ratios[INDEX_HIGH_RPM] + ratios[INDEX_STD_DEV_RPM]);
 	}
@@ -260,8 +261,8 @@ public class Braquet {
 	@Override
 	public String toString() {
 		return "Braquet [pedalier=" + pedalier + ", cassette=" + cassette + ", timeMissingLow=" + timeMissingLow
-				+ ", timeMissingHigh=" + timeMissingHigh + ", pedalierChanges=" + pedalierChanges
-				+ ", cassetteChanges=" + cassetteChanges + "]";
+				+ ", timeMissingHigh=" + timeMissingHigh + ", pedalierChanges=" + pedalierChanges + ", cassetteChanges="
+				+ cassetteChanges + "]";
 	}
 
 	public double[] getRatios() {
@@ -301,14 +302,14 @@ public class Braquet {
 				}
 			}
 
-//			StandardDeviation sdComputer = new StandardDeviation();
+			//			StandardDeviation sdComputer = new StandardDeviation();
 
 			double[] values = new double[valueList.size()];
 			for (int i = 0; i < values.length; i++) {
 				values[i] = valueList.get(i);
 			}
 
-//			rpmStandardDeviation = sdComputer.evaluate(values);
+			//			rpmStandardDeviation = sdComputer.evaluate(values);
 		}
 	}
 }
