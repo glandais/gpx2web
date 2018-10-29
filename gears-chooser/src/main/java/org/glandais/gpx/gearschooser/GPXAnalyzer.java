@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -202,7 +203,7 @@ public class GPXAnalyzer implements Upload.Receiver, Upload.StartedListener, Upl
 					DocumentBuilder db = dbf.newDocumentBuilder();
 					Document gpxFile = db.parse(file);
 
-					List<GPXPath> paths = GPXParser.parsePaths(gpxFile, false);
+					List<GPXPath> paths = GPXParser.parsePaths(gpxFile, false, Collections.emptyList());
 
 					final BraquetComputer braquetComputer = new BraquetComputer();
 					braquetComputer.parseGPX(paths, new BraquetProgress() {

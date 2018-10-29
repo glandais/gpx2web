@@ -7,7 +7,8 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
-import org.glandais.srtm.loader.SRTMImageProducer;
+import org.glandais.gpx.map.MapProducer;
+import org.glandais.gpx.srtm.SRTMImageProducer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -32,15 +33,25 @@ public class GPXCharter {
 		createChart(gpxPath, string);
 		if (maxsize > 0) {
 			System.out.println("map " + gpxPath.getName());
-			createMap(gpxPath, string, maxsize);
+			createSRTMMap(gpxPath, string, maxsize);
+			createOtherMap(gpxPath, string, maxsize);
 		}
 	}
 
-	public static void createMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
-		String imgPath = outputFile + gpxPath.getName() + ".map.png";
+	public static void createSRTMMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
+		String imgPath = outputFile + gpxPath.getName() + ".srtm.png";
 		SRTMImageProducer imageProducer = new SRTMImageProducer(gpxPath.getMinlon(), gpxPath.getMaxlon(),
 				gpxPath.getMinlat(), gpxPath.getMaxlat(), maxsize, 0.2);
 		imageProducer.fillWithZ();
+		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
+		imageProducer.saveImage(imgPath);
+	}
+
+	public static void createOtherMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
+		String imgPath = outputFile + gpxPath.getName() + ".map.png";
+		MapProducer imageProducer = new MapProducer("https://foil.fr/magic/magicCache/{z}/{x}/{y}.png",
+				gpxPath.getMinlon(), gpxPath.getMaxlon(), gpxPath.getMinlat(), gpxPath.getMaxlat(), 0.2, 12);
+		imageProducer.fillWithImages();
 		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
 		imageProducer.saveImage(imgPath);
 	}

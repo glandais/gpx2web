@@ -1,6 +1,6 @@
 package org.glandais.gpx.braquet;
 
-import org.glandais.srtm.loader.Point;
+import org.glandais.gpx.srtm.Point;
 
 public class PointBraquet {
 

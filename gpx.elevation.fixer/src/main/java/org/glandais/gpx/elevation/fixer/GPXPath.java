@@ -3,9 +3,9 @@ package org.glandais.gpx.elevation.fixer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glandais.srtm.loader.Point;
-import org.glandais.srtm.loader.SRTMException;
-import org.glandais.srtm.loader.SRTMHelper;
+import org.glandais.gpx.srtm.Point;
+import org.glandais.gpx.srtm.SRTMException;
+import org.glandais.gpx.srtm.SRTMHelper;
 
 public class GPXPath {
 
@@ -118,12 +118,9 @@ public class GPXPath {
 		filterPoints();
 		computeArrays();
 		fixZ();
-		// addInterPoints(0.01);
 		computeArrays();
 
 		bikeTimeEval.computeMaxSpeeds(points);
-
-		// points = new GPXInterpolator().getInterpolatedPath(points);
 
 		double previousElevation = -9999;
 		time = new long[points.size()];

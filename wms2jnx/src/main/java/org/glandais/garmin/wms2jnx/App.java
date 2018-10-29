@@ -2,8 +2,6 @@ package org.glandais.garmin.wms2jnx;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,7 +16,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.apache.commons.cli.PosixParser;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 public class App {
 

@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.glandais.srtm.loader.Point;
+import org.glandais.gpx.srtm.Point;
 
 public class GPXBikeTimeEval {
 
@@ -37,15 +37,12 @@ public class GPXBikeTimeEval {
 	private double maxBrake;
 
 	/**
-	 * @param m
-	 *            kg
-	 * @param puissance
-	 *            W
+	 * @param m               kg
+	 * @param puissance       W
 	 * @param freewheel_power
 	 * @param maxAngle
 	 * @param maxSpeed
-	 * @param maxBrake
-	 *            g unit
+	 * @param maxBrake        g unit
 	 */
 	public GPXBikeTimeEval(double m, double puissance, double freewheel_power, double maxAngle, double maxSpeed,
 			double maxBrake) {
@@ -106,9 +103,6 @@ public class GPXBikeTimeEval {
 
 					time = timeSpeed.x;
 					v = timeSpeed.y;
-
-					// System.out.println(p.getDist() + " - " + (v * 3.6) + " ("
-					// + p.getMaxSpeed() * 3.6 + ")");
 
 					// ms ellapsed time
 					long ts = Math.round(time * 1000);
@@ -195,12 +189,9 @@ public class GPXBikeTimeEval {
 	}
 
 	/**
-	 * @param speed
-	 *            m/h
-	 * @param dist
-	 *            km
-	 * @param grad
-	 *            %
+	 * @param speed m/h
+	 * @param dist  km
+	 * @param grad  %
 	 * @param ms2
 	 * @param ms1
 	 * @return
@@ -214,7 +205,7 @@ public class GPXBikeTimeEval {
 		// s
 		double t = 0.0;
 		// s
-		double dt = 0.25;
+		double dt = 0.2;
 		while (true) {
 			// OK
 			// (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)

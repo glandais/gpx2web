@@ -8,7 +8,7 @@ import java.util.List;
 import org.glandais.gpx.braquet.db.Cassette;
 import org.glandais.gpx.braquet.db.Pedalier;
 import org.glandais.gpx.elevation.fixer.GPXPath;
-import org.glandais.srtm.loader.Point;
+import org.glandais.gpx.srtm.Point;
 
 public class BraquetComputer {
 

@@ -8,7 +8,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 
-import org.glandais.srtm.loader.Point;
+import org.glandais.gpx.srtm.Point;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -55,6 +55,9 @@ public class GPXFileWriter {
 	 * @throws IOException
 	 */
 	public static void writeGpxFile(List<GPXPath> cTrackPoints, File target) throws IOException {
+		if (!target.getParentFile().exists()) {
+			target.getParentFile().mkdirs();
+		}
 		FileWriter fw = new FileWriter(target);
 
 		fw.write(XML_HEADER + "\n");

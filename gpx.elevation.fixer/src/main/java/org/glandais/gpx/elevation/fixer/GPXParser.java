@@ -3,8 +3,8 @@ package org.glandais.gpx.elevation.fixer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glandais.srtm.loader.Point;
-import org.glandais.srtm.loader.SRTMHelper;
+import org.glandais.gpx.srtm.Point;
+import org.glandais.gpx.srtm.SRTMHelper;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Document;
