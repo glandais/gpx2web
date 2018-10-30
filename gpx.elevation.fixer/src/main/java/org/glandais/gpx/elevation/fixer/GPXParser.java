@@ -1,13 +1,12 @@
 package org.glandais.gpx.elevation.fixer;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -17,7 +16,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public class GPXParser {
 
@@ -29,11 +27,15 @@ public class GPXParser {
 		super();
 	}
 
-	public static List<GPXPath> parsePaths(File inputFile)
-			throws ParserConfigurationException, SAXException, IOException {
+	@FunctionalInterface
+	public static interface Loader<I> {
+		Document load(DocumentBuilder db, I input) throws Exception;
+	}
+
+	public static <I> List<GPXPath> parsePaths(I input, Loader<I> loader) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document gpxDocument = db.parse(inputFile);
+		Document gpxDocument = loader.load(db, input);
 
 		List<GPXPath> paths = new ArrayList<>();
 		processElement(gpxDocument, gpxDocument.getDocumentElement(), paths);
@@ -41,6 +43,14 @@ public class GPXParser {
 			GPXPostProcessor.filterPoints(gpxPath);
 		}
 		return paths;
+	}
+
+	public static List<GPXPath> parsePaths(InputStream inputFile) throws Exception {
+		return parsePaths(inputFile, (db, i) -> db.parse(i));
+	}
+
+	public static List<GPXPath> parsePaths(File inputFile) throws Exception {
+		return parsePaths(inputFile, (db, i) -> db.parse(i));
 	}
 
 	protected static void processElement(Document document, Element element, List<GPXPath> paths) {

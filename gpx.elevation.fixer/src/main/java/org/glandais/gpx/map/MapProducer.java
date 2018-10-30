@@ -89,11 +89,21 @@ public class MapProducer {
 	}
 
 	public void export(String imgPath) throws IOException {
+		compute();
+		if (width > 0 && height > 0) {
+			saveImage(imgPath);
+		}
+	}
+
+	public void compute() throws IOException {
 		if (width > 0 && height > 0) {
 			fillWithImages();
 			addPoints(gpxPath.getPoints());
-			saveImage(imgPath);
 		}
+	}
+
+	public BufferedImage getImage() {
+		return image;
 	}
 
 	protected void fillWithImages() throws IOException {
