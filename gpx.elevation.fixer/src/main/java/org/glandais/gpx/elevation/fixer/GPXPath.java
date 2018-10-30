@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.glandais.gpx.srtm.Point;
-import org.glandais.gpx.srtm.SRTMException;
 import org.glandais.gpx.srtm.SRTMHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GPXPath {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(GPXPath.class);
+
+	private SRTMHelper srtmHelper;
 
 	private double minElevation = 20000;
 	private double maxElevation = -10000;
@@ -25,8 +30,9 @@ public class GPXPath {
 	private double[] zs;
 	private long[] time;
 
-	public GPXPath(String name) {
+	public GPXPath(SRTMHelper srtmHelper, String name) {
 		super();
+		this.srtmHelper = srtmHelper;
 		this.name = name;
 	}
 
@@ -82,12 +88,10 @@ public class GPXPath {
 		return maxElevation;
 	}
 
-	public void processPoint(double lon, double lat, double ele, long date, boolean fixZ) throws SRTMException {
+	public void processPoint(double lon, double lat, double ele, long date, boolean fixZ) {
 		Point p = new Point(lon, lat, ele, date);
 		boolean doAdd = true;
-		if (previousPoint == null) {
-			doAdd = true;
-		} else {
+		if (previousPoint != null) {
 			// en km double
 			double dist = previousPoint.distanceTo(p);
 			if (Double.toString(dist).contains("NaN") || dist < 0.002) {
@@ -97,10 +101,10 @@ public class GPXPath {
 		if (doAdd) {
 			if (fixZ) {
 				if (previousPoint == null) {
-					p.setZ(SRTMHelper.getInstance().getElevation(p.getLon(), p.getLat()));
+					p.setZ(srtmHelper.getElevation(p.getLon(), p.getLat()));
 					points.add(p);
 				} else {
-					List<Point> subPoints = SRTMHelper.getInstance().getPointsBetween(previousPoint, p);
+					List<Point> subPoints = srtmHelper.getPointsBetween(previousPoint, p);
 					for (int i = 1; i < subPoints.size(); i++) {
 						Point point = subPoints.get(i);
 						points.add(point);
@@ -113,11 +117,16 @@ public class GPXPath {
 		}
 	}
 
-	public void postProcess(GPXBikeTimeEval bikeTimeEval) throws SRTMException {
-		System.out.println("Post process " + name);
+	public void postProcess(GPXBikeTimeEval bikeTimeEval) {
+		LOGGER.info("Post process {}", name);
+
+		LOGGER.info("filterPoints {}", name);
 		filterPoints();
+		LOGGER.info("computeArrays {}", name);
 		computeArrays();
+		LOGGER.info("fixZ {}", name);
 		fixZ();
+		LOGGER.info("computeArrays {}", name);
 		computeArrays();
 
 		bikeTimeEval.computeMaxSpeeds(points);
@@ -215,8 +224,6 @@ public class GPXPath {
 	}
 
 	private double computeNewValue(int i, double before, double after, double[] data) {
-		// double dsample = 1;
-
 		double ac = dists[i];
 
 		int mini = i - 1;

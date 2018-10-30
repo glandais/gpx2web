@@ -12,46 +12,43 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.glandais.gpx.elevation.fixer.GPXPath;
+
 public class SRTMImageProducer {
 
-	private BufferedImage image;
+	protected BufferedImage image;
 
-	private double minlon;
-	private double minlat;
-	private double maxlon;
-	private double maxlat;
-	private int width;
-	private int height;
-	private double minz = Double.MAX_VALUE;
-	private double maxz = -Double.MAX_VALUE;
+	private GPXPath gpxPath;
 
-	private Graphics2D graphics;
+	protected double minlon;
+	protected double minlat;
+	protected double maxlon;
+	protected double maxlat;
+	protected int width;
+	protected int height;
+	protected double minz = Double.MAX_VALUE;
+	protected double maxz = -Double.MAX_VALUE;
 
-	public static void main(String[] args) throws Exception {
-		// SRTMImageProducer imageProducer = new SRTMImageProducer(-2, -1, 46.5,
-		// 47.5, 200, 0);
+	protected Graphics2D graphics;
 
-		// System.out.println(SRTMHelper.getInstance().getElevation(4,
-		// 44.9997));
-		// System.out.println(SRTMHelper.getInstance().getElevation(4.0005,
-		// 44.9997));
-		// System.out.println(SRTMHelper.getInstance().getElevation(4.0005,
-		// 45.0003));
-		// System.out.println(SRTMHelper.getInstance().getElevation(4,
-		// 45.0003));
+	protected SRTMHelper srtmHelper;
 
-		SRTMImageProducer imageProducer = new SRTMImageProducer(0.0001, 4.9999, 45.0001, 45.9999, 200, 0);
-		imageProducer.fillWithZ();
-		imageProducer.saveImage("/tmp/map.png");
+//	public static void main(String[] args) throws Exception {
+//		SRTMHelper srtmHelper = new SRTMHelper(new File("cache" + File.separator + "srtm"));
+//		SRTMImageProducer imageProducer = new SRTMImageProducer(srtmHelper, 0.0001, 4.9999, 45.0001, 45.9999, 200, 0);
+//		imageProducer.fillWithZ();
+//		imageProducer.saveImage("/tmp/map.png");
+//	}
 
-	}
-
-	public void saveImage(String fileName) throws IOException {
-		ImageIO.write(image, "png", new File(fileName));
-	}
-
-	public SRTMImageProducer(double minlon, double maxlon, double minlat, double maxlat, int maxsize, double margin) {
+	public SRTMImageProducer(SRTMHelper srtmHelper, GPXPath gpxPath, int maxsize, double margin) {
 		super();
+		this.gpxPath = gpxPath;
+		double minlon = gpxPath.getMinlon();
+		double maxlon = gpxPath.getMaxlon();
+		double minlat = gpxPath.getMinlat();
+		double maxlat = gpxPath.getMaxlat();
+
+		this.srtmHelper = srtmHelper;
 
 		double lonmiddle = (maxlon + minlon) / 2;
 		double lonwidht = (maxlon - minlon) * (1.0 + margin);
@@ -71,18 +68,32 @@ public class SRTMImageProducer {
 			this.width = (int) Math.round((1.0 * maxsize * (maxlon - minlon)) / (maxlat - minlat));
 		}
 
-		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		graphics = image.createGraphics();
+		if (width > 0 && height > 0) {
+			image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			graphics = image.createGraphics();
+		}
 	}
 
-	public void fillWithZ() throws SRTMException {
+	public void export(String imgPath) throws IOException {
+		if (width > 0 && height > 0) {
+			fillWithZ();
+			addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
+			saveImage(imgPath);
+		}
+	}
+
+	protected void saveImage(String fileName) throws IOException {
+		ImageIO.write(image, "png", new File(fileName));
+	}
+
+	protected void fillWithZ() {
 		double[][] zs = new double[width][];
 		for (int i = 0; i < width; i++) {
 			zs[i] = new double[height];
 			for (int j = 0; j < height; j++) {
 				double lon = getLon(i);
 				double lat = getLat(j);
-				double z = SRTMHelper.getInstance().getElevation(lon, lat);
+				double z = srtmHelper.getElevation(lon, lat);
 				if (z < minz) {
 					minz = z;
 				}
@@ -95,23 +106,17 @@ public class SRTMImageProducer {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				double z = zs[i][j];
-				if (z <= 0) {
-
-				}
 				int rgb = getRgb(getRelativeZ(z, minz, maxz));
 				image.setRGB(i, j, rgb);
 			}
 		}
 	}
 
-	private double getRelativeZ(double z, double minz, double maxz) {
+	protected double getRelativeZ(double z, double minz, double maxz) {
 		return (z - minz) / (maxz - minz);
 	}
 
-	private int getRgb(double d) {
-		/*
-		 * int r = (int) Math.round(255 * d); int g = r; int b = r;
-		 */
+	protected int getRgb(double d) {
 		int r = 0;
 		int g = 0;
 		int b = 0;
@@ -128,15 +133,15 @@ public class SRTMImageProducer {
 		return (r << 16) + (g << 8) + b;
 	}
 
-	private double getLat(int j) {
+	protected double getLat(int j) {
 		return minlat + (1.0 * (height - 1 - j) * (maxlat - minlat)) / height;
 	}
 
-	private double getLon(int i) {
+	protected double getLon(int i) {
 		return minlon + (1.0 * i * (maxlon - minlon)) / width;
 	}
 
-	public void addPoints(List<? extends Point> points, double trackminz, double trackmaxz) {
+	protected void addPoints(List<? extends Point> points, double trackminz, double trackmaxz) {
 		boolean first = true;
 		int previ = 0;
 		int prevj = 0;
@@ -161,7 +166,7 @@ public class SRTMImageProducer {
 		}
 	}
 
-	private int getColor(double z) {
+	protected int getColor(double z) {
 		int r = 0;
 		int g = 0;
 		int b = 0;
@@ -177,14 +182,12 @@ public class SRTMImageProducer {
 		return (r << 16) + (g << 8) + b;
 	}
 
-	private int getJ(double lat) {
-		int j = (int) Math.round(1.0 * height * (maxlat - lat) / (maxlat - minlat));
-		return j;
+	protected int getJ(double lat) {
+		return (int) Math.round(1.0 * height * (maxlat - lat) / (maxlat - minlat));
 	}
 
-	private int getI(double lon) {
-		int i = (int) Math.round(1.0 * width * (lon - minlon) / (maxlon - minlon));
-		return i;
+	protected int getI(double lon) {
+		return (int) Math.round(1.0 * width * (lon - minlon) / (maxlon - minlon));
 	}
 
 }

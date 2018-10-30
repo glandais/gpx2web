@@ -7,8 +7,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
-import org.glandais.gpx.map.MapProducer;
-import org.glandais.gpx.srtm.SRTMImageProducer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -28,50 +26,23 @@ public class GPXCharter {
 
 	private static final DecimalFormat speedformat = new DecimalFormat("#0.0");
 
-	public static void createChartAndMap(GPXPath gpxPath, String string, int maxsize) throws Exception {
-		System.out.println("chart " + gpxPath.getName());
-		createChart(gpxPath, string);
-		if (maxsize > 0) {
-			System.out.println("map " + gpxPath.getName());
-			createSRTMMap(gpxPath, string, maxsize);
-			createOtherMap(gpxPath, string, maxsize);
-		}
+	private GPXCharter() {
+		super();
 	}
 
-	public static void createSRTMMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
-		String imgPath = outputFile + gpxPath.getName() + ".srtm.png";
-		SRTMImageProducer imageProducer = new SRTMImageProducer(gpxPath.getMinlon(), gpxPath.getMaxlon(),
-				gpxPath.getMinlat(), gpxPath.getMaxlat(), maxsize, 0.2);
-		imageProducer.fillWithZ();
-		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
-		imageProducer.saveImage(imgPath);
-	}
-
-	public static void createOtherMap(GPXPath gpxPath, String outputFile, int maxsize) throws Exception {
-		String imgPath = outputFile + gpxPath.getName() + ".map.png";
-		MapProducer imageProducer = new MapProducer("https://foil.fr/magic/magicCache/{z}/{x}/{y}.png",
-				gpxPath.getMinlon(), gpxPath.getMaxlon(), gpxPath.getMinlat(), gpxPath.getMaxlat(), 0.2, 12);
-		imageProducer.fillWithImages();
-		imageProducer.addPoints(gpxPath.getPoints(), gpxPath.getMinElevation(), gpxPath.getMaxElevation());
-		imageProducer.saveImage(imgPath);
-	}
-
-	public static void createChart(GPXPath gpxPath, String outputFile) {
-		String imgPath = outputFile + gpxPath.getName() + ".png";
-		String imgPathTimeMin = outputFile + gpxPath.getName() + "-timeMin.png";
-		String imgPathSmall = outputFile + gpxPath.getName() + "-small.png";
-		String imgPathWeb = outputFile + gpxPath.getName() + "-web.png";
-
+	public static void createCharts(GPXPath gpxPath, String outputFolder) throws IOException {
 		DefaultXYDataset dataset = new DefaultXYDataset();
 		dataset.addSeries("", getSerie(gpxPath));
 
-		createChartBig(gpxPath, imgPath, dataset);
-		createChartTime(gpxPath, imgPathTimeMin, gpxPath.getTime());
-		createChartSmall(gpxPath, imgPathSmall, dataset);
-		createChartWeb(gpxPath, imgPathWeb, dataset);
+		createChartBig(gpxPath, outputFolder, dataset);
+		createChartTime(gpxPath, outputFolder);
+		createChartSmall(gpxPath, outputFolder, dataset);
+		createChartWeb(gpxPath, outputFolder, dataset);
 	}
 
-	private static void createChartTime(GPXPath gpxPath, String imgPathTime, long[] time) {
+	private static void createChartTime(GPXPath gpxPath, String outputFolder) throws IOException {
+		long[] time = gpxPath.getTime();
+		String imgPathTime = outputFolder + gpxPath.getName() + "-time.png";
 		DateAxis dateAxis = new DateAxis("");
 
 		DateTickUnit unit = null;
@@ -95,15 +66,13 @@ public class GPXCharter {
 		plot.setRenderer(renderer);
 
 		JFreeChart chart = new JFreeChart("", JFreeChart.DEFAULT_TITLE_FONT, plot, false);
-		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPathTime), chart, 1920, 1080);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		ChartUtilities.saveChartAsPNG(new File(imgPathTime), chart, 1920, 1080);
 
 	}
 
-	private static void createChartWeb(GPXPath gpxPath, String imgPathWeb, DefaultXYDataset dataset) {
+	private static void createChartWeb(GPXPath gpxPath, String outputFolder, DefaultXYDataset dataset)
+			throws IOException {
+		String imgPathWeb = outputFolder + gpxPath.getName() + "-web.png";
 		JFreeChart chart = ChartFactory.createXYAreaChart("", "", "", dataset, PlotOrientation.VERTICAL, false, false,
 				false);
 		chart.getXYPlot().getDomainAxis().setVisible(true);
@@ -119,14 +88,12 @@ public class GPXCharter {
 		chart.addSubtitle(new TextTitle(
 				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
 
-		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPathWeb), chart, 640, 480);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		ChartUtilities.saveChartAsPNG(new File(imgPathWeb), chart, 640, 480);
 	}
 
-	private static void createChartSmall(GPXPath gpxPath, String imgPathSmall, DefaultXYDataset dataset) {
+	private static void createChartSmall(GPXPath gpxPath, String outputFolder, DefaultXYDataset dataset)
+			throws IOException {
+		String imgPathSmall = outputFolder + gpxPath.getName() + "-small.png";
 		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false, false,
 				false);
 
@@ -137,24 +104,18 @@ public class GPXCharter {
 		chart.getXYPlot().setDomainGridlinePaint(Color.blue);
 		chart.getXYPlot().setRangeGridlinePaint(Color.blue);
 
-		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPathSmall), chart, 512, 64);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		ChartUtilities.saveChartAsPNG(new File(imgPathSmall), chart, 512, 64);
 	}
 
-	private static void createChartBig(GPXPath gpxPath, String imgPath, DefaultXYDataset dataset) {
+	private static void createChartBig(GPXPath gpxPath, String outputFolder, DefaultXYDataset dataset)
+			throws IOException {
+		String imgPath = outputFolder + gpxPath.getName() + ".png";
 		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", dataset, PlotOrientation.VERTICAL, false, false,
 				false);
 		XYPlot plot = (XYPlot) chart.getPlot();
 		XYItemRenderer rendu = new XYLineAndShapeRenderer();
 		plot.setRenderer(1, rendu);
-		try {
-			ChartUtilities.saveChartAsPNG(new File(imgPath), chart, 1920, 1080);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		ChartUtilities.saveChartAsPNG(new File(imgPath), chart, 1920, 1080);
 	}
 
 	public static double[][] getSerie(GPXPath gpxPath) {

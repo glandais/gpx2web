@@ -7,42 +7,60 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.glandais.gpx.elevation.fixer.GPXPath;
 import org.glandais.gpx.srtm.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MapProducer {
 
-	private static final File CACHE = new File("C:\\gpx\\cache");
+	protected static final String SEPARATOR = File.separator;
 
-	private static final MagicPower2MapSpace MAPSPACE = MagicPower2MapSpace.INSTANCE_256;
-	private int zoom;
-	private String urlPattern;
-	private BufferedImage image;
+	protected static final String ABC = "abc";
 
-	private double minlon;
-	private double minlat;
-	private double maxlon;
-	private double maxlat;
-	private int width;
-	private int height;
+	protected static final Logger LOGGER = LoggerFactory.getLogger(MapProducer.class);
 
-	private Graphics2D graphics;
+	protected static final MagicPower2MapSpace MAPSPACE = MagicPower2MapSpace.INSTANCE_256;
 
-	private double startx;
+	protected int zoom;
+	protected String urlPattern;
+	protected BufferedImage image;
 
-	private double starty;
+	protected double minlon;
+	protected double minlat;
+	protected double maxlon;
+	protected double maxlat;
+	protected int width;
+	protected int height;
 
-	public MapProducer(String urlPattern, double minlon, double maxlon, double minlat, double maxlat, double margin,
-			int zoom) {
+	protected Graphics2D graphics;
+
+	protected double startx;
+
+	protected double starty;
+
+	protected File cache;
+
+	private GPXPath gpxPath;
+
+	public MapProducer(File cache, String urlPattern, GPXPath gpxPath, double margin, int zoom) {
 		super();
+		this.gpxPath = gpxPath;
+		double minlon = gpxPath.getMinlon();
+		double maxlon = gpxPath.getMaxlon();
+		double minlat = gpxPath.getMinlat();
+		double maxlat = gpxPath.getMaxlat();
+		this.cache = new File(cache, Integer.toHexString(urlPattern.hashCode()));
+
 		this.zoom = zoom;
 		this.urlPattern = urlPattern;
 		double lonmiddle = (maxlon + minlon) / 2;
@@ -63,11 +81,22 @@ public class MapProducer {
 		this.startx = MAPSPACE.cLonToX(this.minlon, zoom);
 		this.starty = MAPSPACE.cLatToY(this.maxlat, zoom);
 
-		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		graphics = image.createGraphics();
+		if (width > 0 && height > 0) {
+			LOGGER.info("Creating a map of {}x{} pixels", width, height);
+			image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			graphics = image.createGraphics();
+		}
 	}
 
-	public void fillWithImages() throws IOException {
+	public void export(String imgPath) throws IOException {
+		if (width > 0 && height > 0) {
+			fillWithImages();
+			addPoints(gpxPath.getPoints());
+			saveImage(imgPath);
+		}
+	}
+
+	protected void fillWithImages() throws IOException {
 		int timin = (int) Math.floor(MAPSPACE.cLonToX(this.minlon, zoom) / 256);
 		int timax = (int) Math.ceil(MAPSPACE.cLonToX(this.maxlon, zoom) / 256);
 
@@ -77,29 +106,36 @@ public class MapProducer {
 		for (int i = timin; i < timax; i++) {
 			for (int j = tjmin; j < tjmax; j++) {
 				BufferedImage img = getImage(i, j);
-				double x = i * 256 - startx;
-				double y = j * 256 - starty;
-				graphics.drawImage(img, (int) x, (int) y, null);
+				if (img != null) {
+					double x = i * 256 - startx;
+					double y = j * 256 - starty;
+					graphics.drawImage(img, (int) x, (int) y, null);
+				}
 			}
 		}
 	}
 
-	private BufferedImage getImage(int i, int j) throws IOException {
-		File image = new File(CACHE, zoom + "/" + i + "/" + j);
-		if (!image.exists()) {
-			String url = urlPattern.replace("{z}", "" + zoom).replace("{x}", "" + i).replace("{y}", "" + j);
-			image.getParentFile().mkdirs();
-			System.out.println("Downloading " + url);
-			FileUtils.copyURLToFile(new URL(url), image);
+	protected BufferedImage getImage(int i, int j) throws IOException {
+		File tile = new File(this.cache, zoom + SEPARATOR + i + SEPARATOR + j);
+		if (!tile.exists()) {
+			String url = urlPattern.replace("{z}", "" + zoom).replace("{x}", "" + i).replace("{y}", "" + j)
+					.replace("{s}", "" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
+			tile.getParentFile().mkdirs();
+			LOGGER.info("Downloading {}", url);
+			try {
+				FileUtils.copyURLToFile(new URL(url), tile);
+			} catch (FileNotFoundException e) {
+				FileUtils.touch(tile);
+			}
 		}
-		return ImageIO.read(image);
+		if (tile.length() == 0) {
+			return null;
+		} else {
+			return ImageIO.read(tile);
+		}
 	}
 
-	public void addPoints(List<Point> points, double minElevation, double maxElevation) {
-		boolean first = true;
-		int previ = 0;
-		int prevj = 0;
-
+	protected void addPoints(List<Point> points) {
 		graphics.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -116,21 +152,11 @@ public class MapProducer {
 			xPoints[c] = i;
 			yPoints[c] = j;
 			c++;
-			if (!first && previ != i && prevj != j) {
-//				graphics.drawLine(previ, prevj, i, j);
-				previ = i;
-				prevj = j;
-			}
-			if (first) {
-				previ = i;
-				prevj = j;
-				first = false;
-			}
 		}
 		graphics.drawPolyline(xPoints, yPoints, points.size());
 	}
 
-	public void saveImage(String imgPath) throws IOException {
+	protected void saveImage(String imgPath) throws IOException {
 		ImageIO.write(image, "png", new File(imgPath));
 	}
 

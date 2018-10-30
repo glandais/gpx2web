@@ -2,7 +2,6 @@ package org.glandais.gpx.elevation.fixer;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
-import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -16,16 +15,14 @@ public class GPXBikeTimeEval {
 	private double cRef = 0;
 	private static final double CIRC = 40000000.0;
 
-	DecimalFormat speedformat = new DecimalFormat("#0.0");
-
 	private double maxSpeed = 36.0 / 3.6;
 
 	// poids en kg
 	private double m;
 
 	// puissance moyenne
-	private double max_power;
-	private double freewheel_power;
+	private double maxPower;
+	private double freewheelPower;
 
 	// g
 	private double g = 9.8;
@@ -37,19 +34,19 @@ public class GPXBikeTimeEval {
 	private double maxBrake;
 
 	/**
-	 * @param m               kg
-	 * @param puissance       W
-	 * @param freewheel_power
+	 * @param m              kg
+	 * @param puissance      W
+	 * @param freewheelPower
 	 * @param maxAngle
 	 * @param maxSpeed
-	 * @param maxBrake        g unit
+	 * @param maxBrake       g unit
 	 */
-	public GPXBikeTimeEval(double m, double puissance, double freewheel_power, double maxAngle, double maxSpeed,
+	public GPXBikeTimeEval(double m, double puissance, double freewheelPower, double maxAngle, double maxSpeed,
 			double maxBrake) {
 		super();
 		this.m = m;
-		this.max_power = puissance;
-		this.freewheel_power = freewheel_power;
+		this.maxPower = puissance;
+		this.freewheelPower = freewheelPower;
 		this.tanMaxAngle = Math.tan(maxAngle * (Math.PI / 180.0));
 		this.maxSpeed = maxSpeed / 3.6;
 		this.maxBrake = maxBrake * g;
@@ -126,12 +123,12 @@ public class GPXBikeTimeEval {
 		}
 
 		for (int i = points.size() - 1; i > 0; i--) {
-			double maxSpeed = points.get(i).getMaxSpeed();
+			double maxSpeedCurrent = points.get(i).getMaxSpeed();
 			double maxSpeedPrevious = points.get(i - 1).getMaxSpeed();
 			// we have to brake!
-			if (maxSpeed < maxSpeedPrevious) {
+			if (maxSpeedCurrent < maxSpeedPrevious) {
 				double dist = points.get(i).getDist() - points.get(i - 1).getDist();
-				double newMaxSpeedPrevious = getMaxSpeedByBraking(maxSpeed, dist);
+				double newMaxSpeedPrevious = getMaxSpeedByBraking(maxSpeedCurrent, dist);
 				points.get(i - 1).setMaxSpeed(newMaxSpeedPrevious);
 			}
 		}
@@ -209,25 +206,25 @@ public class GPXBikeTimeEval {
 		while (true) {
 			// OK
 			// (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)
-			double p_frot = 0.26 * v * v * v + 0.1 * m * v;
+			double pFrot = 0.26 * v * v * v + 0.1 * m * v;
 			// OK
 			// (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)
-			double p_grav = m * g * v * Math.sin(Math.atan(grad / 100.0));
+			double pGrav = m * g * v * Math.sin(Math.atan(grad / 100.0));
 			// total resistance power
-			double p_res = p_frot + p_grav;
+			double pRes = pFrot + pGrav;
 
-			double p_cyclist = max_power;
-			if (p_grav < -max_power + freewheel_power) {
-				p_cyclist = freewheel_power;
-			} else if (p_grav > -max_power + freewheel_power && p_grav < 0) {
-				p_cyclist = p_grav + max_power;
+			double pCyclist = maxPower;
+			if (pGrav < -maxPower + freewheelPower) {
+				pCyclist = freewheelPower;
+			} else if (pGrav > -maxPower + freewheelPower && pGrav < 0) {
+				pCyclist = pGrav + maxPower;
 			}
 
 			// p_app = cyclist power - resistance
-			double p_app = p_cyclist - p_res;
+			double pApp = pCyclist - pRes;
 
 			// m.s-2
-			double acc = p_app / m;
+			double acc = pApp / m;
 			v = v + acc * dt;
 
 			// Compute max speed
@@ -248,28 +245,28 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	private static Point getCircleCenter(Point a, Point b, Point c) {
-		double ax = a.getLon();
-		double ay = a.getLat();
-		double bx = b.getLon();
-		double by = b.getLat();
-		double cx = c.getLon();
-		double cy = c.getLat();
+	private static Point getCircleCenter(Point p1, Point p2, Point p3) {
+		double ax = p1.getLon();
+		double ay = p1.getLat();
+		double bx = p2.getLon();
+		double by = p2.getLat();
+		double cx = p3.getLon();
+		double cy = p3.getLat();
 
-		double A = bx - ax;
-		double B = by - ay;
-		double C = cx - ax;
-		double D = cy - ay;
+		double a = bx - ax;
+		double b = by - ay;
+		double c = cx - ax;
+		double d = cy - ay;
 
-		double E = A * (ax + bx) + B * (ay + by);
-		double F = C * (ax + cx) + D * (ay + cy);
+		double e = a * (ax + bx) + b * (ay + by);
+		double f = c * (ax + cx) + d * (ay + cy);
 
-		double G = 2 * (A * (cy - by) - B * (cx - bx));
+		double G = 2 * (a * (cy - by) - b * (cx - bx));
 		if (Math.abs(G) < 0.001)
-			return null; // a, b, c must be collinear
+			return null; // p1, p2, p3 must be collinear
 
-		double px = (D * E - B * F) / G;
-		double py = (A * F - C * E) / G;
+		double px = (d * e - b * f) / G;
+		double py = (a * f - c * e) / G;
 		return new Point(px, py);
 	}
 

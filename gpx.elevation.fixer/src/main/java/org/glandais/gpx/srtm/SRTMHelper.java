@@ -1,39 +1,46 @@
 package org.glandais.gpx.srtm;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.graphhopper.reader.dem.SRTMGL1Provider;
 
 public class SRTMHelper {
 
-	private String dataFolder = "C://srtm//";
+	private static final Logger LOGGER = LoggerFactory.getLogger(SRTMHelper.class);
 
-	private SRTMGL1Provider srtmgl1Provider = new SRTMGL1Provider(dataFolder);
+	private final File cache;
 
-	private static SRTMHelper instance = new SRTMHelper();
+	private final SRTMGL1Provider srtmgl1Provider;
 
-	public static SRTMHelper getInstance() {
-		return instance;
-	}
-
-	public static void main(String[] args) throws Exception {
-		System.out.println(SRTMHelper.getInstance().getElevation(-5, 45));
-		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 45.000000000001));
-		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 49.999999999999));
-		System.out.println(SRTMHelper.getInstance().getElevation(0, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(-4.999999999999, 49.999999999999));
-		System.out.println(SRTMHelper.getInstance().getElevation(-5, 50));
-		System.out.println(SRTMHelper.getInstance().getElevation(-0.000000000001, 45.000000000001));
-		System.out.println(SRTMHelper.getInstance().getElevation(0, 45));
+	public static void main(String[] args) {
+		SRTMHelper srtmHelper = new SRTMHelper(new File("cache" + File.separator + "srtm"));
+		LOGGER.info("{}", srtmHelper.getElevation(-5, 45));
+		LOGGER.info("{}", srtmHelper.getElevation(-4.999999999999, 45.000000000001));
+		LOGGER.info("{}", srtmHelper.getElevation(-0.000000000001, 49.999999999999));
+		LOGGER.info("{}", srtmHelper.getElevation(0, 50));
+		LOGGER.info("{}", srtmHelper.getElevation(-4.999999999999, 49.999999999999));
+		LOGGER.info("{}", srtmHelper.getElevation(-5, 50));
+		LOGGER.info("{}", srtmHelper.getElevation(-0.000000000001, 45.000000000001));
+		LOGGER.info("{}", srtmHelper.getElevation(0, 45));
 		// http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
 		// http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
-		System.out.println(SRTMHelper.getInstance().getElevation(-1.547876, 47.227357));
+		LOGGER.info("{}", srtmHelper.getElevation(-1.547876, 47.227357));
 	}
 
-	public double getElevation(double lon, double lat) throws SRTMException {
+	public SRTMHelper(File cache) {
+		super();
+		this.cache = cache;
+		this.srtmgl1Provider = new SRTMGL1Provider(this.cache.getAbsolutePath());
+	}
+
+	public double getElevation(double lon, double lat) {
 		return srtmgl1Provider.getEle(lat, lon);
 	}
 
@@ -53,8 +60,8 @@ public class SRTMHelper {
 		return ((col * 5.0) / 6000.0) - 180;
 	}
 
-	public List<Point> getPointsBetween(final Point p1, Point p2) throws SRTMException {
-		List<Point> result = new ArrayList<Point>();
+	public List<Point> getPointsBetween(final Point p1, Point p2) {
+		List<Point> result = new ArrayList<>();
 		result.add(p1);
 		result.add(p2);
 
