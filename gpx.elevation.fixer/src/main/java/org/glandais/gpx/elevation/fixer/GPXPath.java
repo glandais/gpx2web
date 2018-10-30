@@ -4,35 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.glandais.gpx.srtm.Point;
-import org.glandais.gpx.srtm.SRTMHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GPXPath {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GPXPath.class);
-
-	private SRTMHelper srtmHelper;
-
 	private double minElevation = 20000;
 	private double maxElevation = -10000;
-	private Point previousPoint = null;
 	private double totalElevation = 0;
 	private double minlon = 180;
 	private double maxlon = -180;
 	private double minlat = 180;
 	private double maxlat = -180;
 
-	private List<Point> points = new ArrayList<Point>();
+	private List<Point> points = new ArrayList<>();
 	private String name;
 
 	private double[] dists;
 	private double[] zs;
 	private long[] time;
 
-	public GPXPath(SRTMHelper srtmHelper, String name) {
+	public GPXPath(String name) {
 		super();
-		this.srtmHelper = srtmHelper;
 		this.name = name;
 	}
 
@@ -64,6 +55,11 @@ public class GPXPath {
 		return points;
 	}
 
+	public void setPoints(List<Point> points) {
+		this.points = points;
+		updateArrays();
+	}
+
 	public double[] getDists() {
 		return dists;
 	}
@@ -88,53 +84,39 @@ public class GPXPath {
 		return maxElevation;
 	}
 
-	public void processPoint(double lon, double lat, double ele, long date, boolean fixZ) {
-		Point p = new Point(lon, lat, ele, date);
-		boolean doAdd = true;
-		if (previousPoint != null) {
-			// en km double
-			double dist = previousPoint.distanceTo(p);
-			if (Double.toString(dist).contains("NaN") || dist < 0.002) {
-				doAdd = false;
-			}
-		}
-		if (doAdd) {
-			if (fixZ) {
-				if (previousPoint == null) {
-					p.setZ(srtmHelper.getElevation(p.getLon(), p.getLat()));
-					points.add(p);
-				} else {
-					List<Point> subPoints = srtmHelper.getPointsBetween(previousPoint, p);
-					for (int i = 1; i < subPoints.size(); i++) {
-						Point point = subPoints.get(i);
-						points.add(point);
-					}
-				}
-				previousPoint = p;
-			} else {
-				points.add(p);
-			}
-		}
+	public void addPoint(double lon, double lat, double ele, long date) {
+		points.add(new Point(lon, lat, ele, date));
 	}
 
-	public void postProcess(GPXBikeTimeEval bikeTimeEval) {
-		LOGGER.info("Post process {}", name);
-
-		LOGGER.info("filterPoints {}", name);
-		filterPoints();
-		LOGGER.info("computeArrays {}", name);
-		computeArrays();
-		LOGGER.info("fixZ {}", name);
-		fixZ();
-		LOGGER.info("computeArrays {}", name);
-		computeArrays();
-
-		bikeTimeEval.computeMaxSpeeds(points);
-
-		double previousElevation = -9999;
+	public void updateArrays() {
+		dists = new double[points.size()];
+		zs = new double[points.size()];
 		time = new long[points.size()];
-		previousPoint = null;
+		time = new long[points.size()];
+		minElevation = 20000;
+		maxElevation = -10000;
+		totalElevation = 0;
+		minlon = 180;
+		maxlon = -180;
+		minlat = 180;
+		maxlat = -180;
+
+		double d = 0;
+		Point previousPoint = null;
+		double previousElevation = -9999;
+
+		int i = 0;
 		for (Point p : points) {
+			zs[i] = p.getZ();
+			if (previousPoint != null) {
+				double dist = previousPoint.distanceTo(p);
+				d += dist;
+			}
+			dists[i] = d;
+			p.setDist(dists[i]);
+			zs[i] = p.getZ();
+			time[i] = p.getTime();
+
 			if (p.getLon() < minlon) {
 				minlon = p.getLon();
 			}
@@ -162,95 +144,9 @@ public class GPXPath {
 				}
 			}
 			previousElevation = elevation;
-		}
-
-		bikeTimeEval.computeTrack(points);
-
-		for (int j = 0; j < points.size(); j++) {
-			time[j] = points.get(j).getTime();
-		}
-
-	}
-
-	private void fixZ() {
-		double[] newZs = new double[zs.length];
-		for (int j = 0; j < newZs.length; j++) {
-			newZs[j] = computeNewValue(j, 1, 1, zs);
-			Point p = points.get(j);
-			p.setZ(newZs[j]);
-			p.setDist(dists[j]);
-		}
-		zs = newZs;
-	}
-
-	private void computeArrays() {
-		previousPoint = null;
-		double d = 0;
-		dists = new double[points.size()];
-		zs = new double[points.size()];
-		time = new long[points.size()];
-		int i = 0;
-		for (Point p : points) {
-			zs[i] = p.getZ();
-			if (previousPoint != null) {
-				double dist = previousPoint.distanceTo(p);
-				d += dist;
-			}
-			dists[i] = d;
-			p.setDist(dists[i]);
-			zs[i] = p.getZ();
-			time[i] = p.getTime();
 			previousPoint = p;
 			i++;
 		}
-	}
-
-	private void filterPoints() {
-		List<Point> newPoints = new ArrayList<Point>();
-		Point lastPoint = null;
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (i == 0 || i == points.size() - 1) {
-				newPoints.add(p);
-				lastPoint = p;
-			} else {
-				if (lastPoint.distanceTo(p) > 0.002) {
-					newPoints.add(p);
-					lastPoint = p;
-				}
-			}
-		}
-		points = newPoints;
-	}
-
-	private double computeNewValue(int i, double before, double after, double[] data) {
-		double ac = dists[i];
-
-		int mini = i - 1;
-		while (mini >= 0 && (ac - dists[mini]) <= before) {
-			mini--;
-		}
-		mini++;
-
-		int maxi = i + 1;
-		while (maxi < data.length && (dists[maxi] - ac) <= after) {
-			maxi++;
-		}
-
-		double totc = 0;
-		double totz = 0;
-		for (int j = mini; j < maxi; j++) {
-			double c = 1 - (Math.abs(dists[j] - ac) / Math.max(after, before));
-			totc = totc + c;
-			totz = totz + data[j] * c;
-		}
-
-		if (totc == 0) {
-			return data[i];
-		} else {
-			return totz / totc;
-		}
-
 	}
 
 }

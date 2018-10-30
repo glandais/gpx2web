@@ -73,7 +73,14 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	public void computeTrack(List<Point> points) {
+	public void computeVirtualTime(GPXPath gpxPath) {
+		List<Point> points = gpxPath.getPoints();
+		computeMaxSpeeds(points);
+		computeTrack(points);
+		gpxPath.setPoints(points);
+	}
+
+	protected void computeTrack(List<Point> points) {
 		Calendar start = getNextStart();
 		long currentTime = start.getTimeInMillis();
 
@@ -110,7 +117,7 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	public void computeMaxSpeeds(List<Point> points) {
+	protected void computeMaxSpeeds(List<Point> points) {
 		for (int i = 0; i < points.size(); i++) {
 			Point p = points.get(i);
 			if (i == 0 || i == points.size() - 1) {
@@ -134,7 +141,7 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	private double getMaxSpeedByIncline(Point pm1, Point p, Point pp1) {
+	protected double getMaxSpeedByIncline(Point pm1, Point p, Point pp1) {
 		lonRef = p.getLon();
 		latRef = p.getLat();
 		cRef = CIRC * Math.cos(latRef * (Math.PI / 180.0));
@@ -158,7 +165,7 @@ public class GPXBikeTimeEval {
 		return Math.min(maxSpeed, vmax);
 	}
 
-	private double getMaxSpeedByBraking(double maxSpeed, double dist) {
+	protected double getMaxSpeedByBraking(double maxSpeed, double dist) {
 		// discrete resolution, i'm so lazy...
 		double dmax = dist * 1000;
 		// m
@@ -193,7 +200,7 @@ public class GPXBikeTimeEval {
 	 * @param ms1
 	 * @return
 	 */
-	private Point2D.Double getTimeForDist(double v, double dist, double grad, double ms1, double ms2) {
+	protected Point2D.Double getTimeForDist(double v, double dist, double grad, double ms1, double ms2) {
 		// we will split the distance
 		// m
 		double dmax = dist * 1000.0;
@@ -245,7 +252,7 @@ public class GPXBikeTimeEval {
 		}
 	}
 
-	private static Point getCircleCenter(Point p1, Point p2, Point p3) {
+	protected static Point getCircleCenter(Point p1, Point p2, Point p3) {
 		double ax = p1.getLon();
 		double ay = p1.getLat();
 		double bx = p2.getLon();
@@ -270,7 +277,7 @@ public class GPXBikeTimeEval {
 		return new Point(px, py);
 	}
 
-	private Point transform(Point point) {
+	protected Point transform(Point point) {
 		double lon = (point.getLon() - lonRef) * (Math.PI / 180.0);
 		double lat = (point.getLat() - latRef) * (Math.PI / 180.0);
 		double x = lon * cRef / (2 * 3.14);

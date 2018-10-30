@@ -8,6 +8,7 @@ import java.util.List;
 import org.glandais.gpx.braquet.db.Cassette;
 import org.glandais.gpx.braquet.db.Pedalier;
 import org.glandais.gpx.elevation.fixer.GPXPath;
+import org.glandais.gpx.elevation.fixer.GPXPostProcessor;
 import org.glandais.gpx.srtm.Point;
 
 public class BraquetComputer {
@@ -70,10 +71,6 @@ public class BraquetComputer {
 		}
 
 		int k = 0;
-		for (GPXPath gpxPath : paths) {
-			//			gpxPath.filterPoints();
-			//			gpxPath.computeArrays();
-		}
 		for (Braquet braquetDisp : braquets) {
 			progress.progress(k, braquets.size());
 			braquetDisp.reset();
@@ -117,10 +114,10 @@ public class BraquetComputer {
 	}
 
 	public List<GPXPath> splitWithStops(GPXPath gpxPath) {
-		List<GPXPath> result = new ArrayList<GPXPath>();
+		List<GPXPath> result = new ArrayList<>();
 		int ipath = 1;
 
-		List<Point> curPoints = new ArrayList<Point>();
+		List<Point> curPoints = new ArrayList<>();
 		Point lastPoint = null;
 		for (int i = 0; i < gpxPath.getPoints().size(); i++) {
 			Point p = gpxPath.getPoints().get(i);
@@ -130,7 +127,7 @@ public class BraquetComputer {
 				// a stop is not moving for a long time (2m in 10s)
 				if (dist < 0.01 && time >= 5000) {
 					ipath = addPath(gpxPath, result, ipath, curPoints);
-					curPoints = new ArrayList<Point>();
+					curPoints = new ArrayList<>();
 				} else {
 					if (curPoints.size() == 0) {
 						curPoints.add(lastPoint);
@@ -141,65 +138,48 @@ public class BraquetComputer {
 			lastPoint = p;
 		}
 		addPath(gpxPath, result, ipath, curPoints);
-		// for (GPXPath path : result) {
-		// System.out.println(path.points.get(0).distanceTo(path.points.get(path.points.size()
-		// - 1)));
-		// List<Point> pathPoints = path.points;
-		// for (int i = 1; i < pathPoints.size(); i++) {
-		// Point p1 = pathPoints.get(i - 1);
-		// Point p2 = pathPoints.get(i);
-		// long dt = p2.getTime() - p1.getTime();
-		// double speed = p1.distanceTo(p2) / (dt / 3600000.0);
-		// System.out.println("- " + p1.distanceTo(p2) + " (" + dt +
-		// ") " + speed);
-		// }
-		// }
 		return result;
 	}
 
 	private int addPath(GPXPath sourcePath, List<GPXPath> result, int ipath, List<Point> points) {
-		if (points.size() > 0) {
-			/*
-			List<Point> filteredPoints = GPXPath.filterPoints(points);
-			if (filteredPoints.size() > 0) {
-			
-				long startTime = filteredPoints.get(0).getTime() + 15000;
-				long endTime = filteredPoints.get(filteredPoints.size() - 1).getTime() - 15000;
-			
-				List<Point> realPoints = new ArrayList<Point>();
-				for (Point point : filteredPoints) {
-					long time = point.getTime();
-					if (time >= startTime && time <= endTime) {
-						realPoints.add(point);
-					}
-				}
-			
-				if (realPoints.size() > 0) {
-					GPXPath curPath = new GPXPath(sourcePath.getName() + " - " + ipath);
-					curPath.getPoints().addAll(realPoints);
-					curPath.computeArrays();
-			
-					double dist = curPath.getPoints().get(curPath.getPoints().size() - 1).getDist();
-					long time = curPath.getPoints().get(curPath.getPoints().size() - 1).getTime()
-							- curPath.getPoints().get(0).getTime();
-			
-					double speed = dist / (time / 3600000.0);
-					if (dist > 0.1 && speed > 3) {
-						result.add(curPath);
-						ipath++;
-					}
+		if (!points.isEmpty()) {
+			long startTime = points.get(0).getTime() + 15000;
+			long endTime = points.get(points.size() - 1).getTime() - 15000;
+
+			List<Point> realPoints = new ArrayList<>();
+			for (Point point : points) {
+				long time = point.getTime();
+				if (time >= startTime && time <= endTime) {
+					realPoints.add(point);
 				}
 			}
-			*/
+
+			if (!realPoints.isEmpty()) {
+				GPXPath curPath = new GPXPath(sourcePath.getName() + " - " + ipath);
+				curPath.getPoints().addAll(realPoints);
+				curPath.updateArrays();
+
+				double dist = curPath.getPoints().get(curPath.getPoints().size() - 1).getDist();
+				long time = curPath.getPoints().get(curPath.getPoints().size() - 1).getTime()
+						- curPath.getPoints().get(0).getTime();
+
+				double speed = dist / (time / 3600000.0);
+				if (dist > 0.1 && speed > 3) {
+					result.add(curPath);
+					ipath++;
+				}
+			}
 		}
 		return ipath;
 	}
 
 	public void tryBraquets(GPXPath gpxPath, Braquet braquet) throws IOException {
 		Point lastPoint = null;
-		double[] speed = new double[gpxPath.getPoints().size() - 1];
-		for (int i = 0; i < gpxPath.getPoints().size(); i++) {
-			Point p = gpxPath.getPoints().get(i);
+		List<Point> points = gpxPath.getPoints();
+
+		double[] speed = new double[points.size() - 1];
+		for (int i = 0; i < points.size(); i++) {
+			Point p = points.get(i);
 			if (i == 0) {
 				lastPoint = p;
 			} else {
@@ -219,17 +199,16 @@ public class BraquetComputer {
 			}
 			lastPoint = p;
 		}
-		lastPoint = gpxPath.getPoints().get(0);
-		for (int i = 0; i < gpxPath.getPoints().size() - 1; i++) {
-			Point p = gpxPath.getPoints().get(i + 1);
+		lastPoint = points.get(0);
+		for (int i = 0; i < points.size() - 1; i++) {
+			Point p = points.get(i + 1);
 			long dt = p.getTime() - lastPoint.getTime();
-			/*
-			double invSpeed = gpxPath.computeNewValueTime(i, 15000, 15000, speed);
+
+			double invSpeed = GPXPostProcessor.computeNewValue(i, 0.1, 0.1, speed, gpxPath.getDists());
 			double curSpeed = 1 / invSpeed;
 			double dist = lastPoint.distanceTo(p);
 			braquet.applySpeed(p, curSpeed, dt, dist);
 			lastPoint = p;
-			*/
 		}
 
 	}

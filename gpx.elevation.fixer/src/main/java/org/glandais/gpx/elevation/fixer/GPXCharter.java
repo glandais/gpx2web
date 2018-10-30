@@ -12,6 +12,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -45,8 +46,7 @@ public class GPXCharter {
 		String imgPathTime = outputFolder + gpxPath.getName() + "-time.png";
 		DateAxis dateAxis = new DateAxis("");
 
-		DateTickUnit unit = null;
-		unit = new DateTickUnit(DateTickUnit.MINUTE, 30);
+		DateTickUnit unit = new DateTickUnit(DateTickUnitType.MINUTE, 30);
 
 		DateFormat chartFormatter = new SimpleDateFormat("HH:mm");
 		dateAxis.setDateFormatOverride(chartFormatter);

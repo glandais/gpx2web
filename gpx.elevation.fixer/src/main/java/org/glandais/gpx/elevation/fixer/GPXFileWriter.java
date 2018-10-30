@@ -41,17 +41,17 @@ public class GPXFileWriter {
 	private static final DecimalFormat df = new DecimalFormat("0.00#########################",
 			new DecimalFormatSymbols(Locale.ENGLISH));
 
+	protected GPXFileWriter() {
+		super();
+	}
+
 	/**
 	 * Writes the GPX file
 	 * 
-	 * @param trackName
-	 *            Name of the GPX track (metadata)
-	 * @param cTrackPoints
-	 *            Cursor to track points.
-	 * @param cWayPoints
-	 *            Cursor to way points.
-	 * @param target
-	 *            Target GPX file
+	 * @param trackName    Name of the GPX track (metadata)
+	 * @param cTrackPoints Cursor to track points.
+	 * @param cWayPoints   Cursor to way points.
+	 * @param target       Target GPX file
 	 * @throws IOException
 	 */
 	public static void writeGpxFile(List<GPXPath> cTrackPoints, File target) throws IOException {
@@ -75,12 +75,9 @@ public class GPXFileWriter {
 	/**
 	 * Iterates on track points and write them.
 	 * 
-	 * @param trackName
-	 *            Name of the track (metadata).
-	 * @param fw
-	 *            Writer to the target file.
-	 * @param c
-	 *            Cursor to track points.
+	 * @param trackName Name of the track (metadata).
+	 * @param fw        Writer to the target file.
+	 * @param c         Cursor to track points.
 	 * @throws IOException
 	 */
 	public static void writeTrackPoints(FileWriter fw, GPXPath gpxPath) throws IOException {

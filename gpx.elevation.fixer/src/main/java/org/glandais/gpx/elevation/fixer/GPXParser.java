@@ -1,10 +1,14 @@
 package org.glandais.gpx.elevation.fixer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glandais.gpx.srtm.Point;
-import org.glandais.gpx.srtm.SRTMHelper;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
@@ -13,6 +17,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class GPXParser {
 
@@ -20,21 +25,25 @@ public class GPXParser {
 
 	private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-	private SRTMHelper srtmHelper;
-
-	public GPXParser(SRTMHelper srtmHelper) {
+	protected GPXParser() {
 		super();
-		this.srtmHelper = srtmHelper;
 	}
 
-	public List<GPXPath> parsePaths(Document gpxDocument, boolean fixZ, List<Point> wpts) throws Exception {
+	public static List<GPXPath> parsePaths(File inputFile)
+			throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document gpxDocument = db.parse(inputFile);
+
 		List<GPXPath> paths = new ArrayList<>();
-		processElement(gpxDocument, gpxDocument.getDocumentElement(), paths, fixZ, wpts);
+		processElement(gpxDocument, gpxDocument.getDocumentElement(), paths);
+		for (GPXPath gpxPath : paths) {
+			GPXPostProcessor.filterPoints(gpxPath);
+		}
 		return paths;
 	}
 
-	private void processElement(Document document, Element element, List<GPXPath> paths, boolean fixZ,
-			List<Point> wpts) {
+	protected static void processElement(Document document, Element element, List<GPXPath> paths) {
 		String tagName = element.getTagName().toLowerCase();
 
 		if (tagName.equals("trk") || tagName.equals("rte")) {
@@ -44,38 +53,26 @@ public class GPXParser {
 				name = nameElement.getTextContent();
 			}
 			LOGGER.info("Parsing {}", name);
-			GPXPath currentPath = new GPXPath(srtmHelper, name);
+			GPXPath currentPath = new GPXPath(name);
 			paths.add(currentPath);
 		}
 
 		if (tagName.equals("trkpt")) {
-			processPoint(element, paths, fixZ);
+			processPoint(element, paths);
 		} else if (tagName.equals("rtept")) {
-			processPoint(element, paths, fixZ);
-		} else if (tagName.equals("wpt") && wpts != null) {
-			double lon = Double.parseDouble(element.getAttribute("lon"));
-			double lat = Double.parseDouble(element.getAttribute("lat"));
-			Point p = new Point(lon, lat);
-			Element eleName = findElement(element, "name");
-			if (eleName != null) {
-				p.setCaption(eleName.getTextContent());
-			}
-			if (fixZ) {
-				p.setZ(srtmHelper.getElevation(p.getLon(), p.getLat()));
-			}
-			wpts.add(p);
+			processPoint(element, paths);
 		} else {
 			NodeList childNodes = element.getChildNodes();
 			for (int i = 0; i < childNodes.getLength(); i++) {
 				Node node = childNodes.item(i);
 				if (node instanceof Element) {
-					processElement(document, (Element) node, paths, fixZ, wpts);
+					processElement(document, (Element) node, paths);
 				}
 			}
 		}
 	}
 
-	private void processPoint(Element element, List<GPXPath> paths, boolean fixZ) {
+	protected static void processPoint(Element element, List<GPXPath> paths) {
 		double lon = Double.parseDouble(element.getAttribute("lon"));
 		double lat = Double.parseDouble(element.getAttribute("lat"));
 		Element eleElement = findElement(element, "ele");
@@ -90,10 +87,10 @@ public class GPXParser {
 			String dateString = timeElement.getTextContent();
 			date = DATE_TIME_FORMAT.parseMillis(dateString);
 		}
-		paths.get(paths.size() - 1).processPoint(lon, lat, ele, date, fixZ);
+		paths.get(paths.size() - 1).addPoint(lon, lat, ele, date);
 	}
 
-	private Element findElement(Element element, String string) {
+	protected static Element findElement(Element element, String string) {
 		Element ele = null;
 		NodeList childNodes = element.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {

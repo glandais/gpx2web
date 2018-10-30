@@ -7,15 +7,12 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.glandais.gpx.map.MapProducer;
 import org.glandais.gpx.srtm.SRTMHelper;
 import org.glandais.gpx.srtm.SRTMImageProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
@@ -41,6 +38,12 @@ public class GPXApp {
 
 	@Option(name = { "-c", "--cache" }, description = "Cache folder")
 	private File cache = new File("cache");
+
+	@Option(name = { "-z", "--fixZ" }, description = "Fix altitudes")
+	private boolean fixZ = true;
+
+	@Option(name = { "-v", "--virtualTime" }, description = "Compute virtual time")
+	private boolean computeVirtualTime = true;
 
 	@Option(name = { "-m", "--mass" }, description = "Mass (kg)")
 	private double m = 95;
@@ -70,9 +73,9 @@ public class GPXApp {
 	private boolean createCharts = true;
 
 	@Option(name = { "-tileUrl", "--tile_url" }, description = "Export tile map : tile URL")
-	private String tileUrl = 
+	private String tileUrl =
 //	"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-	"https://foil.fr/magic/magicCache/{z}/{x}/{y}.png";
+			"https://foil.fr/magic/magicCache/{z}/{x}/{y}.png";
 //	"https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZ2xhbmRhaXMiLCJhIjoiZGQxMDNjODBlN2ZkMDEyNjJjN2E5MjEzNzk2YWU0NDUifQ.YyPJXAyXxk0wuXB1DBqymg";
 
 	@Option(name = { "-tileZoom", "--tile_zoom" }, description = "Export tile map : tile zoom")
@@ -82,8 +85,6 @@ public class GPXApp {
 	public List<File> files;
 
 	private SRTMHelper srtmHelper;
-
-	private GPXParser gpxParser;
 
 	public static void main(String[] args) throws Exception {
 		GPXApp gpxApp = SingleCommand.singleCommand(GPXApp.class).parse(args);
@@ -99,7 +100,6 @@ public class GPXApp {
 		LOGGER.info("Output to {}", fout);
 		GPXBikeTimeEval bikeTimeEval = new GPXBikeTimeEval(m, power, freewheelPower, maxAngle, maxSpeed, maxBrake);
 		srtmHelper = new SRTMHelper(new File(cache, "srtm"));
-		gpxParser = new GPXParser(srtmHelper);
 
 		GregorianCalendar[] starts = getTmpStarts();
 
@@ -142,13 +142,15 @@ public class GPXApp {
 
 	private void processfile(File file, File fout, GPXBikeTimeEval bikeTimeEval) throws Exception {
 		LOGGER.info("Processing {}", file);
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document gpxFile = db.parse(file);
-
-		List<GPXPath> paths = gpxParser.parsePaths(gpxFile, true, null);
+		List<GPXPath> paths = GPXParser.parsePaths(file);
 		for (GPXPath gpxPath : paths) {
-			gpxPath.postProcess(bikeTimeEval);
+			if (fixZ) {
+				srtmHelper.fixAltitudes(gpxPath);
+				GPXPostProcessor.smoothAltitudes(gpxPath);
+			}
+			if (computeVirtualTime) {
+				bikeTimeEval.computeVirtualTime(gpxPath);
+			}
 			String name = gpxPath.getName();
 			LOGGER.info("stats for {}", name);
 			LOGGER.info("min elevation : {}", gpxPath.getMinElevation());

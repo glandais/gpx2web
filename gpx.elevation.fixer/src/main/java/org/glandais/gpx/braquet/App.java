@@ -1,13 +1,10 @@
 package org.glandais.gpx.braquet;
 
-import java.util.Collections;
+import java.io.File;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.glandais.gpx.elevation.fixer.GPXParser;
 import org.glandais.gpx.elevation.fixer.GPXPath;
-import org.w3c.dom.Document;
 
 public class App {
 
@@ -15,13 +12,8 @@ public class App {
 
 		BraquetComputer braquetComputer = new BraquetComputer();
 
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document gpxFile = db.parse(args[0]);
-
-		List<GPXPath> paths = Collections.emptyList();// GPXParser.parsePaths(gpxFile, false, null);
+		List<GPXPath> paths = GPXParser.parsePaths(new File(args[0]));
 		braquetComputer.parseGPX(paths, new BraquetProgress() {
-
 			public void progress(int i, int size) {
 				System.out.println(i + " / " + size);
 			}

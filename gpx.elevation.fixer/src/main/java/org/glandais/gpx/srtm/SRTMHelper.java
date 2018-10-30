@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.glandais.gpx.elevation.fixer.GPXPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,6 +108,25 @@ public class SRTMHelper {
 		});
 
 		return result;
+	}
+
+	public void fixAltitudes(GPXPath gpxPath) {
+		List<Point> res = new ArrayList<>();
+		Point previousPoint = null;
+		for (Point p : gpxPath.getPoints()) {
+			if (previousPoint == null) {
+				p.setZ(getElevation(p.getLon(), p.getLat()));
+				res.add(p);
+			} else {
+				List<Point> subPoints = getPointsBetween(previousPoint, p);
+				for (int i = 1; i < subPoints.size(); i++) {
+					Point point = subPoints.get(i);
+					res.add(point);
+				}
+			}
+			previousPoint = p;
+		}
+		gpxPath.setPoints(res);
 	}
 
 }
