@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -98,7 +99,7 @@ public class MapProducer {
 	public void compute() throws IOException {
 		if (width > 0 && height > 0) {
 			fillWithImages();
-			addPoints(gpxPath.getPoints());
+			addPoints(gpxPath);
 		}
 	}
 
@@ -145,13 +146,20 @@ public class MapProducer {
 		}
 	}
 
-	protected void addPoints(List<Point> points) {
+	protected void addPoints(GPXPath gpxPath) {
 		graphics.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 		graphics.setComposite(ac);
 		graphics.setColor(Color.MAGENTA);
+
+		drawPath(gpxPath);
+		drawArrows(gpxPath);
+	}
+
+	private void drawPath(GPXPath gpxPath) {
+		List<Point> points = gpxPath.getPoints();
 
 		int[] xPoints = new int[points.size()];
 		int[] yPoints = new int[points.size()];
@@ -164,6 +172,75 @@ public class MapProducer {
 			c++;
 		}
 		graphics.drawPolyline(xPoints, yPoints, points.size());
+	}
+
+	private void drawArrows(GPXPath gpxPath) {
+		double[] dists = gpxPath.getDists();
+		double length = dists[dists.length - 1];
+		int count = 5;
+		double arrowSizeX = 32;
+		double arrowSizeY = 32;
+		List<Point> points = gpxPath.getPoints();
+		int c = 0;
+		List<Point> checkpoints = new ArrayList<>();
+
+		double[] targetDists = new double[count * 3];
+		for (int i = 0; i < count; i++) {
+			double d = (i * 2 + 1) * (length / (2.0 * count));
+			targetDists[i * 3 + 1] = d;
+			targetDists[i * 3] = d - 0.5;
+			targetDists[i * 3 + 2] = d + 0.5;
+		}
+
+		for (int i = 0; i < dists.length - 1; i++) {
+			if (dists[i] >= targetDists[c]) {
+				Point p = points.get(i);
+				addProjectedPoint(checkpoints, p);
+				c++;
+				if (c == count * 3) {
+					break;
+				}
+			}
+		}
+
+		if (c == count * 3) {
+			int[] x = new int[3];
+			int[] y = new int[3];
+			for (int i = 0; i < count; i++) {
+				Point pm1 = checkpoints.get(i * 3);
+				Point p = checkpoints.get(i * 3 + 1);
+				Point pp1 = checkpoints.get(i * 3 + 2);
+
+				double x0 = p.getLon();
+				double y0 = p.getLat();
+
+				double xdx = pp1.getLon() - pm1.getLon();
+				double xdy = pp1.getLat() - pm1.getLat();
+				double l = Math.sqrt(xdx * xdx + xdy * xdy);
+				xdx = xdx / l;
+				xdy = xdy / l;
+
+				double ydx = -xdy;
+				double ydy = xdx;
+
+				x[0] = (int) (x0 - arrowSizeX * xdx / 2.0 + arrowSizeY * ydx);
+				y[0] = (int) (y0 - arrowSizeX * xdy / 2.0 + arrowSizeY * ydy);
+
+				x[1] = (int) (x0 + arrowSizeX * xdx / 2.0);
+				y[1] = (int) (y0 + arrowSizeX * xdy / 2.0);
+
+				x[2] = (int) (x0 - arrowSizeX * xdx / 2.0 - arrowSizeY * ydx);
+				y[2] = (int) (y0 - arrowSizeX * xdy / 2.0 - arrowSizeY * ydy);
+
+				graphics.drawPolyline(x, y, 3);
+			}
+		}
+	}
+
+	private void addProjectedPoint(List<Point> checkpoints, Point p) {
+		double x = (int) (MAPSPACE.cLonToX(p.getLon(), zoom) - startx);
+		double y = (int) (MAPSPACE.cLatToY(p.getLat(), zoom) - starty);
+		checkpoints.add(new Point(x, y));
 	}
 
 	protected void saveImage(String imgPath) throws IOException {
