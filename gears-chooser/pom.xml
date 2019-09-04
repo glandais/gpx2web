@@ -167,7 +167,7 @@
 <!-- 			<version>0.8.6</version> -->
 <!-- 		</dependency> -->
 		<dependency>
-			<groupId>org.glandais</groupId>
+			<groupId>io.github.glandais</groupId>
 			<artifactId>gpx.elevation.fixer</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
