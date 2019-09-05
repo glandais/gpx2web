@@ -14,6 +14,10 @@ import io.github.glandais.io.GPXCharter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.kml.KMLFileWriter;
+import io.github.glandais.map.MapImage;
+import io.github.glandais.map.SRTMMapProducer;
+import io.github.glandais.map.TileMapImage;
+import io.github.glandais.map.TileMapProducer;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -43,6 +47,12 @@ public class GpxProcessor {
 	private GPXCharter gpxCharter;
 
 	@Autowired
+	private TileMapProducer tileImageProducer;
+
+	@Autowired
+	private SRTMMapProducer srtmImageProducer;
+
+	@Autowired
 	private GPXFileWriter gpxFileWriter;
 
 	@Autowired
@@ -68,11 +78,15 @@ public class GpxProcessor {
 			}
 
 			if (options.isSrtmMap()) {
-				gpxCharter.createSRTMMap(path, new File(pathFolder, "srtm.png"), 2048);
+				File file = new File(pathFolder, "srtm.png");
+				MapImage map = srtmImageProducer.createSRTMMap(path, 2048, 0.2);
+				map.saveImage(file);
 			}
 			if (options.isTileMap()) {
-				gpxCharter.createTileMap(path, new File(pathFolder, "map.png"), options.getCache(),
-						options.getTileUrl(), options.getTileZoom());
+				File file = new File(pathFolder, "map.png");
+				TileMapImage map = tileImageProducer.createTileMap(path, options.getTileUrl(), options.getTileZoom(),
+						0.2);
+				map.saveImage(file);
 			}
 			if (options.isChart()) {
 				gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"));
