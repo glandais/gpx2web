@@ -15,8 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GPXElevationFixer {
 
-	@Autowired
 	private SRTMHelper srtmHelper;
+
+	public GPXElevationFixer(SRTMHelper srtmHelper) {
+		super();
+		this.srtmHelper = srtmHelper;
+	}
 
 	public void fixElevation(GPXPath path) {
 		log.info("Fixing elevation for {}", path.getName());

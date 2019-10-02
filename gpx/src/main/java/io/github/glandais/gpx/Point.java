@@ -1,5 +1,8 @@
 package io.github.glandais.gpx;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +17,8 @@ public class Point {
 	private double dist;
 	private long time;
 	private double maxSpeed;
+	
+	private Map<String, Double> data = new HashMap<String, Double>();
 
 	public Point(double lon, double lat) {
 		super();

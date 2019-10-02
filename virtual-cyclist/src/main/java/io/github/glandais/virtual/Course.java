@@ -32,7 +32,7 @@ public class Course {
 		return start;
 	}
 
-	public double getPowerW(double p_air, double p_frot, double p_grav, double v, double grad) {
+	public double getPowerW(Point from, Point to, double p_air, double p_frot, double p_grav, double v, double grad) {
 		if (grad < -0.06) {
 			return 0;
 		} else if (grad < 0) {
@@ -44,7 +44,7 @@ public class Course {
 	}
 
 	public double getMKg(Point from, double odo) {
-		return cyclist.getMKg();
+		return cyclist.getmKg();
 	}
 
 	public double getCx(Point from, double odo) {

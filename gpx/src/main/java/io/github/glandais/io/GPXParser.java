@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class GPXParser {
-
 	public List<GPXPath> parsePaths(InputStream is) throws Exception {
 		return parsePaths(is, (db, f) -> {
 			try {
@@ -105,13 +104,33 @@ public class GPXParser {
 		double ele = 0;
 		if (timeElement != null) {
 			String dateString = timeElement.getTextContent();
-			TemporalAccessor parse = DateTimeFormatter.ISO_DATE_TIME.parse(dateString);
-			date = Instant.from(parse).toEpochMilli();
+			try {
+				TemporalAccessor parse = DateTimeFormatter.ISO_DATE_TIME.parse(dateString);
+				date = Instant.from(parse).toEpochMilli();
+			} catch (Exception e) {
+				// oops
+			}
 		}
 		if (eleElement != null) {
 			ele = Double.valueOf(eleElement.getTextContent());
 		}
 		Point p = new Point(lon, lat, ele, date);
+		Element extensions = findElement(element, "extensions");
+		if (extensions != null) {
+			NodeList childNodes = extensions.getChildNodes();
+			for (int i = 0; i < childNodes.getLength(); i++) {
+				Node node = childNodes.item(i);
+				if (node instanceof Element) {
+					Element child = (Element) node;
+					try {
+						double value = Double.parseDouble(child.getTextContent());
+						p.getData().put(child.getTagName(), value);
+					} catch (NumberFormatException e) {
+						// oops
+					}
+				}
+			}
+		}
 		paths.get(paths.size() - 1).addPoint(p);
 	}
 

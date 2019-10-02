@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Slf4j
+@NoArgsConstructor
 public class GPXPath {
 
 	private double minElevation;
@@ -22,6 +24,7 @@ public class GPXPath {
 	private String name;
 
 	private double[] dists;
+	private double dist;
 	private double[] zs;
 	private long[] time;
 
@@ -41,7 +44,7 @@ public class GPXPath {
 
 	public void computeArrays() {
 		Point previousPoint = null;
-		double d = 0;
+		dist = 0;
 		dists = new double[points.size()];
 		zs = new double[points.size()];
 		time = new long[points.size()];
@@ -49,10 +52,10 @@ public class GPXPath {
 		for (Point p : points) {
 			zs[i] = p.getZ();
 			if (previousPoint != null) {
-				double dist = previousPoint.distanceTo(p);
-				d += dist;
+				double d = previousPoint.distanceTo(p);
+				dist += d;
 			}
-			dists[i] = d;
+			dists[i] = dist;
 			p.setDist(dists[i]);
 			zs[i] = p.getZ();
 			time[i] = p.getTime();
@@ -90,6 +93,10 @@ public class GPXPath {
 			previousElevation = elevation;
 		}
 		log.debug("{} {} {} {} {} {}", minlon, maxlon, minlat, maxlat, minElevation, maxElevation);
+	}
+
+	public int size() {
+		return points.size();
 	}
 
 }

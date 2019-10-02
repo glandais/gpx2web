@@ -11,8 +11,10 @@ import io.github.glandais.util.Constants;
 
 @Service
 public class PowerComputer {
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(PowerComputer.class);
+
+	// m/h, initial speed = 5km/h
+	private static final double INITIAL_SPEED = 2.0 / 3.6;
 
 	public void computeTrack(Course course) {
 
@@ -20,14 +22,14 @@ public class PowerComputer {
 
 		long currentTime = course.getStart().toInstant().toEpochMilli();
 
-		// m/h, initial speed = 5km/h
-		double v = 5.0 / 3.6;
+		double v = INITIAL_SPEED;
 		double odo = 0.0;
 		for (int j = 0; j < points.size(); j++) {
 			Point to = points.get(j);
 			double dist = 0;
 			if (j > 0) {
 				Point from = points.get(j - 1);
+				from.getData().put("v", 3.6 * v);
 				// meters
 				dist = 1000.0 * from.distanceTo(to);
 				if (dist > 0) {
@@ -98,7 +100,8 @@ public class PowerComputer {
 			p_air = cx * v * v * v;
 			p_frot = f * Constants.G * mKg * v;
 
-			p_cyclist = course.getPowerW(p_air, p_frot, p_grav, v, grad);
+			p_cyclist = course.getPowerW(from, to, p_air, p_frot, p_grav, v, grad);
+			from.getData().put("p", p_cyclist);
 
 			// p_app = cyclist power - resistance
 			p_app = p_cyclist - p_air - p_frot - p_grav;
@@ -117,8 +120,8 @@ public class PowerComputer {
 			if (v > ms) {
 				v = ms;
 			}
-			if (v < 0) {
-				v = 0.0;
+			if (v < INITIAL_SPEED) {
+				v = INITIAL_SPEED;
 			}
 
 			dx = dt * v;
@@ -128,8 +131,8 @@ public class PowerComputer {
 				double ratio = (dist - prev_d) / dx;
 				double lastTime = prev_t + dt * ratio;
 				double lastSpeed = prev_v + acc * dt * ratio;
-				if (lastSpeed < 0) {
-					lastSpeed = 0.0;
+				if (lastSpeed < INITIAL_SPEED) {
+					lastSpeed = INITIAL_SPEED;
 				}
 				return new PointToPoint(lastTime, lastSpeed);
 			}
