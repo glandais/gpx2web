@@ -61,4 +61,17 @@ public class Point {
 		return (rad * 180.0 / Math.PI);
 	}
 
+	public int getLatSemi() {
+		return toSemiCircles(lat);
+	}
+
+	public int getLonSemi() {
+		return toSemiCircles(lon);
+	}
+
+	public static int toSemiCircles(double i) {
+		double d = i * 2147483648.0 / 180.0;
+		return (int) d;
+	}
+
 }

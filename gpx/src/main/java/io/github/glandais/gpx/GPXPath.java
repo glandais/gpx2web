@@ -15,6 +15,7 @@ public class GPXPath {
 	private double minElevation;
 	private double maxElevation;
 	private double totalElevation;
+	private double totalElevationNegative;
 	private double minlon;
 	private double maxlon;
 	private double minlat;
@@ -66,6 +67,7 @@ public class GPXPath {
 		minElevation = Double.MAX_VALUE;
 		maxElevation = -Double.MAX_VALUE;
 		totalElevation = 0;
+		totalElevationNegative = 0;
 		minlon = Double.MAX_VALUE;
 		maxlon = -Double.MAX_VALUE;
 		minlat = Double.MAX_VALUE;
@@ -88,6 +90,8 @@ public class GPXPath {
 				double dz = elevation - previousElevation;
 				if (dz > 0) {
 					totalElevation += dz;
+				} else {
+					totalElevationNegative += dz;
 				}
 			}
 			previousElevation = elevation;

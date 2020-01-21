@@ -18,8 +18,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.github.glandais.fit.FitFileWriter;
 import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.SimpleTimeComputer;
 import io.github.glandais.io.GPXParser;
+import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.virtual.Course;
+import io.github.glandais.virtual.Cyclist;
+import io.github.glandais.virtual.MaxSpeedComputer;
+import io.github.glandais.virtual.PowerComputer;
 
 @RestController
 public class FitController {
@@ -31,7 +35,13 @@ public class FitController {
 	private FitFileWriter fitFileWriter;
 
 	@Autowired
-	private SimpleTimeComputer simpleTimeComputer;
+	private GPXElevationFixer gpxElevationFixer;
+
+	@Autowired
+	private MaxSpeedComputer maxSpeedComputer;
+
+	@Autowired
+	private PowerComputer powerComputer;
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/fit")
@@ -40,7 +50,16 @@ public class FitController {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
-			simpleTimeComputer.computeTime(gpxPath, ZonedDateTime.now(), 30);
+			gpxElevationFixer.fixElevation(gpxPath);
+			double mKg = 80;
+			double powerW = 240;
+			double maxAngleDeg = 15;
+			double maxSpeedKmH = 90;
+			double maxBrakeG = 0.3;
+			Cyclist cyclist = new Cyclist(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG);
+			Course course = new Course(gpxPath, cyclist , ZonedDateTime.now());
+			maxSpeedComputer.computeMaxSpeeds(course);
+			powerComputer.computeTrack(course);
 
 			File tmp = File.createTempFile("fit", "tmp");
 			fitFileWriter.writeFitFile(gpxPath, tmp);
