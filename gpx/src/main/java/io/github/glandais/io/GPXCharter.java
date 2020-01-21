@@ -86,7 +86,7 @@ public class GPXCharter {
 				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
 
 		try {
-			ChartUtils.saveChartAsPNG(file, chart, 640, 480);
+			ChartUtils.saveChartAsPNG(file, chart, 640, 240);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
