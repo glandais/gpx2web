@@ -42,7 +42,7 @@ public class FitFileWriter {
 		LapMesg lapMesg = new LapMesg();
 		lapMesg.setStartTime(new DateTime(start.getTime()));
 		lapMesg.setTimestamp(new DateTime(finish.getTime()));
-		lapMesg.setTotalDistance((float) path.getDist());
+		lapMesg.setTotalDistance((float) (1000.0 * path.getDist()));
 		encode.write(lapMesg);
 
 		for (Point point : points) {
@@ -50,7 +50,7 @@ public class FitFileWriter {
 			recordMesg.setPositionLat(deg2semicircles(point.getLat()));
 			recordMesg.setPositionLong(deg2semicircles(point.getLon()));
 			recordMesg.setAltitude((float) point.getZ());
-			recordMesg.setDistance((float) point.getDist());
+			recordMesg.setDistance((float) (1000.0 * point.getDist()));
 			recordMesg.setTimestamp(new DateTime(point.getTime()));
 			encode.write(recordMesg);
 		}
