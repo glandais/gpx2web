@@ -1,0 +1,7 @@
+version: '2.2'
+services:
+  gpxtools:
+    image: gpxtools
+    restart: always
+    ports:
+      - "8080:8080"
