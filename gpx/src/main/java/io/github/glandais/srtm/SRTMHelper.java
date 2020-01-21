@@ -37,7 +37,7 @@ public class SRTMHelper {
 		this.elevationProvider = elevationProvider;
 	}
 
-	public double getElevation(double lon, double lat) {
+	public synchronized double getElevation(double lon, double lat) {
 		return elevationProvider.getEle(lat, lon);
 	}
 
@@ -58,7 +58,7 @@ public class SRTMHelper {
 	}
 
 	public List<Point> getPointsBetween(final Point p1, Point p2)  {
-		List<Point> result = new ArrayList<Point>();
+		List<Point> result = new ArrayList<>();
 		result.add(p1);
 		result.add(p2);
 
@@ -95,7 +95,7 @@ public class SRTMHelper {
 			}
 		}
 
-		Collections.sort(result, new Comparator<Point>() {
+		Collections.sort(result, new Comparator<>() {
 			public int compare(Point cp1, Point cp2) {
 				double d1 = p1.distanceTo(cp1);
 				double d2 = p1.distanceTo(cp2);
