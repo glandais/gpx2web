@@ -14,6 +14,12 @@ public class TileMapImage extends MapImage {
 
 	protected String urlPattern;
 
+	public TileMapImage(GPXPath path, double margin, int maxSize, File cacheFolder, String urlPattern) {
+		super(path, margin, maxSize);
+		this.cache = new File(cacheFolder, Integer.toHexString(urlPattern.hashCode()));
+		this.urlPattern = urlPattern;
+	}
+
 	public TileMapImage(GPXPath path, double margin, File cacheFolder, String urlPattern, int zoom) {
 		super(path, margin);
 		setZoom(zoom);

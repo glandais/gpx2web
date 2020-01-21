@@ -29,10 +29,10 @@ public class MapController {
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/map")
 	public void handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("tileUrl") String tileUrl,
-			@RequestParam("tileZoom") Integer tileZoom, HttpServletResponse response) throws Exception {
+			@RequestParam("maxSize") Integer maxSize, HttpServletResponse response) throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
-			TileMapImage tileMap = tileMapProducer.createTileMap(paths.get(0), tileUrl, tileZoom, 0.2);
+			TileMapImage tileMap = tileMapProducer.createTileMap(paths.get(0), tileUrl, 0.2, maxSize);
 			response.setContentType("image/png");
 			ImageIO.write(tileMap.getImage(), "png", response.getOutputStream());
 		} else {

@@ -52,10 +52,19 @@ public class TileMapProducer {
 				.build();
 	}
 
+	public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, int maxSize) throws IOException {
+		log.info("start createTileMap");
+		TileMapImage tileMapImage = new TileMapImage(path, margin, maxSize, cacheFolder, urlPattern);
+		return doCreateTileMap(path, tileMapImage);
+	}
+
 	public TileMapImage createTileMap(GPXPath path, String urlPattern, int zoom, double margin) throws IOException {
 		log.info("start createTileMap");
 		TileMapImage tileMapImage = new TileMapImage(path, margin, cacheFolder, urlPattern, zoom);
+		return doCreateTileMap(path, tileMapImage);
+	}
 
+	private TileMapImage doCreateTileMap(GPXPath path, TileMapImage tileMapImage) throws IOException {
 		log.info("Creating a map of {}x{} pixels", tileMapImage.getWidth(), tileMapImage.getHeight());
 
 		fillWithImages(tileMapImage);
