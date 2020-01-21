@@ -129,12 +129,12 @@ public class TileMapProducer {
 		graphics.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
 		graphics.setComposite(ac);
 		graphics.setColor(Color.MAGENTA);
 
 		drawPath(tileMapImage, path);
-		drawArrows(tileMapImage, path);
+//		drawArrows(tileMapImage, path);
 	}
 
 	private void drawPath(TileMapImage tileMapImage, GPXPath path) {
