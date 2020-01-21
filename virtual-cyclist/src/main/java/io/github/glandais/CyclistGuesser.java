@@ -23,7 +23,7 @@ import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 
-@SpringBootApplication
+//@SpringBootApplication
 public class CyclistGuesser implements CommandLineRunner {
 
 	@Autowired

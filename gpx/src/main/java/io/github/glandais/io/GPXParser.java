@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -49,53 +50,70 @@ public class GPXParser {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document gpxDocument = parser.apply(db, file);
-		List<GPXPath> paths = new ArrayList<GPXPath>();
-		processElement(gpxDocument, gpxDocument.getDocumentElement(), paths);
+		List<GPXPath> paths = new ArrayList<>();
+		String metadataName = getMetadataName(gpxDocument.getDocumentElement());
+		if (StringUtils.isEmpty(metadataName)) {
+			metadataName = "Map";
+		}
+		processElement(gpxDocument.getDocumentElement(), metadataName, paths);
 		for (GPXPath gpxPath : paths) {
 			gpxPath.computeArrays();
 		}
 		return paths;
 	}
 
-	private void processElement(Document document, Element element, List<GPXPath> paths) throws Exception {
+	private String getMetadataName(Element element) {
+		String tagName = element.getTagName().toLowerCase();
+
+		String result = null;
+		if (tagName.equals("metadata")) {
+			Element nameElement = findElement(element, "name");
+			if (nameElement != null) {
+				result = nameElement.getTextContent();
+			}
+		} else {
+			NodeList childNodes = element.getChildNodes();
+			for (int i = 0; i < childNodes.getLength(); i++) {
+				Node node = childNodes.item(i);
+				if (result == null && node instanceof Element) {
+					result = getMetadataName((Element) node);
+				}
+			}
+		}
+		return result;
+	}
+
+	private void processElement(Element element, String metadataName, List<GPXPath> paths) throws Exception {
 		String tagName = element.getTagName().toLowerCase();
 
 		if (tagName.equals("trk") || tagName.equals("rte")) {
 			Element nameElement = findElement(element, "name");
-			String name = "path-" + paths.size();
+			String name = "";
 			if (nameElement != null) {
 				name = nameElement.getTextContent();
+			}
+			if (StringUtils.isEmpty(name)) {
+				name = metadataName + " " + (paths.size() + 1);
 			}
 			log.info("Parsing {}", name);
 			GPXPath currentPath = new GPXPath(name);
 			paths.add(currentPath);
 		}
 
-		if (tagName.equals("trkpt")) {
-			processPoint(document, element, paths);
-		} else if (tagName.equals("rtept")) {
-			processPoint(document, element, paths);
-		} else if (tagName.equals("wpt")) {
-			double lon = Double.parseDouble(element.getAttribute("lon"));
-			double lat = Double.parseDouble(element.getAttribute("lat"));
-			Point p = new Point(lon, lat);
-			Element eleName = findElement(element, "name");
-			if (eleName != null) {
-				p.setCaption(eleName.getTextContent());
-			}
-			// wpts.add(p);
+		if (tagName.equals("trkpt") || tagName.equals("rtept")) {
+			processPoint(element, paths);
 		} else {
 			NodeList childNodes = element.getChildNodes();
 			for (int i = 0; i < childNodes.getLength(); i++) {
 				Node node = childNodes.item(i);
 				if (node instanceof Element) {
-					processElement(document, (Element) node, paths);
+					processElement((Element) node, metadataName, paths);
 				}
 			}
 		}
 	}
 
-	private void processPoint(Document document, Element element, List<GPXPath> paths) throws Exception {
+	private void processPoint(Element element, List<GPXPath> paths) throws Exception {
 		double lon = Double.parseDouble(element.getAttribute("lon"));
 		double lat = Double.parseDouble(element.getAttribute("lat"));
 		Element timeElement = findElement(element, "time");

@@ -17,8 +17,8 @@ public class Point {
 	private double dist;
 	private long time;
 	private double maxSpeed;
-	
-	private Map<String, Double> data = new HashMap<String, Double>();
+
+	private Map<String, Double> data = new HashMap<>();
 
 	public Point(double lon, double lat) {
 		super();
@@ -43,14 +43,14 @@ public class Point {
 
 	public double distanceTo(Point otherPoint) {
 		double theta = lon - otherPoint.getLon();
-		double dist = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(otherPoint.getLat()))
+		double distance = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(otherPoint.getLat()))
 				+ Math.cos(deg2rad(lat)) * Math.cos(deg2rad(otherPoint.getLat())) * Math.cos(deg2rad(theta));
-		dist = Math.max(-1.0, Math.min(1.0, dist));
-		dist = Math.acos(dist);
-		dist = rad2deg(dist);
-		dist = dist * 60 * 1.1515;
-		dist = dist * 1.609344;
-		return dist;
+		distance = Math.max(-1.0, Math.min(1.0, distance));
+		distance = Math.acos(distance);
+		distance = rad2deg(distance);
+		distance = distance * 60 * 1.1515;
+		distance = distance * 1.609344;
+		return distance;
 	}
 
 	private double deg2rad(double deg) {

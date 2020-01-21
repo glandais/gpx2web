@@ -8,8 +8,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.github.glandais.fit.FitFileWriter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
+import io.github.glandais.gpx.SimpleTimeComputer;
 import io.github.glandais.io.GPXCharter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
@@ -35,6 +37,9 @@ public class GpxProcessor {
 	private GPXElevationFixer gpxElevationFixer;
 
 	@Autowired
+	private SimpleTimeComputer simpleTimeComputer;
+
+	@Autowired
 	private MaxSpeedComputer maxSpeedComputer;
 
 	@Autowired
@@ -58,6 +63,9 @@ public class GpxProcessor {
 	@Autowired
 	private KMLFileWriter kmlFileWriter;
 
+	@Autowired
+	private FitFileWriter fitFileWriter;
+
 	public void process(File gpxFile, GpxToolOptions options) throws Exception {
 		log.info("Processing file {}", gpxFile.getName());
 		List<GPXPath> paths = gpxParser.parsePaths(gpxFile);
@@ -72,9 +80,13 @@ public class GpxProcessor {
 			}
 			if (options.isVirtualTime()) {
 				ZonedDateTime start = options.getNextStart();
-				Course course = new Course(path, options.getCyclist(), start);
-				maxSpeedComputer.computeMaxSpeeds(course);
-				powerComputer.computeTrack(course);
+				if (options.getSimpleVirtualSpeed() != null) {
+					simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed());
+				} else {
+					Course course = new Course(path, options.getCyclist(), start);
+					maxSpeedComputer.computeMaxSpeeds(course);
+					powerComputer.computeTrack(course);
+				}
 			}
 
 			if (options.isSrtmMap()) {
@@ -102,6 +114,11 @@ public class GpxProcessor {
 			if (options.isKml()) {
 				log.info("Writing KML for path {}", path.getName());
 				kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
+			}
+
+			if (options.isFit()) {
+				log.info("Writing FIT for path {}", path.getName());
+				fitFileWriter.writeFitFile(path, new File(pathFolder, path.getName() + ".fit"));
 			}
 
 			log.info("Processed path {}", path.getName());

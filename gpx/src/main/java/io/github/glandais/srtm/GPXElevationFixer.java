@@ -3,9 +3,9 @@ package io.github.glandais.srtm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.util.SmootherService;
@@ -16,18 +16,20 @@ import lombok.extern.slf4j.Slf4j;
 public class GPXElevationFixer {
 
 	private SRTMHelper srtmHelper;
+	private GPXFilter gpxFilter;
 
-	public GPXElevationFixer(SRTMHelper srtmHelper) {
+	public GPXElevationFixer(SRTMHelper srtmHelper, GPXFilter gpxFilter) {
 		super();
 		this.srtmHelper = srtmHelper;
+		this.gpxFilter = gpxFilter;
 	}
 
 	public void fixElevation(GPXPath path) {
 		log.info("Fixing elevation for {}", path.getName());
 
-		filterPoints(path);
+		gpxFilter.filterPoints(path);
 		setZOnPath(path);
-		filterPoints(path);
+		gpxFilter.filterPoints(path);
 		smoothZ(path, 0.3);
 
 		log.info("Fixed elevation for {}", path.getName());
@@ -50,28 +52,6 @@ public class GPXElevationFixer {
 		}
 		path.setPoints(newPoints);
 		log.info("Set elevations for {} ({})", path.getName(), newPoints.size());
-	}
-
-	protected void filterPoints(GPXPath path) {
-		List<Point> points = path.getPoints();
-
-		log.info("Filtering {} ({})", path.getName(), points.size());
-		List<Point> newPoints = new ArrayList<Point>();
-		Point lastPoint = null;
-		for (int i = 0; i < points.size(); i++) {
-			Point p = points.get(i);
-			if (i == 0 || i == points.size() - 1) {
-				newPoints.add(p);
-				lastPoint = p;
-			} else {
-				if (lastPoint.distanceTo(p) > 0.002) {
-					newPoints.add(p);
-					lastPoint = p;
-				}
-			}
-		}
-		path.setPoints(newPoints);
-		log.info("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
 	}
 
 	public void smoothZ(GPXPath path, double buffer) {

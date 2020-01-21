@@ -29,6 +29,8 @@ public class GpxToolOptions {
 
 	private boolean virtualTime;
 
+	private Double simpleVirtualSpeed;
+
 	private Cyclist cyclist;
 
 	private boolean srtmMap;
@@ -40,6 +42,8 @@ public class GpxToolOptions {
 	private boolean chart;
 
 	private boolean kml;
+
+	private boolean fit;
 
 	private ZonedDateTime[] starts;
 	private int counter = 0;
@@ -53,6 +57,8 @@ public class GpxToolOptions {
 		options.addOption(Option.builder("no_elevation").desc("don't fix elevation").build());
 		options.addOption(Option.builder("no_second_precision").desc("don't create a point per second").build());
 		options.addOption(Option.builder("no_virtual_time").desc("don't add virtual time").build());
+		options.addOption(
+				Option.builder("svs").longOpt("simple_virtual_speed").desc("Cyclist speed (km/h)").hasArg().build());
 		options.addOption(Option.builder("cw").longOpt("cyclist_weight").desc("Cyclist weight (kg)").hasArg().build());
 		options.addOption(Option.builder("cp").longOpt("cyclist_power").desc("Cyclist power (W)").hasArg().build());
 		options.addOption(
@@ -70,6 +76,8 @@ public class GpxToolOptions {
 
 		options.addOption(Option.builder("kml").desc("Export KML").build());
 
+		options.addOption(Option.builder("fit").desc("Export Fit").build());
+
 		return options;
 	}
 
@@ -85,6 +93,9 @@ public class GpxToolOptions {
 		fixElevation = !cmd.hasOption("no_elevation");
 		pointPerSecond = !cmd.hasOption("no_elevation");
 		virtualTime = !cmd.hasOption("no_virtual_time");
+		if (cmd.hasOption("svs")) {
+			simpleVirtualSpeed = getDoubleOption(cmd, "svs", 30);
+		}
 		double mKg = getDoubleOption(cmd, "cw", 80);
 		double powerW = getDoubleOption(cmd, "cp", 240);
 		double maxAngleDeg = getDoubleOption(cmd, "ca", 15);
@@ -99,6 +110,7 @@ public class GpxToolOptions {
 		chart = !cmd.hasOption("no_chart");
 
 		kml = cmd.hasOption("kml");
+		fit = cmd.hasOption("fit");
 
 		starts = new ZonedDateTime[1];
 		ZonedDateTime start = ZonedDateTime.now();
