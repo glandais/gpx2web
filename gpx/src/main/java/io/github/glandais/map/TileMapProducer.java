@@ -153,7 +153,7 @@ public class TileMapProducer {
 		tileMapImage.getGraphics().drawPolyline(xPoints, yPoints, points.size());
 	}
 
-	private void drawArrows(TileMapImage tileMapImage, GPXPath gpxPath) {
+	protected void drawArrows(TileMapImage tileMapImage, GPXPath gpxPath) {
 		Graphics2D graphics = tileMapImage.getGraphics();
 		double[] dists = gpxPath.getDists();
 		double length = dists[dists.length - 1];
