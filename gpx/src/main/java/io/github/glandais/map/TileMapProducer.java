@@ -158,8 +158,9 @@ public class TileMapProducer {
 		double[] dists = gpxPath.getDists();
 		double length = dists[dists.length - 1];
 		int count = 5;
-		double arrowSizeX = 32;
-		double arrowSizeY = 32;
+		double arrowSize = Math.min(tileMapImage.getWidth(), tileMapImage.getWidth()) / 10.0;
+		double arrowSizeX = arrowSize;
+		double arrowSizeY = arrowSize;
 		List<Point> points = gpxPath.getPoints();
 		int c = 0;
 		List<Point2D> checkpoints = new ArrayList<>();
