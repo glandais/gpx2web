@@ -126,12 +126,12 @@ public class TileMapProducer {
 	protected void addPoints(TileMapImage tileMapImage, GPXPath path) {
 		Graphics2D graphics = tileMapImage.getGraphics();
 
-		graphics.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		graphics.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		graphics.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
 		graphics.setComposite(ac);
-		graphics.setColor(Color.MAGENTA);
+		graphics.setColor(Color.RED);
 
 		drawPath(tileMapImage, path);
 //		drawArrows(tileMapImage, path);
