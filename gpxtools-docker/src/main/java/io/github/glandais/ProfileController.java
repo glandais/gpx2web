@@ -18,12 +18,16 @@ import org.springframework.web.multipart.MultipartFile;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.io.GPXCharter;
 import io.github.glandais.io.GPXParser;
+import io.github.glandais.srtm.GPXElevationFixer;
 
 @RestController
 public class ProfileController {
 
 	@Autowired
 	private GPXParser gpxParser;
+
+	@Autowired
+	private GPXElevationFixer gpxElevationFixer;
 
 	@Autowired
 	private GPXCharter gpxCharter;
@@ -35,6 +39,7 @@ public class ProfileController {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
+			gpxElevationFixer.fixElevation(gpxPath);
 
 			File tmp = File.createTempFile("chart", "tmp");
 			gpxCharter.createChartWeb(gpxPath, tmp);
