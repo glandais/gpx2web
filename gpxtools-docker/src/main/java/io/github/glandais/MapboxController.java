@@ -54,7 +54,7 @@ public class MapboxController {
 			String polyline = PolylineUtils.encode(mPoints, 5);
 			StaticPolylineAnnotation line = StaticPolylineAnnotation.builder().fillColor("red").fillOpacity(0.6f)
 					.strokeWidth(5.0).polyline(polyline).build();
-			List<StaticPolylineAnnotation> staticPolylineAnnotations = List.of();
+			List<StaticPolylineAnnotation> staticPolylineAnnotations = List.of(line);
 			URL url = MapboxStaticMap.builder().accessToken(accessToken).cameraAuto(true).width(maxSize).height(maxSize)
 					.staticMarkerAnnotations(staticMarkerAnnotations)
 					.staticPolylineAnnotations(staticPolylineAnnotations).build().url().url();
