@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.graphhopper.reader.dem.SRTMGL1Provider;
 
+import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
@@ -57,7 +58,8 @@ public class Steps {
 			steps = new ArrayList<>();
 			List<GPXPath> paths = new GPXParser().parsePaths(Steps.class.getResourceAsStream("/PBP2019.gpx"));
 			paths.sort(Comparator.comparing(GPXPath::getName));
-			GPXElevationFixer gpxElevationFixer = new GPXElevationFixer(new SRTMHelper(new SRTMGL1Provider("cache")));
+			GPXElevationFixer gpxElevationFixer = new GPXElevationFixer(new SRTMHelper(new SRTMGL1Provider("cache")),
+					new GPXFilter());
 			for (GPXPath gpxPath : paths) {
 				gpxElevationFixer.fixElevation(gpxPath);
 			}
