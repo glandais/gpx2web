@@ -43,8 +43,8 @@ public class Main {
 
 	public static void main(String[] args)
 			throws JsonGenerationException, JsonMappingException, FileNotFoundException, IOException {
-//		Profiles profiles = retrieveProfiles();
-		Profiles profiles = readProfiles();
+		Profiles profiles = retrieveProfiles();
+//		Profiles profiles = readProfiles();
 
 		List<Profile> profileList = new ArrayList<>(profiles.values());
 
