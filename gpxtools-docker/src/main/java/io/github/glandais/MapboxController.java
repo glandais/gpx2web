@@ -39,24 +39,25 @@ public class MapboxController {
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
 			List<io.github.glandais.gpx.Point> points = gpxPath.getPoints();
-			io.github.glandais.gpx.Point start = points.get(0);
-			io.github.glandais.gpx.Point end = points.get(points.size() - 1);
-			StaticMarkerAnnotation pinStart = StaticMarkerAnnotation.builder()
-					.iconUrl("https://n-peloton.fr/maps/pin-icon-start.png")
-					.lnglat(Point.fromLngLat(start.getLon(), start.getLat())).build();
-			StaticMarkerAnnotation pinEnd = StaticMarkerAnnotation.builder()
-					.iconUrl("https://n-peloton.fr/maps/pin-icon-end.png")
-					.lnglat(Point.fromLngLat(end.getLon(), end.getLat())).build();
-			List<StaticMarkerAnnotation> staticMarkerAnnotations = List.of(pinStart, pinEnd);
+//			io.github.glandais.gpx.Point start = points.get(0);
+//			io.github.glandais.gpx.Point end = points.get(points.size() - 1);
+//			StaticMarkerAnnotation pinStart = StaticMarkerAnnotation.builder()
+//					.iconUrl("https://n-peloton.fr/maps/pin-icon-start.png")
+//					.lnglat(Point.fromLngLat(start.getLon(), start.getLat())).build();
+//			StaticMarkerAnnotation pinEnd = StaticMarkerAnnotation.builder()
+//					.iconUrl("https://n-peloton.fr/maps/pin-icon-end.png")
+//					.lnglat(Point.fromLngLat(end.getLon(), end.getLat())).build();
+//			List<StaticMarkerAnnotation> staticMarkerAnnotations = List.of(pinStart, pinEnd);
+			List<StaticMarkerAnnotation> staticMarkerAnnotations = List.of();
 			List<Point> mPoints = points.stream().map(p -> Point.fromLngLat(p.getLon(), p.getLat()))
 					.collect(Collectors.toList());
 			mPoints = PolylineUtils.simplify(mPoints, 0.0001);
 			String polyline = PolylineUtils.encode(mPoints, 5);
-			StaticPolylineAnnotation line = StaticPolylineAnnotation.builder().fillColor(1, 0, 0).fillOpacity(0.6f)
+			StaticPolylineAnnotation line = StaticPolylineAnnotation.builder().strokeColor(1, 0, 0).fillOpacity(0.6f)
 					.strokeWidth(5.0).polyline(polyline).build();
 			List<StaticPolylineAnnotation> staticPolylineAnnotations = List.of(line);
 			URL url = MapboxStaticMap.builder().accessToken(accessToken).cameraAuto(true).width(maxSize).height(maxSize)
-					.staticMarkerAnnotations(staticMarkerAnnotations)
+					.styleId("outdoors-v11").staticMarkerAnnotations(staticMarkerAnnotations)
 					.staticPolylineAnnotations(staticPolylineAnnotations).build().url().url();
 			System.out.println(url);
 
