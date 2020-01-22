@@ -51,11 +51,10 @@ public class MapboxController {
 			List<Point> mPoints = points.stream().map(p -> Point.fromLngLat(p.getLon(), p.getLat()))
 					.collect(Collectors.toList());
 			mPoints = PolylineUtils.simplify(mPoints, 0.0001);
-//			String polyline = PolylineUtils.encode(mPoints, 5);
-			String polyline = LineString.fromLngLats(mPoints).toString();
+			String polyline = PolylineUtils.encode(mPoints, 5);
 			StaticPolylineAnnotation line = StaticPolylineAnnotation.builder().fillColor("red").fillOpacity(0.6f)
 					.strokeWidth(5.0).polyline(polyline).build();
-			List<StaticPolylineAnnotation> staticPolylineAnnotations = List.of(line);
+			List<StaticPolylineAnnotation> staticPolylineAnnotations = List.of();
 			URL url = MapboxStaticMap.builder().accessToken(accessToken).cameraAuto(true).width(maxSize).height(maxSize)
 					.staticMarkerAnnotations(staticMarkerAnnotations)
 					.staticPolylineAnnotations(staticPolylineAnnotations).build().url().url();
