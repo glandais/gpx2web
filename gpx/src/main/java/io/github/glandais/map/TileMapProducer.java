@@ -109,24 +109,28 @@ public class TileMapProducer {
 		String urlPattern = tileMapImage.getUrlPattern();
 		File tile = new File(cache, zoom + SEPARATOR + i + SEPARATOR + j);
 		if (!tile.exists()) {
-			String url = urlPattern.replace("{z}", "" + zoom).replace("{x}", "" + i).replace("{y}", "" + j)
-					.replace("{s}", "" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
-			tile.getParentFile().mkdirs();
-			log.info("Downloading {}", url);
-			try {
-				try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url));
-						OutputStream outputStream = new FileOutputStream(tile);) {
-					InputStream inputStream = response.getEntity().getContent();
-					IOUtils.copy(inputStream, outputStream);
-				}
-			} catch (FileNotFoundException e) {
-				FileUtils.touch(tile);
-			}
+			downloadTile(i, j, zoom, urlPattern, tile);
 		}
 		if (tile.length() == 0) {
 			return null;
 		} else {
 			return ImageIO.read(tile);
+		}
+	}
+
+	private synchronized void downloadTile(int i, int j, int zoom, String urlPattern, File tile) throws IOException {
+		String url = urlPattern.replace("{z}", "" + zoom).replace("{x}", "" + i).replace("{y}", "" + j).replace("{s}",
+				"" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
+		tile.getParentFile().mkdirs();
+		log.info("Downloading {}", url);
+		try {
+			try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url));
+					OutputStream outputStream = new FileOutputStream(tile);) {
+				InputStream inputStream = response.getEntity().getContent();
+				IOUtils.copy(inputStream, outputStream);
+			}
+		} catch (FileNotFoundException e) {
+			FileUtils.touch(tile);
 		}
 	}
 
