@@ -101,7 +101,7 @@ public class GpxProcessor {
 				map.saveImage(file);
 			}
 			if (options.isChart()) {
-				gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"));
+				gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
 			}
 
 			if (options.isPointPerSecond()) {

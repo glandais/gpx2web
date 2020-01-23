@@ -34,15 +34,15 @@ public class ProfileController {
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/profile")
-	public void handleFileUpload(@RequestParam("file") MultipartFile file, HttpServletResponse response)
-			throws Exception {
+	public void handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("width") Integer width,
+			@RequestParam("height") Integer height, HttpServletResponse response) throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
 			gpxElevationFixer.fixElevation(gpxPath);
 
 			File tmp = File.createTempFile("chart", "tmp");
-			gpxCharter.createChartWeb(gpxPath, tmp);
+			gpxCharter.createChartWeb(gpxPath, tmp, width, height);
 
 			response.setContentType("image/png");
 			try (FileInputStream fis = new FileInputStream(tmp)) {

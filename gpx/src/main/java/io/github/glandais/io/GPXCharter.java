@@ -68,7 +68,7 @@ public class GPXCharter {
 
 	}
 
-	public void createChartWeb(GPXPath gpxPath, File file) {
+	public void createChartWeb(GPXPath gpxPath, File file, int width, int height) {
 		log.info("start createChartWeb");
 		JFreeChart chart = ChartFactory.createXYAreaChart("", "", "", getDataSet(gpxPath), PlotOrientation.VERTICAL,
 				false, false, false);
@@ -86,7 +86,7 @@ public class GPXCharter {
 				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
 
 		try {
-			ChartUtils.saveChartAsPNG(file, chart, 640, 240);
+			ChartUtils.saveChartAsPNG(file, chart, width, height);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
