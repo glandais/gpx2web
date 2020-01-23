@@ -25,7 +25,7 @@ public class GPXFilter {
 		List<Point> points = path.getPoints();
 
 		log.info("Filtering {} ({})", path.getName(), points.size());
-		List<Point> newPoints = simplify(points, 0.0001, radial, douglasPeucker);
+		List<Point> newPoints = simplify(points, 0.00003, radial, douglasPeucker);
 		path.setPoints(newPoints);
 		log.info("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
 	}
