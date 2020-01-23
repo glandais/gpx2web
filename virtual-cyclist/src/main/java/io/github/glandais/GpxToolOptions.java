@@ -37,7 +37,8 @@ public class GpxToolOptions {
 
 	private boolean tileMap;
 	private String tileUrl;
-	private int tileZoom;
+	private int width;
+	private int height;
 
 	private boolean chart;
 
@@ -71,7 +72,8 @@ public class GpxToolOptions {
 		options.addOption(Option.builder("srtm").desc("SRTM map").build());
 		options.addOption(Option.builder("tile").desc("Create a map from tiles").build());
 		options.addOption(Option.builder("tile_url").desc("Tile url").hasArg().build());
-		options.addOption(Option.builder("tile_zoom").desc("Tile map zoom").hasArg().build());
+		options.addOption(Option.builder("width").desc("Tile map width").hasArg().build());
+		options.addOption(Option.builder("height").desc("Tile map height").hasArg().build());
 		options.addOption(Option.builder("no_chart").desc("don't draw chart").build());
 
 		options.addOption(Option.builder("kml").desc("Export KML").build());
@@ -106,7 +108,8 @@ public class GpxToolOptions {
 		srtmMap = cmd.hasOption("srtm");
 		tileMap = cmd.hasOption("tile");
 		tileUrl = cmd.getOptionValue("tile_url", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-		tileZoom = (int) getDoubleOption(cmd, "tile_zoom", 12);
+		width = (int) getDoubleOption(cmd, "width", 1024);
+		height = (int) getDoubleOption(cmd, "height", 768);
 		chart = !cmd.hasOption("no_chart");
 
 		kml = cmd.hasOption("kml");

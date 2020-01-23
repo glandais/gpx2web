@@ -52,6 +52,13 @@ public class TileMapProducer {
 				.build();
 	}
 
+	public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, Integer width, Integer height)
+			throws IOException {
+		log.info("start createTileMap");
+		TileMapImage tileMapImage = new TileMapImage(path, margin, cacheFolder, urlPattern, width, height);
+		return doCreateTileMap(path, tileMapImage);
+	}
+
 	public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, int maxSize) throws IOException {
 		log.info("start createTileMap");
 		TileMapImage tileMapImage = new TileMapImage(path, margin, maxSize, cacheFolder, urlPattern);

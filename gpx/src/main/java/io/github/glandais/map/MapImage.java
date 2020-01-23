@@ -42,7 +42,7 @@ public class MapImage {
 		this.minlat = gpxPath.getMinlat();
 		this.maxlat = gpxPath.getMaxlat();
 		setZoom(16);
-		
+
 		int xmin = (int) (getX(minlon) + startx);
 		int xmax = (int) (getX(maxlon) + startx);
 		int ymin = (int) (getY(maxlat) + starty);
@@ -67,6 +67,51 @@ public class MapImage {
 			setZoom(this.zoom + 1);
 		} while (width < maxSize && height < maxSize);
 		setZoom(this.zoom - 1);
+		initImage();
+	}
+
+	public MapImage(GPXPath gpxPath, double margin, Integer width, Integer height) {
+		super();
+
+		this.width = width;
+		this.height = height;
+		this.zoom = 16;
+
+		double xmin = MAPSPACE.cLonToX(gpxPath.getMinlon(), zoom);
+		double xmax = MAPSPACE.cLonToX(gpxPath.getMaxlon(), zoom);
+		double ymin = MAPSPACE.cLatToY(gpxPath.getMinlat(), zoom);
+		double ymax = MAPSPACE.cLatToY(gpxPath.getMaxlat(), zoom);
+
+		int delta = (int) Math.max((xmax - xmin) * margin / 2.0, (ymax - ymin) * margin / 2.0);
+		xmin = xmin - delta;
+		xmax = xmax + delta;
+		ymin = ymin - delta;
+		ymax = ymax + delta;
+
+		double lonmin = MAPSPACE.cXToLon((int) xmin, zoom);
+		double lonmax = MAPSPACE.cXToLon((int) xmax, zoom);
+		double latmin = MAPSPACE.cYToLat((int) ymin, zoom);
+		double latmax = MAPSPACE.cYToLat((int) ymax, zoom);
+
+		double loncenter = (lonmax + lonmin) / 2.0;
+		double latcenter = (latmax + latmin) / 2.0;
+		zoom = 17;
+		boolean ok;
+		do {
+			zoom--;
+			double xCenter = MAPSPACE.cLonToX(loncenter, zoom);
+			double yCenter = MAPSPACE.cLatToY(latcenter, zoom);
+
+			this.startx = xCenter - (width / 2.0);
+			this.starty = yCenter - (height / 2.0);
+
+			this.minlon = MAPSPACE.cXToLon((int) startx, zoom);
+			this.maxlon = MAPSPACE.cXToLon((int) startx + this.width, zoom);
+			this.minlat = MAPSPACE.cYToLat((int) starty + this.height, zoom);
+			this.maxlat = MAPSPACE.cYToLat((int) starty, zoom);
+
+			ok = (lonmin > this.minlon && lonmax < this.maxlon && latmin > this.minlat && latmax < this.maxlat);
+		} while (!ok);
 		initImage();
 	}
 

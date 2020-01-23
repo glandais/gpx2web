@@ -96,8 +96,8 @@ public class GpxProcessor {
 			}
 			if (options.isTileMap()) {
 				File file = new File(pathFolder, "map.png");
-				TileMapImage map = tileImageProducer.createTileMap(path, options.getTileUrl(), options.getTileZoom(),
-						0.2);
+				TileMapImage map = tileImageProducer.createTileMap(path, options.getTileUrl(), 0.2, options.getWidth(),
+						options.getHeight());
 				map.saveImage(file);
 			}
 			if (options.isChart()) {
