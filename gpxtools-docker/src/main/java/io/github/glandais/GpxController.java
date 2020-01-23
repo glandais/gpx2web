@@ -3,6 +3,7 @@ package io.github.glandais;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +54,21 @@ public class GpxController {
 				IOUtils.copy(fis, response.getOutputStream());
 			}
 			Files.delete(tmp.toPath());
+		} else {
+			throw new IllegalArgumentException("0 or more than 1 path found");
+		}
+	}
+
+	@CrossOrigin(origins = "https://gabriel.landais.org")
+	@PostMapping("/gpxinfo")
+	public String handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception {
+		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+		if (paths.size() == 1) {
+			GPXPath gpxPath = paths.get(0);
+			gpxPathEnhancer.virtualize(gpxPath);
+			gpxFilter.filterPointsDouglasPeucker(gpxPath);
+			return Math.round(gpxPath.getDist()) + "km " + Math.round(gpxPath.getTotalElevation()) + " m↑ "
+					+ Math.round(gpxPath.getTotalElevationNegative()) + " m↓";
 		} else {
 			throw new IllegalArgumentException("0 or more than 1 path found");
 		}

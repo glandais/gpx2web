@@ -13,10 +13,12 @@ public class GPXFilter {
 
 	public void filterPointsDouglasPeucker(GPXPath path) {
 		simplify(path, false, true);
+		path.computeArrays();
 	}
 
 	public void filterPointsDistance(GPXPath path) {
 		simplify(path, true, false);
+		path.computeArrays();
 	}
 
 	private void simplify(GPXPath path, boolean radial, boolean douglasPeucker) {
