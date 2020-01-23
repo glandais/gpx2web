@@ -82,8 +82,8 @@ public class GPXCharter {
 		chart.getXYPlot().setDomainGridlinePaint(Color.blue);
 		chart.getXYPlot().setRangeGridlinePaint(Color.blue);
 
-		chart.addSubtitle(new TextTitle(
-				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
+//		chart.addSubtitle(new TextTitle(
+//				speedformat.format(distance) + " km     +" + speedformat.format(gpxPath.getTotalElevation()) + " m"));
 
 		try {
 			ChartUtils.saveChartAsPNG(file, chart, width, height);
