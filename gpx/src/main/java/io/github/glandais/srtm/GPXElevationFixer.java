@@ -27,9 +27,9 @@ public class GPXElevationFixer {
 	public void fixElevation(GPXPath path) {
 		log.info("Fixing elevation for {}", path.getName());
 
-		gpxFilter.filterPoints(path);
+		gpxFilter.filterPointsDistance(path);
 		setZOnPath(path);
-		gpxFilter.filterPoints(path);
+		gpxFilter.filterPointsDistance(path);
 		smoothZ(path, 0.3);
 
 		log.info("Fixed elevation for {}", path.getName());

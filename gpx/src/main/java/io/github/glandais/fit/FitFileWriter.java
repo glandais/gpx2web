@@ -80,10 +80,6 @@ public class FitFileWriter {
 			r.setDistance((float) (1000.0 * point.getDist()));
 			r.setTimestamp(new DateTime(new Date(point.getTime())));
 			r.setAltitude((float) point.getZ());
-			Double v = point.getData().get("v");
-			if (v != null) {
-				r.setSpeed((float) (v / 3.6));
-			}
 			encode.write(r);
 		}
 

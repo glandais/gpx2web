@@ -51,7 +51,7 @@ public class GpxTool implements CommandLineRunner {
 
 	@Autowired
 	private GpxProcessor gpxProcessor;
-	
+
 	@Override
 	public void run(String... args) throws Exception {
 		log.info("Options : {}", OPTIONS);

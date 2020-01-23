@@ -15,48 +15,46 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.github.glandais.fit.FitFileWriter;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 
 @RestController
-public class FitController {
+public class GpxController {
 
 	@Autowired
 	private GPXParser gpxParser;
 
 	@Autowired
-	private FitFileWriter fitFileWriter;
+	private GPXPathEnhancer gpxPathEnhancer;
 
 	@Autowired
-	private GPXPathEnhancer gpxPathEnhancer;
+	private GPXFileWriter gpxFileWriter;
 
 	@Autowired
 	private GPXFilter gpxFilter;
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
-	@PostMapping("/fit")
+	@PostMapping("/simplify")
 	public void handleFileUpload(@RequestParam("file") MultipartFile file, HttpServletResponse response)
 			throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
 			gpxPathEnhancer.virtualize(gpxPath);
-
 			gpxFilter.filterPointsDouglasPeucker(gpxPath);
-			File tmp = File.createTempFile("fit", "tmp");
-			fitFileWriter.writeFitFile(gpxPath, tmp);
 
-			response.setContentType("application/fit");
+			File tmp = File.createTempFile("gpx", "tmp");
+			gpxFileWriter.writeGpxFile(paths, tmp);
+
+			response.setContentType("application/gpx");
 			try (FileInputStream fis = new FileInputStream(tmp)) {
 				IOUtils.copy(fis, response.getOutputStream());
 			}
 			Files.delete(tmp.toPath());
-
 		} else {
 			throw new IllegalArgumentException("0 or more than 1 path found");
 		}
 	}
-
 }
