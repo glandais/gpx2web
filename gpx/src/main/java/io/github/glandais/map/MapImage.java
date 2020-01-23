@@ -79,8 +79,8 @@ public class MapImage {
 
 		double xmin = MAPSPACE.cLonToX(gpxPath.getMinlon(), zoom);
 		double xmax = MAPSPACE.cLonToX(gpxPath.getMaxlon(), zoom);
-		double ymin = MAPSPACE.cLatToY(gpxPath.getMinlat(), zoom);
-		double ymax = MAPSPACE.cLatToY(gpxPath.getMaxlat(), zoom);
+		double ymax = MAPSPACE.cLatToY(gpxPath.getMinlat(), zoom);
+		double ymin = MAPSPACE.cLatToY(gpxPath.getMaxlat(), zoom);
 
 		int delta = (int) Math.max((xmax - xmin) * margin / 2.0, (ymax - ymin) * margin / 2.0);
 		xmin = xmin - delta;
@@ -90,8 +90,8 @@ public class MapImage {
 
 		double lonmin = MAPSPACE.cXToLon((int) xmin, zoom);
 		double lonmax = MAPSPACE.cXToLon((int) xmax, zoom);
-		double latmin = MAPSPACE.cYToLat((int) ymin, zoom);
-		double latmax = MAPSPACE.cYToLat((int) ymax, zoom);
+		double latmin = MAPSPACE.cYToLat((int) ymax, zoom);
+		double latmax = MAPSPACE.cYToLat((int) ymin, zoom);
 
 		double loncenter = (lonmax + lonmin) / 2.0;
 		double latcenter = (latmax + latmin) / 2.0;
