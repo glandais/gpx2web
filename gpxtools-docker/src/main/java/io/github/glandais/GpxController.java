@@ -59,22 +59,7 @@ public class GpxController {
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/gpxinfo")
-	public String gpxinfo(@RequestParam("file") MultipartFile file) throws Exception {
-		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
-		if (paths.size() == 1) {
-			GPXPath gpxPath = paths.get(0);
-			gpxPathEnhancer.virtualize(gpxPath);
-			gpxFilter.filterPointsDouglasPeucker(gpxPath);
-			return Math.round(gpxPath.getDist()) + "km " + Math.round(gpxPath.getTotalElevation()) + " m↑ "
-					+ Math.round(gpxPath.getTotalElevationNegative()) + " m↓";
-		} else {
-			throw new IllegalArgumentException("0 or more than 1 path found");
-		}
-	}
-
-	@CrossOrigin(origins = "https://gabriel.landais.org")
-	@PostMapping("/gpxinfo2")
-	public GPXInfo gpxinfo2(@RequestParam("file") MultipartFile file) throws Exception {
+	public GPXInfo gpxinfo(@RequestParam("file") MultipartFile file) throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
