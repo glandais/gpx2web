@@ -3,7 +3,6 @@ package io.github.glandais;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -38,8 +37,7 @@ public class GpxController {
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/simplify")
-	public void handleFileUpload(@RequestParam("file") MultipartFile file, HttpServletResponse response)
-			throws Exception {
+	public void simplify(@RequestParam("file") MultipartFile file, HttpServletResponse response) throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
@@ -61,7 +59,7 @@ public class GpxController {
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/gpxinfo")
-	public String handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception {
+	public String gpxinfo(@RequestParam("file") MultipartFile file) throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
 			GPXPath gpxPath = paths.get(0);
@@ -69,6 +67,22 @@ public class GpxController {
 			gpxFilter.filterPointsDouglasPeucker(gpxPath);
 			return Math.round(gpxPath.getDist()) + "km " + Math.round(gpxPath.getTotalElevation()) + " m↑ "
 					+ Math.round(gpxPath.getTotalElevationNegative()) + " m↓";
+		} else {
+			throw new IllegalArgumentException("0 or more than 1 path found");
+		}
+	}
+
+	@CrossOrigin(origins = "https://gabriel.landais.org")
+	@PostMapping("/gpxinfo2")
+	public GPXInfo gpxinfo2(@RequestParam("file") MultipartFile file) throws Exception {
+		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+		if (paths.size() == 1) {
+			GPXPath gpxPath = paths.get(0);
+			gpxPathEnhancer.virtualize(gpxPath);
+			gpxFilter.filterPointsDouglasPeucker(gpxPath);
+			float dist = Math.round(10.0 * gpxPath.getDist()) / 10.0f;
+			return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()),
+					(int) Math.round(gpxPath.getTotalElevationNegative()));
 		} else {
 			throw new IllegalArgumentException("0 or more than 1 path found");
 		}
