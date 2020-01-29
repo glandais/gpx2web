@@ -1,7 +1,10 @@
 package io.github.glandais;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -17,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.Point;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 
@@ -68,6 +72,45 @@ public class GpxController {
 			float dist = Math.round(10.0 * gpxPath.getDist()) / 10.0f;
 			return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()),
 					(int) Math.round(gpxPath.getTotalElevationNegative()));
+		} else {
+			throw new IllegalArgumentException("0 or more than 1 path found");
+		}
+	}
+
+	@CrossOrigin(origins = "https://gabriel.landais.org")
+	@PostMapping("/geojson")
+	public void geojson(@RequestParam("file") MultipartFile file, HttpServletResponse response) throws Exception {
+		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+		if (paths.size() == 1) {
+			GPXPath gpxPath = paths.get(0);
+			gpxPathEnhancer.virtualize(gpxPath);
+			gpxFilter.filterPointsDouglasPeucker(gpxPath);
+			try (Writer w = new OutputStreamWriter(response.getOutputStream());
+					BufferedWriter bw = new BufferedWriter(w)) {
+				bw.write("{");
+				bw.newLine();
+				bw.write("  \"type\": \"LineString\",");
+				bw.newLine();
+				bw.write("  \"coordinates\": [");
+				bw.newLine();
+				for (int i = 0; i < gpxPath.getPoints().size(); i++) {
+					Point point = gpxPath.getPoints().get(i);
+					bw.write("    [");
+					bw.write(Float.toString((float) point.getLon()));
+					bw.write(", ");
+					bw.write(Float.toString((float) point.getLat()));
+					bw.write("]");
+					if (i != gpxPath.getPoints().size() - 1) {
+						bw.write(",");
+					}
+					bw.newLine();
+				}
+				bw.write("	]");
+				bw.newLine();
+				bw.write("}");
+				bw.newLine();
+			}
+
 		} else {
 			throw new IllegalArgumentException("0 or more than 1 path found");
 		}
