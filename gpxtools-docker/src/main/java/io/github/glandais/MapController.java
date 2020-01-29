@@ -33,7 +33,7 @@ public class MapController {
 			throws Exception {
 		List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
 		if (paths.size() == 1) {
-			TileMapImage tileMap = tileMapProducer.createTileMap(paths.get(0), tileUrl, 0.2, width, height);
+			TileMapImage tileMap = tileMapProducer.createTileMap(paths.get(0), tileUrl, 0, width, height);
 			response.setContentType("image/png");
 			ImageIO.write(tileMap.getImage(), "png", response.getOutputStream());
 		} else {
