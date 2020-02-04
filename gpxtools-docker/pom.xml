@@ -44,7 +44,7 @@
 				<version>1.8.0</version>
 				<configuration>
 					<to>
-						<image>gpxtools</image>
+						<image>glandais/gpxtools:latest</image>
 					</to>
 				</configuration>
 				<executions>
