@@ -43,8 +43,11 @@ public class GPXFileWriter {
 			+ "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" "
 			+ "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">";
 
-	private static final DecimalFormat df = new DecimalFormat("0.00#########################",
-			new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final ThreadLocal<DecimalFormat> LAT_LON_FORMATTER = ThreadLocal
+			.withInitial(() -> new DecimalFormat("0.00#####", new DecimalFormatSymbols(Locale.ENGLISH)));
+
+	private static final ThreadLocal<DecimalFormat> ELEVATION_FORMATTER = ThreadLocal
+			.withInitial(() -> new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.ENGLISH)));
 
 	/**
 	 * Writes the GPX file
@@ -92,9 +95,9 @@ public class GPXFileWriter {
 		List<Point> points = gpxPath.getPoints();
 		for (Point point : points) {
 			StringBuffer out = new StringBuffer();
-			out.append("\t\t\t" + "<trkpt lat=\"" + df.format(point.getLat()) + "\" " + "lon=\""
-					+ df.format(point.getLon()) + "\">");
-			out.append("<ele>" + df.format(point.getZ()) + "</ele>");
+			out.append("\t\t\t" + "<trkpt lat=\"" + LAT_LON_FORMATTER.get().format(point.getLat()) + "\" " + "lon=\""
+					+ LAT_LON_FORMATTER.get().format(point.getLon()) + "\">");
+			out.append("<ele>" + ELEVATION_FORMATTER.get().format(point.getZ()) + "</ele>");
 			out.append("<time>" + DateTimeFormatter.ISO_DATE_TIME
 					.format(Instant.ofEpochMilli(point.getTime()).atOffset(ZoneOffset.UTC)) + "</time>");
 			// out.append("<extensions><gpxx:Depth>8</gpxx:Depth></extensions>");
