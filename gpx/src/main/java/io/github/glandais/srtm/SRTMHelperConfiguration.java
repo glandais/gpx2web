@@ -17,6 +17,9 @@ public class SRTMHelperConfiguration {
 
 	@Bean
 	public ElevationProvider elevationProvider() {
-		return new SRTMGL1Provider(new File(cacheFolder, "srtm").getAbsolutePath());
+
+		final SRTMGL1Provider srtm = new SRTMGL1Provider(new File(cacheFolder, "srtm").getAbsolutePath());
+		srtm.setInterpolate(true);
+		return srtm;
 	}
 }
