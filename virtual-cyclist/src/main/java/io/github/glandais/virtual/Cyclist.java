@@ -1,75 +1,60 @@
 package io.github.glandais.virtual;
 
-import io.github.glandais.util.Constants;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @ToString
 @EqualsAndHashCode
 public class Cyclist {
 
-	private double mKg;
-	private double powerW;
-	private double maxSpeedMs;
-	private double tanMaxAngle;
-	private double maxBrake;
-	private double cx;
-	private double f;
+    private final double mKg;
 
-	public Cyclist(double mKg, double powerW, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG) {
-		this(mKg, powerW, 0.30, 0.01, maxAngleDeg, maxSpeedKmH, maxBrakeG);
-	}
+    private final double powerW;
 
-	public Cyclist(double mKg, double powerW, double cx, double f, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG) {
-		super();
+    private final double maxAngleDeg;
 
-		this.mKg = mKg;
-		this.powerW = powerW;
-		this.cx = cx;
-		this.f = f;
-		this.tanMaxAngle = Math.tan(maxAngleDeg * (Math.PI / 180.0));
-		this.maxSpeedMs = maxSpeedKmH / 3.6;
-		this.maxBrake = maxBrakeG * Constants.G;
-	}
+    private final double maxSpeedKmH;
 
-	public double getmKg() {
-		return mKg;
-	}
+    private final double maxBrakeG;
 
-	public double getPowerW() {
-		return powerW;
-	}
+    private final double cx;
 
-	public double getMaxSpeedMs() {
-		return maxSpeedMs;
-	}
+    private final double f;
 
-	public double getTanMaxAngle() {
-		return tanMaxAngle;
-	}
+    private final double tanMaxAngle;
 
-	public double getMaxBrake() {
-		return maxBrake;
-	}
+    private final double maxSpeedMs;
 
-	public double getCx() {
-		return cx;
-	}
-	
-	public double getF() {
-		return f;
-	}
+    public Cyclist(double mKg, double powerW, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG) {
 
-	public void setmKg(double mKg) {
-		this.mKg = mKg;
-	}
+        this(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG, 0.30, 0.01);
+    }
 
-	public void setCx(double cx) {
-		this.cx = cx;
-	}
+    public Cyclist(double mKg, double powerW, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG, double cx, double f) {
 
-	public void setF(double f) {
-		this.f = f;
-	}
+        this(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG, cx, f, Math.tan(maxAngleDeg * (Math.PI / 180.0)), maxSpeedKmH / 3.6);
+    }
 
+    public Cyclist(final double mKg,
+            final double powerW,
+            final double maxAngleDeg,
+            final double maxSpeedKmH,
+            final double maxBrakeG,
+            final double cx,
+            final double f,
+            final double tanMaxAngle,
+            final double maxSpeedMs) {
+
+        this.mKg = mKg;
+        this.powerW = powerW;
+        this.maxAngleDeg = maxAngleDeg;
+        this.maxSpeedKmH = maxSpeedKmH;
+        this.maxBrakeG = maxBrakeG;
+        this.cx = cx;
+        this.f = f;
+        this.tanMaxAngle = tanMaxAngle;
+        this.maxSpeedMs = maxSpeedMs;
+    }
 }

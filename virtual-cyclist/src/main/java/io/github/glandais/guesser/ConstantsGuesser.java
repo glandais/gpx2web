@@ -47,7 +47,7 @@ public class ConstantsGuesser {
 		gradeService.computeGrade(original, "grade");
 		speedService.computeSpeed(original, "originalSpeed");
 
-		CyclistWithScore cyclist = new CyclistWithScore(55, 240, 0.16, 0.01, 15, 90, 0.3);
+		CyclistWithScore cyclist = new CyclistWithScore(55, 0, 15, 90, 0.3, 0.16, 0.01);
 		CourseWithPower course = new CourseWithPower(original, cyclist, ZonedDateTime.now());
 		maxSpeedComputer.computeMaxSpeeds(course);
 
@@ -73,7 +73,7 @@ public class ConstantsGuesser {
 					double f = fRange.getValue(j, nSteps);
 					for (int k = 0; k <= nSteps; k++) {
 						double m = mRange.getValue(k, nSteps);
-						CyclistWithScore c = new CyclistWithScore(m, 0, cx, f, 15, 90, 0.3);
+						CyclistWithScore c = new CyclistWithScore(m, 0, 15, 90, 0.3, cx, f);
 						simulated = objectMapper.readValue(originalJson, GPXPath.class);
 
 						setScore(original, simulated, c);
@@ -90,8 +90,8 @@ public class ConstantsGuesser {
 					minCyclist.getCx() + cxRange.getStep(nSteps));
 			fRange = new ConstantRange(minCyclist.getF() - fRange.getStep(nSteps),
 					minCyclist.getF() + fRange.getStep(nSteps));
-			mRange = new ConstantRange(minCyclist.getmKg() - mRange.getStep(nSteps),
-					minCyclist.getmKg() + mRange.getStep(nSteps));
+			mRange = new ConstantRange(minCyclist.getMKg() - mRange.getStep(nSteps),
+					minCyclist.getMKg() + mRange.getStep(nSteps));
 		}
 
 		return minCyclist;

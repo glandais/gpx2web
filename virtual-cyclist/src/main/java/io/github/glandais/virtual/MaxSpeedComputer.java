@@ -75,7 +75,7 @@ public class MaxSpeedComputer {
 		double dt = 0.01;
 		double v = maxSpeedCurrent;
 		while (true) {
-			double dv = cyclist.getMaxBrake() * dt;
+			double dv = cyclist.getMaxBrakeG() * dt;
 			v = v + dv;
 
 			double dx = dt * v;

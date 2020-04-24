@@ -1,23 +1,12 @@
 package io.github.glandais.virtual;
 
+import lombok.Value;
+
+@Value
 public class PointToPoint {
 
-	private double time;
+    private final double time;
 
-	private double endSpeed;
-
-	public PointToPoint(double time, double endSpeed) {
-		super();
-		this.time = time;
-		this.endSpeed = endSpeed;
-	}
-
-	public double getTime() {
-		return time;
-	}
-
-	public double getEndSpeed() {
-		return endSpeed;
-	}
+    private final double endSpeed;
 
 }

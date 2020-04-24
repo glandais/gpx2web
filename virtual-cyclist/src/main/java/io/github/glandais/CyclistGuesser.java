@@ -62,7 +62,7 @@ public class CyclistGuesser implements CommandLineRunner {
 		gpxElevationFixer.smoothZ(original, 0.1);
 		gradeService.computeGrade(original, "grade");
 		speedService.computeSpeed(original, "originalSpeed");
-		Cyclist cyclist = new Cyclist(67.2, 0.0, 0.2372, 0.0042, 15, 90, 0.3);
+		Cyclist cyclist = new Cyclist(67.2, 0.0, 15, 90, 0.3, 0.2372, 0.0042);
 
 //		Cyclist cyclist = constantsGuesser.guessWithPathWithPower(original);
 

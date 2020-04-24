@@ -2,5 +2,8 @@
 *.project
 *.settings
 *.classpath
-gpxtools-docker/cache/*
-
+/gpxtools-docker/cache/*
+*.iml
+/.idea
+/cache
+/covid-charts
