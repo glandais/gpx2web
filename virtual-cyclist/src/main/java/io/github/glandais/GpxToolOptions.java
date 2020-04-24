@@ -27,6 +27,8 @@ public class GpxToolOptions {
 
 	private boolean pointPerSecond;
 
+	private boolean filter;
+
 	private boolean virtualTime;
 
 	private Double simpleVirtualSpeed;
@@ -57,6 +59,7 @@ public class GpxToolOptions {
 		options.addOption(Option.builder("cache").desc("Cache folder").hasArg().build());
 		options.addOption(Option.builder("no_elevation").desc("don't fix elevation").build());
 		options.addOption(Option.builder("no_second_precision").desc("don't create a point per second").build());
+		options.addOption(Option.builder("filter").desc("filter output").build());
 		options.addOption(Option.builder("no_virtual_time").desc("don't add virtual time").build());
 		options.addOption(
 				Option.builder("svs").longOpt("simple_virtual_speed").desc("Cyclist speed (km/h)").hasArg().build());
@@ -93,7 +96,8 @@ public class GpxToolOptions {
 		System.setProperty("gpx.data.cache", cacheValue);
 		output = new File(cmd.getOptionValue("o", "output"));
 		fixElevation = !cmd.hasOption("no_elevation");
-		pointPerSecond = !cmd.hasOption("no_elevation");
+		pointPerSecond = !cmd.hasOption("no_second_precision");
+		filter = cmd.hasOption("filter");
 		virtualTime = !cmd.hasOption("no_virtual_time");
 		if (cmd.hasOption("svs")) {
 			simpleVirtualSpeed = getDoubleOption(cmd, "svs", 30);
