@@ -1,5 +1,8 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.gpx.geocalc.Coordinate;
+import io.github.glandais.gpx.geocalc.EarthCalc;
+import io.github.glandais.gpx.geocalc.GeocalcPoint;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
@@ -77,25 +80,24 @@ public class GPXDataComputer {
                 .size() > 1) {
             final Point start = path.getPoints()
                     .get(0);
-            double dx = 0;
-            double dy = 0;
+            final GeocalcPoint geoStart = GeocalcPoint.at(Coordinate.fromDegrees(start.getLat()), Coordinate.fromDegrees(start.getLon()));
+            double bearing = 0;
+            int nBearing = 0;
             for (int i = 1;
                     i < path.getPoints()
                             .size();
                     i++) {
                 final Point point = path.getPoints()
                         .get(i);
-                final Point pointDx = new Point(point.getLat(), start.getLon());
-                final Point pointDy = new Point(start.getLon(), point.getLat());
+                final GeocalcPoint geoPoint =
+                        GeocalcPoint.at(Coordinate.fromDegrees(point.getLat()), Coordinate.fromDegrees(point.getLon()));
 
-                dx = dx + start.distanceTo(pointDx);
-                dy = dy + start.distanceTo(pointDy);
+                bearing = bearing + EarthCalc.bearing(geoStart, geoPoint);
+                nBearing++;
+
             }
-            double angle = (Math.PI / 2) - Math.atan2(dy, dx);
-            if (angle < 0) {
-                angle = angle + 2 * Math.PI;
-            }
-            return 180.0 * angle / Math.PI;
+            bearing = bearing / (1.0 * nBearing);
+            return bearing;
         } else {
             return 0.0;
         }
