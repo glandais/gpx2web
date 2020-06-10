@@ -9,10 +9,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GPXInfo {
 
-	private float distance;
+    private float distance;
 
-	private int positiveElevation;
+    private int positiveElevation;
 
-	private int negativeElevation;
+    private int negativeElevation;
+
+    private double direction;
+
+    private boolean crossing;
 
 }
