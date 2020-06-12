@@ -17,7 +17,7 @@ public class GPXDataComputer {
     public boolean isCrossing(GPXPath path) {
 
         // 50m
-        GPXFilter.simplifyDouglasPeucker(path.getPoints(), 0.0005);
+        GPXFilter.simplifyRadialDist(path.getPoints(), 50);
         if (path.getPoints()
                 .size() > 2) {
 
