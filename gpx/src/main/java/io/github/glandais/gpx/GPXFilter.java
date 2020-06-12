@@ -44,7 +44,7 @@ public class GPXFilter {
 	 *      implementation</a>
 	 * @since 1.2.0
 	 */
-	protected List<Point> simplify(List<Point> points, double tolerance, boolean radial, boolean douglasPeucker) {
+	public List<Point> simplify(List<Point> points, double tolerance, boolean radial, boolean douglasPeucker) {
 		if (points.size() <= 2) {
 			return points;
 		}
@@ -131,8 +131,7 @@ public class GPXFilter {
 		return diffHorizontal * diffHorizontal + diffVertical * diffVertical;
 	}
 
-	private static List<Point> simplifyDpStep(List<Point> points, int first, int last, double sqTolerance,
-			List<Point> simplified) {
+	private static List<Point> simplifyDpStep(List<Point> points, int first, int last, double sqTolerance) {
 		double maxSqDist = sqTolerance;
 		int index = 0;
 
@@ -148,13 +147,13 @@ public class GPXFilter {
 
 		if (maxSqDist > sqTolerance) {
 			if (index - first > 1) {
-				stepList.addAll(simplifyDpStep(points, first, index, sqTolerance, simplified));
+				stepList.addAll(simplifyDpStep(points, first, index, sqTolerance));
 			}
 
 			stepList.add(points.get(index));
 
 			if (last - index > 1) {
-				stepList.addAll(simplifyDpStep(points, index, last, sqTolerance, simplified));
+				stepList.addAll(simplifyDpStep(points, index, last, sqTolerance));
 			}
 		}
 
@@ -168,11 +167,11 @@ public class GPXFilter {
 	 * @param sqTolerance square of amount of simplification
 	 * @return a list of simplified points
 	 */
-	private static List<Point> simplifyDouglasPeucker(List<Point> points, double sqTolerance) {
+	public static List<Point> simplifyDouglasPeucker(List<Point> points, double sqTolerance) {
 		int last = points.size() - 1;
 		ArrayList<Point> simplified = new ArrayList<>();
 		simplified.add(points.get(0));
-		simplified.addAll(simplifyDpStep(points, 0, last, sqTolerance, simplified));
+		simplified.addAll(simplifyDpStep(points, 0, last, sqTolerance));
 		simplified.add(points.get(last));
 		return simplified;
 	}
