@@ -1,9 +1,10 @@
-package io.github.glandais.gpx;
+package io.github.glandais.map;
 
-import io.github.glandais.gpx.geocalc.Coordinate;
-import io.github.glandais.gpx.geocalc.EarthCalc;
-import io.github.glandais.gpx.geocalc.GeocalcPoint;
+import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.Point;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -74,33 +75,39 @@ public class GPXDataComputer {
         return intersects;
     }
 
-    public double getDirection(GPXPath path) {
+    public Vector getWind(GPXPath path) {
 
-        if (path.getPoints()
-                .size() > 1) {
-            final Point start = path.getPoints()
-                    .get(0);
-            final GeocalcPoint geoStart = GeocalcPoint.at(Coordinate.fromDegrees(start.getLat()), Coordinate.fromDegrees(start.getLon()));
-            double bearing = 0;
-            int nBearing = 0;
-            for (int i = 1;
-                    i < path.getPoints()
-                            .size();
-                    i++) {
-                final Point point = path.getPoints()
-                        .get(i);
-                final GeocalcPoint geoPoint =
-                        GeocalcPoint.at(Coordinate.fromDegrees(point.getLat()), Coordinate.fromDegrees(point.getLon()));
+        final List<Point> points = path.getPoints();
+        final int size = points.size();
+        if (size > 3) {
+            final int i1 = size / 3;
+            final int i2 = Math.min((2 * size) / 3, size - 1);
+            final Vector p1 = project(points.get(0));
+            final Vector p2 = project(points.get(i1));
+            final Vector p3 = project(points.get(i2));
 
-                bearing = bearing + EarthCalc.bearing(geoStart, geoPoint);
-                nBearing++;
+            final Vector r1 = vector(p1, p2);
+            final Vector r2 = vector(p2, p3);
+            final Vector r3 = vector(p3, p1);
 
-            }
-            bearing = bearing / (1.0 * nBearing);
-            return bearing;
+            return r1.add(r2.mul(3.0))
+                    .add(r3.mul(5.0))
+                    .normalize();
         } else {
-            return 0.0;
+            return new Vector(0.0, 0.0);
         }
+
+    }
+
+    private Vector vector(final Vector p1, final Vector p2) {
+
+        return new Vector(p2.getX() - p1.getX(), p2.getY() - p1.getY()).normalize();
+    }
+
+    private Vector project(final Point point) {
+
+        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLon(), 12),
+                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLat(), 12));
     }
 
 }

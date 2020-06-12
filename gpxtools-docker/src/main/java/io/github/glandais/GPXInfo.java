@@ -1,5 +1,6 @@
 package io.github.glandais;
 
+import io.github.glandais.map.Vector;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ public class GPXInfo {
 
     private int negativeElevation;
 
-    private double direction;
+    private Vector wind;
 
     private boolean crossing;
 

@@ -1,6 +1,6 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.GPXDataComputer;
+import io.github.glandais.map.GPXDataComputer;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
@@ -75,7 +75,7 @@ public class GpxController {
             float dist = Math.round(10.0 * gpxPath.getDist()) / 10.0f;
 
             return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()), (int) Math.round(gpxPath.getTotalElevationNegative()),
-                    gpxDataComputer.getDirection(gpxPath), gpxDataComputer.isCrossing(gpxPath));
+                    gpxDataComputer.getWind(gpxPath), gpxDataComputer.isCrossing(gpxPath));
         } else {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }
