@@ -80,19 +80,16 @@ public class GPXDataComputer {
         final List<Point> points = path.getPoints();
         final int size = points.size();
         if (size > 3) {
-            final int i1 = size / 3;
-            final int i2 = Math.min((2 * size) / 3, size - 1);
-            final Vector p1 = project(points.get(0));
-            final Vector p2 = project(points.get(i1));
-            final Vector p3 = project(points.get(i2));
 
-            final Vector r1 = vector(p1, p2);
-            final Vector r2 = vector(p2, p3);
-            final Vector r3 = vector(p3, p1);
+            final Vector start = project(points.get(0));
 
-            return r1.add(r2.mul(3.0))
-                    .add(r3.mul(5.0))
-                    .normalize();
+            Vector tot = new Vector(0, 0);
+            for (Point point : points) {
+                tot = tot.add(vector(start, project(point)));
+            }
+            tot = tot.mul(1.0 / size);
+            return tot.normalize()
+                    .mul(-1.0);
         } else {
             return new Vector(0.0, 0.0);
         }
