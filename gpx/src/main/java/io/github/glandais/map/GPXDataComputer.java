@@ -4,11 +4,9 @@ import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -17,18 +15,18 @@ public class GPXDataComputer {
     public boolean isCrossing(GPXPath path) {
 
         // 50m
-        GPXFilter.simplifyRadialDist(path.getPoints(), 50);
+        GPXFilter.filterPointsDouglasPeucker(path, 50);
         if (path.getPoints()
                 .size() > 2) {
 
             for (int i = 0;
-                    i < path.getPoints()
-                            .size() - 1;
-                    i++) {
+                 i < path.getPoints()
+                         .size() - 1;
+                 i++) {
                 for (int j = i + 2;
-                        j < path.getPoints()
-                                .size() - 1;
-                        j++) {
+                     j < path.getPoints()
+                             .size() - 1;
+                     j++) {
 
                     if (isIntersects(path, i, j)) {
                         return true;

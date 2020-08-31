@@ -1,21 +1,11 @@
 package io.github.glandais;
 
-import io.github.glandais.map.GPXDataComputer;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.util.List;
-
+import io.github.glandais.map.GPXDataComputer;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,6 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.List;
 
 @RestController
 public class GpxController {
@@ -37,9 +32,6 @@ public class GpxController {
     private GPXFileWriter gpxFileWriter;
 
     @Autowired
-    private GPXFilter gpxFilter;
-
-    @Autowired
     private GPXDataComputer gpxDataComputer;
 
     @CrossOrigin(origins = "https://gabriel.landais.org")
@@ -50,7 +42,7 @@ public class GpxController {
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxPathEnhancer.virtualize(gpxPath);
-            gpxFilter.filterPointsDouglasPeucker(gpxPath);
+            GPXFilter.filterPointsDouglasPeucker(gpxPath);
 
             File tmp = File.createTempFile("gpx", "tmp");
             gpxFileWriter.writeGpxFile(paths, tmp);
@@ -89,7 +81,7 @@ public class GpxController {
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxPathEnhancer.virtualize(gpxPath);
-            gpxFilter.filterPointsDouglasPeucker(gpxPath);
+            GPXFilter.filterPointsDouglasPeucker(gpxPath);
             try (Writer w = new OutputStreamWriter(response.getOutputStream()); BufferedWriter bw = new BufferedWriter(w)) {
                 bw.write("{");
                 bw.newLine();
@@ -98,9 +90,9 @@ public class GpxController {
                 bw.write("  \"coordinates\": [");
                 bw.newLine();
                 for (int i = 0;
-                        i < gpxPath.getPoints()
-                                .size();
-                        i++) {
+                     i < gpxPath.getPoints()
+                             .size();
+                     i++) {
                     Point point = gpxPath.getPoints()
                             .get(i);
                     bw.write("    [");

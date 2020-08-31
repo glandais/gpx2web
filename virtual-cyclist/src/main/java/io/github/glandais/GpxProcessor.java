@@ -18,14 +18,13 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -66,9 +65,6 @@ public class GpxProcessor {
 
     @Autowired
     private FitFileWriter fitFileWriter;
-
-    @Autowired
-    private GPXFilter gpxFilter;
 
     public void process(File gpxFile, GpxToolOptions options) throws Exception {
 
@@ -115,7 +111,7 @@ public class GpxProcessor {
             }
 
             if (options.isFilter()) {
-                gpxFilter.filterPointsDouglasPeucker(path);
+                GPXFilter.filterPointsDouglasPeucker(path);
             }
 
             log.info("Writing GPX for {}", path.getName());
