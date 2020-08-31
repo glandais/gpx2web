@@ -79,6 +79,7 @@ public class GpxProcessor {
             pathFolder.mkdirs();
             if (options.isFixElevation()) {
                 gpxElevationFixer.fixElevation(path);
+                log.info("D+ : {} m", path.getTotalElevation());
             }
             if (options.isVirtualTime()) {
                 ZonedDateTime start = options.getNextStart();

@@ -6,6 +6,7 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.map.GPXDataComputer;
+import io.github.glandais.srtm.GPXElevationFixer;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,6 +34,9 @@ public class GpxController {
 
     @Autowired
     private GPXDataComputer gpxDataComputer;
+
+    @Autowired
+    private GPXElevationFixer gpxElevationFixer;
 
     @CrossOrigin(origins = "https://gabriel.landais.org")
     @PostMapping("/simplify")
@@ -64,6 +68,7 @@ public class GpxController {
         List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
+            gpxElevationFixer.fixElevation(gpxPath);
             float dist = Math.round(10.0 * gpxPath.getDist()) / 10.0f;
 
             return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()), (int) Math.round(gpxPath.getTotalElevationNegative()),
