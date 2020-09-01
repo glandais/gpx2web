@@ -24,7 +24,13 @@ public class Course {
 
     private final ZonedDateTime start;
 
-    public double getPowerW(Point from, Point to, double p_air, double p_frot, double p_grav, double v, double grad) {
+    // m.s-2
+    private final double windSpeed;
+
+    // rad (0 = N, Pi/2 = E)
+    private final double windDirection;
+
+    public double getPowerW(Point from, Point to, long currentTime, double p_air, double p_frot, double p_grav, double v, double grad) {
 
         if (grad < -0.06) {
             return 0;

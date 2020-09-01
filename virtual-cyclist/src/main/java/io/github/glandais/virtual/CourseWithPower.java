@@ -13,11 +13,11 @@ public class CourseWithPower extends Course {
 
     public CourseWithPower(GPXPath original, Cyclist cyclist, ZonedDateTime date) {
 
-        super(original, cyclist, date);
+        super(original, cyclist, date, 0, 0);
     }
 
     @Override
-    public double getPowerW(Point from, Point to, double p_air, double p_frot, double p_grav, double v, double grad) {
+    public double getPowerW(Point from, Point to, long currentTime, double p_air, double p_frot, double p_grav, double v, double grad) {
 
         Double p = from.getData()
                 .get("power");

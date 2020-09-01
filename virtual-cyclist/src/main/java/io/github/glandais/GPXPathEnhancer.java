@@ -36,7 +36,7 @@ public class GPXPathEnhancer {
 		double maxSpeedKmH = 90;
 		double maxBrakeG = 0.3;
 		Cyclist cyclist = new Cyclist(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG);
-		Course course = new Course(gpxPath, cyclist, ZonedDateTime.now());
+		Course course = new Course(gpxPath, cyclist, ZonedDateTime.now(), 0, 0);
 		maxSpeedComputer.computeMaxSpeeds(course);
 		powerComputer.computeTrack(course);
 		gpxPerSecond.computeOnePointPerSecond(gpxPath);

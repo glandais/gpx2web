@@ -5,7 +5,6 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
-import io.github.glandais.map.GPXDataComputer;
 import io.github.glandais.srtm.GPXElevationFixer;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;

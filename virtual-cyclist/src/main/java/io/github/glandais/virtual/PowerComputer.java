@@ -1,13 +1,14 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.Point;
+import io.github.glandais.map.MagicPower2MapSpace;
+import io.github.glandais.map.Vector;
 import io.github.glandais.util.Constants;
-
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class PowerComputer {
@@ -25,7 +26,7 @@ public class PowerComputer {
                 .toInstant()
                 .toEpochMilli();
 
-        double v = INITIAL_SPEED;
+        double u = INITIAL_SPEED;
         double odo = 0.0;
         for (int j = 0; j < points.size(); j++) {
             Point to = points.get(j);
@@ -33,14 +34,14 @@ public class PowerComputer {
             if (j > 0) {
                 Point from = points.get(j - 1);
                 from.getData()
-                        .put("v", 3.6 * v);
+                        .put("v", 3.6 * u);
                 // meters
                 dist = 1000.0 * from.distanceTo(to);
                 if (dist > 0) {
                     // point to point result
-                    PointToPoint result = computePointToPoint(v, odo, from, to, course);
+                    PointToPoint result = computePointToPoint(u, odo, from, to, currentTime, course);
 
-                    v = result.getEndSpeed();
+                    u = result.getEndSpeed();
 
                     // ms ellapsed time
                     long ts = Math.round(result.getTime() * 1000);
@@ -54,14 +55,14 @@ public class PowerComputer {
                 .computeArrays();
     }
 
-    private PointToPoint computePointToPoint(double v, double odo, Point from, Point to, Course course) {
+    private PointToPoint computePointToPoint(double u, double odo, Point from, Point to, long currentTime, Course course) {
 
         double dist = 1000.0 * from.distanceTo(to);
 
         double dz = to.getZ() - from.getZ();
         double grad = dz / dist;
 
-        LOGGER.debug("{} {} {} {} {}", odo, v, from, to, grad);
+        LOGGER.debug("{} {} {} {} {}", odo, u, from, to, grad);
 
         // max speeds
         double ms1 = from.getMaxSpeed();
@@ -87,16 +88,42 @@ public class PowerComputer {
         double p_grav, p_air, p_frot, p_cyclist, p_app, acc, c, ms, dx;
         double prev_v, prev_d, prev_t;
         while (true) {
-            prev_v = v;
+            prev_v = u;
             prev_d = d;
             prev_t = t;
             // OK
             // (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)
-            p_grav = mKg * Constants.G * v * grad;
-            p_air = cx * v * v * v;
-            p_frot = f * Constants.G * mKg * v;
+            p_grav = mKg * Constants.G * u * grad;
+            p_frot = f * Constants.G * mKg * u;
 
-            p_cyclist = course.getPowerW(from, to, p_air, p_frot, p_grav, v, grad);
+            if (course.getWindSpeed() == 0) {
+                p_air = cx * u * u * u;
+            } else {
+
+                Vector v_from = project(from);
+                Vector v_to = project(to);
+                double dy2 = v_to.getY() - v_from.getY();
+                double dx2 = v_to.getX() - v_from.getX();
+                double bearing = Math.atan2(-dy2, dx2);
+                double windDirectionAsBearing = (Math.PI / 2) - course.getWindDirection();
+
+                double alpha = windDirectionAsBearing - bearing;
+                double v = course.getWindSpeed();
+
+                // https://www.sheldonbrown.com/isvan/Power%20Management%20for%20Lightweight%20Vehicles.pdf
+
+                double l1 = u + v * Math.cos(alpha);
+                double l2 = Math.pow(l1, 2);
+                double l3 = u * u + v * v + 2 * u * v * Math.cos(alpha);
+                double l4 = l2 / l3;
+
+                double mu = 1.2;
+                double lambda = l4 + mu * (1 - l4);
+
+                p_air = cx * lambda * Math.sqrt(l3) * l1 * u;
+            }
+
+            p_cyclist = course.getPowerW(from, to, currentTime, p_air, p_frot, p_grav, u, grad);
             from.getData()
                     .put("p", p_cyclist);
 
@@ -105,7 +132,7 @@ public class PowerComputer {
 
             // m.s-2
             acc = p_app / mKg;
-            v = v + acc * dt;
+            u = u + acc * dt;
 
             // Compute max speed
             if (d > dist) {
@@ -114,14 +141,14 @@ public class PowerComputer {
                 c = d / dist;
                 ms = ms1 + c * (ms2 - ms1);
             }
-            if (v > ms) {
-                v = ms;
+            if (u > ms) {
+                u = ms;
             }
-            if (v < INITIAL_SPEED) {
-                v = INITIAL_SPEED;
+            if (u < INITIAL_SPEED) {
+                u = INITIAL_SPEED;
             }
 
-            dx = dt * v;
+            dx = dt * u;
             d = d + dx;
             t = t + dt;
             if (d > dist) {
@@ -134,6 +161,12 @@ public class PowerComputer {
                 return new PointToPoint(lastTime, lastSpeed);
             }
         }
+    }
+
+    private Vector project(final Point point) {
+
+        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLon(), 12),
+                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLat(), 12));
     }
 
 }

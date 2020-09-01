@@ -1,16 +1,31 @@
-package io.github.glandais.map;
+package io.github.glandais;
 
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.map.MagicPower2MapSpace;
+import io.github.glandais.map.Vector;
+import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.virtual.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
 @Slf4j
 public class GPXDataComputer {
+
+    @Autowired
+    private PowerComputer powerComputer;
+
+    @Autowired
+    private GPXElevationFixer gpxElevationFixer;
+
+    @Autowired
+    private MaxSpeedComputer maxSpeedComputer;
 
     public boolean isCrossing(GPXPath path) {
 
@@ -75,6 +90,41 @@ public class GPXDataComputer {
             }
         }
         return intersects;
+    }
+
+    public Vector getWindNew(GPXPath gpxPath) {
+
+        gpxElevationFixer.fixElevation(gpxPath);
+        double mKg = 72;
+        double powerW = 280;
+        double maxAngleDeg = 15;
+        double maxSpeedKmH = 90;
+        double maxBrakeG = 0.3;
+        Cyclist cyclist = new Cyclist(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG);
+        Course course = new Course(gpxPath, cyclist, ZonedDateTime.now(), 0, 0);
+        maxSpeedComputer.computeMaxSpeeds(course);
+        powerComputer.computeTrack(course);
+        long[] time = course.getGpxPath().getTime();
+        long duration = time[time.length - 1] - time[0];
+
+        int count = 18;
+        long[] dur = new long[count];
+        long longMinDur = Long.MAX_VALUE;
+        for (int i = 0; i < count; i++) {
+
+            int deg = i * (360 / count);
+            course = new Course(gpxPath, cyclist, ZonedDateTime.now(), 3, Math.toRadians(deg));
+            powerComputer.computeTrack(course);
+            time = course.getGpxPath().getTime();
+            dur[i] = time[time.length - 1] - time[0];
+            longMinDur = Math.min(longMinDur, dur[i]);
+        }
+        for (int i = 0; i < count; i++) {
+
+            int deg = i * (360 / count);
+            System.out.println(deg + "° " + dur[i] + " (" + (dur[i] - longMinDur) + ")");
+        }
+        return getWind(gpxPath);
     }
 
     public Vector getWind(GPXPath path) {
