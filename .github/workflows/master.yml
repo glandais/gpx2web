@@ -1,4 +1,4 @@
-name: master pre-release
+name: master release
 
 on:
   push:
@@ -14,13 +14,23 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Modify versions
+        run: mvn -B versions:set -DremoveSnapshot versions:commit
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
+          echo "::set-output name=version::$VERSION"
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: push_release
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            *.jar
+          commit_message: 'Release ${{ steps.get_version.outputs.version }}'
+          tagging_message: "v${{ steps.get_version.outputs.version }}"
+      - name: Modify versions
+        run: mvn -B versions:set -DnextSnapshot versions:commit
+      - name: push_snapshot
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Next SNAPSHOT'
