@@ -34,7 +34,7 @@ jobs:
           automatic_release_tag: "latest"
           prerelease: false
           files: |
-            **/*.jar
+            **/gpxtools.jar
       - name: Modify versions
         run: mvn -B versions:set -DnextSnapshot versions:commit
       - name: push_snapshot
