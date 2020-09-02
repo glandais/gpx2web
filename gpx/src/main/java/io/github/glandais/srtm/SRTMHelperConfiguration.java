@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.reader.dem.SRTMGL1Provider;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class SRTMHelperConfiguration {
 
 	@Value("${gpx.data.cache:cache}")

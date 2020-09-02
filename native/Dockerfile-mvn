@@ -1,0 +1,16 @@
+FROM oracle/graalvm-ce:20.2.0-java11
+
+RUN yum -y upgrade && gu install native-image && yum -y install wget curl ca-certificates zip unzip openssl which findutils && update-ca-trust
+
+ENV SDKMAN_DIR=/sdkman
+RUN curl -s "https://get.sdkman.io" | bash && \
+    echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config && \
+    echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config && \
+    bash -c "source $SDKMAN_DIR/bin/sdkman-init.sh && sdk install maven 3.6.3"
+
+WORKDIR /home/mvn
+
+ENV HOME=/home/mvn
+ENV M2_HOME=/home/mvn/.m2
+
+ENTRYPOINT ["/bin/bash", "-c", "source $SDKMAN_DIR/bin/sdkman-init.sh && \"$@\"", "-s"]

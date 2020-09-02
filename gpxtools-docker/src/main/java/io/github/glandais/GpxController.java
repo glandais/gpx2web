@@ -22,20 +22,28 @@ import java.util.List;
 @RestController
 public class GpxController {
 
-    @Autowired
-    private GPXParser gpxParser;
+    private final GPXParser gpxParser;
 
-    @Autowired
-    private GPXPathEnhancer gpxPathEnhancer;
+    private final GPXPathEnhancer gpxPathEnhancer;
 
-    @Autowired
-    private GPXFileWriter gpxFileWriter;
+    private final GPXFileWriter gpxFileWriter;
 
-    @Autowired
-    private GPXDataComputer gpxDataComputer;
+    private final GPXDataComputer gpxDataComputer;
 
-    @Autowired
-    private GPXElevationFixer gpxElevationFixer;
+    private final GPXElevationFixer gpxElevationFixer;
+
+    public GpxController(final GPXParser gpxParser,
+            final GPXPathEnhancer gpxPathEnhancer,
+            final GPXFileWriter gpxFileWriter,
+            final GPXDataComputer gpxDataComputer,
+            final GPXElevationFixer gpxElevationFixer) {
+
+        this.gpxParser = gpxParser;
+        this.gpxPathEnhancer = gpxPathEnhancer;
+        this.gpxFileWriter = gpxFileWriter;
+        this.gpxDataComputer = gpxDataComputer;
+        this.gpxElevationFixer = gpxElevationFixer;
+    }
 
     @CrossOrigin(origins = "https://gabriel.landais.org")
     @PostMapping("/simplify")

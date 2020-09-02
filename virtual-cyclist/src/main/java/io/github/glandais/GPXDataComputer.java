@@ -18,14 +18,20 @@ import java.util.List;
 @Slf4j
 public class GPXDataComputer {
 
-    @Autowired
-    private PowerComputer powerComputer;
+    private final PowerComputer powerComputer;
 
-    @Autowired
-    private GPXElevationFixer gpxElevationFixer;
+    private final GPXElevationFixer gpxElevationFixer;
 
-    @Autowired
-    private MaxSpeedComputer maxSpeedComputer;
+    private final MaxSpeedComputer maxSpeedComputer;
+
+    public GPXDataComputer(final PowerComputer powerComputer,
+            final GPXElevationFixer gpxElevationFixer,
+            final MaxSpeedComputer maxSpeedComputer) {
+
+        this.powerComputer = powerComputer;
+        this.gpxElevationFixer = gpxElevationFixer;
+        this.maxSpeedComputer = maxSpeedComputer;
+    }
 
     public boolean isCrossing(GPXPath path) {
 

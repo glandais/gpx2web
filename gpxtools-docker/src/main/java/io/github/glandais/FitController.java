@@ -21,14 +21,18 @@ import java.util.List;
 @RestController
 public class FitController {
 
-    @Autowired
-    private GPXParser gpxParser;
+    private final GPXParser gpxParser;
 
-    @Autowired
-    private FitFileWriter fitFileWriter;
+    private final FitFileWriter fitFileWriter;
 
-    @Autowired
-    private GPXPathEnhancer gpxPathEnhancer;
+    private final GPXPathEnhancer gpxPathEnhancer;
+
+    public FitController(final GPXParser gpxParser, final FitFileWriter fitFileWriter, final GPXPathEnhancer gpxPathEnhancer) {
+
+        this.gpxParser = gpxParser;
+        this.fitFileWriter = fitFileWriter;
+        this.gpxPathEnhancer = gpxPathEnhancer;
+    }
 
     @CrossOrigin(origins = "https://gabriel.landais.org")
     @PostMapping("/fit")

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>cycling-tools</artifactId>
+        <groupId>io.github.glandais</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gpxtools-cli</artifactId>
+
+    <properties>
+        <airline.version>0.8</airline.version>
+        <commons-cli.version>1.4</commons-cli.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.glandais</groupId>
+            <artifactId>gpx</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.glandais</groupId>
+            <artifactId>virtual-cyclist</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>airline</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>${commons-cli.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.experimental</groupId>
+            <artifactId>spring-graalvm-native</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>gpxtools</finalName>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>graal</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>20.2.0</version>
+                        <configuration>
+                            <imageName>gpxtools</imageName>
+                            <mainClass>io.github.glandais.GpxTool</mainClass>
+                            <buildArgs>-Dspring.native.verbose=true -Dspring.graal.remove-unused-autoconfig=true
+                                --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime
+                                -H:+ReportExceptionStackTraces --no-server --enable-https
+                            </buildArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

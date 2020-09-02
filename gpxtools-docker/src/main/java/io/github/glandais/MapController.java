@@ -20,11 +20,15 @@ import io.github.glandais.map.TileMapProducer;
 @RestController
 public class MapController {
 
-	@Autowired
-	private GPXParser gpxParser;
+	private final GPXParser gpxParser;
 
-	@Autowired
-	private TileMapProducer tileMapProducer;
+	private final TileMapProducer tileMapProducer;
+
+	public MapController(final GPXParser gpxParser, final TileMapProducer tileMapProducer) {
+
+		this.gpxParser = gpxParser;
+		this.tileMapProducer = tileMapProducer;
+	}
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/map")

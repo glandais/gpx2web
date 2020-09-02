@@ -23,14 +23,18 @@ import io.github.glandais.srtm.GPXElevationFixer;
 @RestController
 public class ProfileController {
 
-	@Autowired
-	private GPXParser gpxParser;
+	private final GPXParser gpxParser;
 
-	@Autowired
-	private GPXElevationFixer gpxElevationFixer;
+	private final GPXElevationFixer gpxElevationFixer;
 
-	@Autowired
-	private GPXCharter gpxCharter;
+	private final GPXCharter gpxCharter;
+
+	public ProfileController(final GPXParser gpxParser, final GPXElevationFixer gpxElevationFixer, final GPXCharter gpxCharter) {
+
+		this.gpxParser = gpxParser;
+		this.gpxElevationFixer = gpxElevationFixer;
+		this.gpxCharter = gpxCharter;
+	}
 
 	@CrossOrigin(origins = "https://gabriel.landais.org")
 	@PostMapping("/profile")

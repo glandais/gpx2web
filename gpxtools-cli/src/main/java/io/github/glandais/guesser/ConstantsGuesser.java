@@ -24,23 +24,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConstantsGuesser {
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
-	@Autowired
-	private PowerComputer powerComputer;
+	private final PowerComputer powerComputer;
 
-	@Autowired
-	private GPXElevationFixer gpxElevationFixer;
+	private final GPXElevationFixer gpxElevationFixer;
 
-	@Autowired
-	private MaxSpeedComputer maxSpeedComputer;
+	private final MaxSpeedComputer maxSpeedComputer;
 
-	@Autowired
-	private GradeService gradeService;
+	private final GradeService gradeService;
 
-	@Autowired
-	private SpeedService speedService;
+	private final SpeedService speedService;
+
+	public ConstantsGuesser(final ObjectMapper objectMapper,
+			final PowerComputer powerComputer,
+			final GPXElevationFixer gpxElevationFixer,
+			final MaxSpeedComputer maxSpeedComputer,
+			final GradeService gradeService,
+			final SpeedService speedService) {
+
+		this.objectMapper = objectMapper;
+		this.powerComputer = powerComputer;
+		this.gpxElevationFixer = gpxElevationFixer;
+		this.maxSpeedComputer = maxSpeedComputer;
+		this.gradeService = gradeService;
+		this.speedService = speedService;
+	}
 
 	public Cyclist guessWithPathWithPower(GPXPath original) throws IOException {
 		gpxElevationFixer.smoothZ(original, 0.1);

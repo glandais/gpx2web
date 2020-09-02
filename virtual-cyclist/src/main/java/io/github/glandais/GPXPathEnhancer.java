@@ -16,17 +16,24 @@ import io.github.glandais.virtual.PowerComputer;
 @Service
 public class GPXPathEnhancer {
 
-	@Autowired
-	private GPXElevationFixer gpxElevationFixer;
+	private final GPXElevationFixer gpxElevationFixer;
 
-	@Autowired
-	private MaxSpeedComputer maxSpeedComputer;
+	private final MaxSpeedComputer maxSpeedComputer;
 
-	@Autowired
-	private PowerComputer powerComputer;
+	private final PowerComputer powerComputer;
 
-	@Autowired
-	private GPXPerSecond gpxPerSecond;
+	private final GPXPerSecond gpxPerSecond;
+
+	public GPXPathEnhancer(final GPXElevationFixer gpxElevationFixer,
+			final MaxSpeedComputer maxSpeedComputer,
+			final PowerComputer powerComputer,
+			final GPXPerSecond gpxPerSecond) {
+
+		this.gpxElevationFixer = gpxElevationFixer;
+		this.maxSpeedComputer = maxSpeedComputer;
+		this.powerComputer = powerComputer;
+		this.gpxPerSecond = gpxPerSecond;
+	}
 
 	public void virtualize(GPXPath gpxPath) {
 		gpxElevationFixer.fixElevation(gpxPath);

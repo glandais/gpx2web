@@ -13,11 +13,7 @@ public class App {
 		BraquetComputer braquetComputer = new BraquetComputer();
 
 		List<GPXPath> paths = new GPXParser().parsePaths(new File(args[0]));
-		braquetComputer.parseGPX(paths, new BraquetProgress() {
-			public void progress(int i, int size) {
-				System.out.println(i + " / " + size);
-			}
-		});
+		braquetComputer.parseGPX(paths, (i, size) -> System.out.println(i + " / " + size));
 
 		boolean first = true;
 		for (Braquet braquetDisp : braquetComputer.getBraquets()) {

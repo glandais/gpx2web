@@ -18,53 +18,69 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 @Service
 @Slf4j
 public class GpxProcessor {
 
-    @Autowired
-    private GPXParser gpxParser;
+    private final GPXParser gpxParser;
 
-    @Autowired
-    private GPXElevationFixer gpxElevationFixer;
+    private final GPXElevationFixer gpxElevationFixer;
 
-    @Autowired
-    private SimpleTimeComputer simpleTimeComputer;
+    private final SimpleTimeComputer simpleTimeComputer;
 
-    @Autowired
-    private MaxSpeedComputer maxSpeedComputer;
+    private final MaxSpeedComputer maxSpeedComputer;
 
-    @Autowired
-    private PowerComputer powerComputer;
+    private final PowerComputer powerComputer;
 
-    @Autowired
-    private GPXPerSecond gpxPerSecond;
+    private final GPXPerSecond gpxPerSecond;
 
-    @Autowired
-    private GPXCharter gpxCharter;
+    private final GPXCharter gpxCharter;
 
-    @Autowired
-    private TileMapProducer tileImageProducer;
+    private final TileMapProducer tileImageProducer;
 
-    @Autowired
-    private SRTMMapProducer srtmImageProducer;
+    private final SRTMMapProducer srtmImageProducer;
 
-    @Autowired
-    private GPXFileWriter gpxFileWriter;
+    private final GPXFileWriter gpxFileWriter;
 
-    @Autowired
-    private KMLFileWriter kmlFileWriter;
+    private final KMLFileWriter kmlFileWriter;
 
-    @Autowired
-    private FitFileWriter fitFileWriter;
+    private final FitFileWriter fitFileWriter;
+
+    public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
+            final GPXParser gpxParser,
+            final GPXElevationFixer gpxElevationFixer,
+            final MaxSpeedComputer maxSpeedComputer,
+            final PowerComputer powerComputer,
+            final FitFileWriter fitFileWriter,
+            final GPXPerSecond gpxPerSecond,
+            final GPXCharter gpxCharter,
+            final TileMapProducer tileImageProducer,
+            final SRTMMapProducer srtmImageProducer,
+            final GPXFileWriter gpxFileWriter,
+            final KMLFileWriter kmlFileWriter) {
+
+        this.simpleTimeComputer = simpleTimeComputer;
+        this.gpxParser = gpxParser;
+        this.gpxElevationFixer = gpxElevationFixer;
+        this.maxSpeedComputer = maxSpeedComputer;
+        this.powerComputer = powerComputer;
+        this.fitFileWriter = fitFileWriter;
+        this.gpxPerSecond = gpxPerSecond;
+        this.gpxCharter = gpxCharter;
+        this.tileImageProducer = tileImageProducer;
+        this.srtmImageProducer = srtmImageProducer;
+        this.gpxFileWriter = gpxFileWriter;
+        this.kmlFileWriter = kmlFileWriter;
+    }
 
     public void process(File gpxFile, GpxToolOptions options) throws Exception {
 
@@ -86,7 +102,7 @@ public class GpxProcessor {
                 if (options.getSimpleVirtualSpeed() != null) {
                     simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed());
                 } else {
-                    Course course = new Course(path, options.getCyclist(), start);
+                    Course course = new Course(path, options.getCyclist(), start, options.getWindSpeed(), options.getWindDirection());
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }
