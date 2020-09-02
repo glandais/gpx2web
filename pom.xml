@@ -11,7 +11,7 @@
     <groupId>io.github.glandais</groupId>
     <artifactId>cycling-tools</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
 
     <properties>
         <java.version>11</java.version>
