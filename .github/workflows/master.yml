@@ -28,6 +28,13 @@ jobs:
         with:
           commit_message: 'Release ${{ steps.get_version.outputs.version }}'
           tagging_message: "v${{ steps.get_version.outputs.version }}"
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          files: |
+            **/*.jar
       - name: Modify versions
         run: mvn -B versions:set -DnextSnapshot versions:commit
       - name: push_snapshot
