@@ -1,10 +1,9 @@
-name: All but not master
+name: not master
 
 on:
   push:
-    branches:
-      - /refs/heads/*
-      - !master
+    branches-ignore:
+      - master
 
 jobs:
   build:
