@@ -4,11 +4,12 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.map.MagicPower2MapSpace;
 import io.github.glandais.map.Vector;
 import io.github.glandais.util.Constants;
+
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PowerComputer {
@@ -22,9 +23,10 @@ public class PowerComputer {
         List<Point> points = course.getGpxPath()
                 .getPoints();
 
-        long currentTime = course.getStart()
+        final long startTime = course.getStart()
                 .toInstant()
                 .toEpochMilli();
+        long currentTime = startTime;
 
         double u = INITIAL_SPEED;
         double odo = 0.0;
@@ -39,7 +41,7 @@ public class PowerComputer {
                 dist = 1000.0 * from.distanceTo(to);
                 if (dist > 0) {
                     // point to point result
-                    PointToPoint result = computePointToPoint(u, odo, from, to, currentTime, course);
+                    PointToPoint result = computePointToPoint(u, odo, from, to, currentTime - startTime, course);
 
                     u = result.getEndSpeed();
 

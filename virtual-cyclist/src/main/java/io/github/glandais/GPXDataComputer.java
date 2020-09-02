@@ -6,13 +6,17 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.map.MagicPower2MapSpace;
 import io.github.glandais.map.Vector;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.virtual.*;
+import io.github.glandais.virtual.Course;
+import io.github.glandais.virtual.CourseWithTiring;
+import io.github.glandais.virtual.Cyclist;
+import io.github.glandais.virtual.MaxSpeedComputer;
+import io.github.glandais.virtual.PowerComputer;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -41,13 +45,13 @@ public class GPXDataComputer {
                 .size() > 2) {
 
             for (int i = 0;
-                 i < path.getPoints()
-                         .size() - 1;
-                 i++) {
+                    i < path.getPoints()
+                            .size() - 1;
+                    i++) {
                 for (int j = i + 2;
-                     j < path.getPoints()
-                             .size() - 1;
-                     j++) {
+                        j < path.getPoints()
+                                .size() - 1;
+                        j++) {
 
                     if (isIntersects(path, i, j)) {
                         return true;
@@ -110,7 +114,8 @@ public class GPXDataComputer {
         Course course = new Course(gpxPath, cyclist, ZonedDateTime.now(), 0, 0);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
-        long[] time = course.getGpxPath().getTime();
+        long[] time = course.getGpxPath()
+                .getTime();
         long duration = time[time.length - 1] - time[0];
 
         int count = 18;
@@ -119,16 +124,20 @@ public class GPXDataComputer {
         for (int i = 0; i < count; i++) {
 
             int deg = i * (360 / count);
-            course = new Course(gpxPath, cyclist, ZonedDateTime.now(), 3, Math.toRadians(deg));
+            course = new CourseWithTiring(gpxPath, cyclist, ZonedDateTime.now(), 3, Math.toRadians(deg), duration);
             powerComputer.computeTrack(course);
-            time = course.getGpxPath().getTime();
+            time = course.getGpxPath()
+                    .getTime();
             dur[i] = time[time.length - 1] - time[0];
             longMinDur = Math.min(longMinDur, dur[i]);
         }
         for (int i = 0; i < count; i++) {
 
             int deg = i * (360 / count);
-            System.out.println(deg + "° " + dur[i] + " (" + (dur[i] - longMinDur) + ")");
+            final long ms = dur[i] - longMinDur;
+            final long s = ms / 1000;
+            final long m = ms / 60000;
+            System.out.println(deg + "° " + dur[i] + " (" + ms + "ms = " + s + "s = " + m + "m)");
         }
         return getWind(gpxPath);
     }
