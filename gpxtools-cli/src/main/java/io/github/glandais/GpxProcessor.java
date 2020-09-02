@@ -24,7 +24,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,6 +54,8 @@ public class GpxProcessor {
 
     private final FitFileWriter fitFileWriter;
 
+    private final GPXDataComputer gpxDataComputer;
+
     public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
             final GPXParser gpxParser,
             final GPXElevationFixer gpxElevationFixer,
@@ -66,7 +67,8 @@ public class GpxProcessor {
             final TileMapProducer tileImageProducer,
             final SRTMMapProducer srtmImageProducer,
             final GPXFileWriter gpxFileWriter,
-            final KMLFileWriter kmlFileWriter) {
+            final KMLFileWriter kmlFileWriter,
+            final GPXDataComputer gpxDataComputer) {
 
         this.simpleTimeComputer = simpleTimeComputer;
         this.gpxParser = gpxParser;
@@ -80,6 +82,7 @@ public class GpxProcessor {
         this.srtmImageProducer = srtmImageProducer;
         this.gpxFileWriter = gpxFileWriter;
         this.kmlFileWriter = kmlFileWriter;
+        this.gpxDataComputer = gpxDataComputer;
     }
 
     public void process(File gpxFile, GpxToolOptions options) throws Exception {
@@ -93,6 +96,9 @@ public class GpxProcessor {
             log.info("Processing path {}", path.getName());
             File pathFolder = new File(gpxFolder, path.getName());
             pathFolder.mkdirs();
+
+            gpxDataComputer.getWindNew(path);
+
             if (options.isFixElevation()) {
                 gpxElevationFixer.fixElevation(path);
                 log.info("D+ : {} m", path.getTotalElevation());
