@@ -10,11 +10,6 @@
 
     <artifactId>gpx</artifactId>
 
-    <properties>
-        <jfreechart.version>1.5.0</jfreechart.version>
-        <graphhopper-core.version>1.0</graphhopper-core.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.github.glandais</groupId>
@@ -24,12 +19,10 @@
         <dependency>
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-core</artifactId>
-            <version>${graphhopper-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
-            <version>${jfreechart.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
