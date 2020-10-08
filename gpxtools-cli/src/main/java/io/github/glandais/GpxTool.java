@@ -1,89 +1,42 @@
 package io.github.glandais;
 
+import io.github.glandais.process.GpxProcessor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import picocli.CommandLine;
 
 @SpringBootApplication(proxyBeanMethods = false)
 @Slf4j
-public class GpxTool implements CommandLineRunner {
+public class GpxTool implements CommandLineRunner, ExitCodeGenerator {
 
-    private static GpxToolOptions OPTIONS;
+    private final CommandLine.IFactory factory;
+    private final RootCommand rootCommand;
+    private final GpxProcessor gpxProcessor;
+    private int exitCode;
+
+    public GpxTool(CommandLine.IFactory factory, RootCommand rootCommand, GpxProcessor gpxProcessor) {
+        this.factory = factory;
+        this.rootCommand = rootCommand;
+        this.gpxProcessor = gpxProcessor;
+    }
+
+    @Override
+    public void run(String... args) {
+
+        exitCode = new CommandLine(rootCommand, factory).execute(args);
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
+    }
 
     public static void main(String[] args) {
 
-        if (parseOptions(args)) {
-            SpringApplication.run(GpxTool.class, args);
-        }
-    }
-
-    private static boolean parseOptions(String[] args) {
-
-        OPTIONS = new GpxToolOptions();
-        Options options = OPTIONS.getOptions();
-        CommandLine cmd = null;
-        try {
-            cmd = getCommandLine(options, args);
-        } catch (ParseException e) {
-            log.error("Failed to parse options", e);
-            printHelp(options);
-        }
-
-        if (cmd == null) {
-            return false;
-        }
-        OPTIONS.parseCommandLine(cmd);
-        if (!OPTIONS.isValid()) {
-            printHelp(options);
-            return false;
-        }
-        return true;
-    }
-
-    private final GpxProcessor gpxProcessor;
-
-    @Override
-    public void run(String... args) throws Exception {
-
-        log.info("Options : {}", OPTIONS);
-        for (File gpxFile : OPTIONS.getGpxFiles()) {
-            gpxProcessor.process(gpxFile, OPTIONS);
-        }
-    }
-
-    private static CommandLine getCommandLine(Options options, String... args) throws ParseException {
-
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
-
-        if (cmd.hasOption("h") || cmd.getArgList()
-                .isEmpty()) {
-            printHelp(options);
-            return null;
-        } else {
-            return cmd;
-        }
-    }
-
-    private static void printHelp(Options options) {
-
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("gpx-tool [OPTIONS] FILE/FOLDER...", options);
-    }
-
-    public GpxTool(final GpxProcessor gpxProcessor) {
-
-        this.gpxProcessor = gpxProcessor;
+        System.exit(SpringApplication.exit(SpringApplication.run(GpxTool.class, args)));
     }
 
 }

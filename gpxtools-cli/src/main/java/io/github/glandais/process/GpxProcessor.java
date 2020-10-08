@@ -1,5 +1,6 @@
-package io.github.glandais;
+package io.github.glandais.process;
 
+import io.github.glandais.GPXDataComputer;
 import io.github.glandais.fit.FitFileWriter;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
@@ -85,7 +86,7 @@ public class GpxProcessor {
         this.gpxDataComputer = gpxDataComputer;
     }
 
-    public void process(File gpxFile, GpxToolOptions options) throws Exception {
+    public void process(File gpxFile, ProcessCommand options) throws Exception {
 
         log.info("Processing file {}", gpxFile.getName());
         List<GPXPath> paths = gpxParser.parsePaths(gpxFile);

@@ -7,16 +7,16 @@ import lombok.Data;
 @AllArgsConstructor
 public class ConstantRange {
 
-	private double min;
+    private double min;
 
-	private double max;
+    private double max;
 
-	public double getValue(int i, int nSteps) {
-		return min + i * getStep(nSteps);
-	}
+    public double getValue(int i, int nSteps) {
+        return min + i * getStep(nSteps);
+    }
 
-	public double getStep(int nSteps) {
-		return (max - min) / nSteps;
-	}
+    public double getStep(int nSteps) {
+        return (max - min) / nSteps;
+    }
 
 }
