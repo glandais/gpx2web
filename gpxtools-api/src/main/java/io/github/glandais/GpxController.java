@@ -8,6 +8,7 @@ import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,11 +48,17 @@ public class GpxController {
 
     @CrossOrigin(origins = "https://gabriel.landais.org")
     @PostMapping("/simplify")
-    public void simplify(@RequestParam("file") MultipartFile file, HttpServletResponse response) throws Exception {
+    public void simplify(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(name = "name", required = false) String name,
+            HttpServletResponse response) throws Exception {
 
         List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
+            if (!StringUtils.isEmpty(name)) {
+                gpxPath.setName(name);
+            }
             gpxPathEnhancer.virtualize(gpxPath);
             GPXFilter.filterPointsDouglasPeucker(gpxPath);
 
