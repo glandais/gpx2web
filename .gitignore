@@ -2,7 +2,8 @@
 *.project
 *.settings
 *.classpath
-/gpxtools-docker/cache/*
+/gpxtools-cli/cache/*
+/gpxtools-api/cache/*
 *.iml
 /.idea
 /cache

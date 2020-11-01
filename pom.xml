@@ -26,6 +26,7 @@
         <module>gpx</module>
         <module>virtual-cyclist</module>
         <module>gpxtools-cli</module>
+        <module>gpxtools-api</module>
     </modules>
     <dependencies>
 

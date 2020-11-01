@@ -1,7 +1,7 @@
 version: '2.2'
 services:
   gpxtools:
-    image: glandais/gpxtools-web:latest
+    image: glandais/gpxtools-api:latest
     restart: always
     ports:
       - "127.0.0.1:8080:8080"
