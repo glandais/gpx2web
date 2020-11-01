@@ -47,7 +47,7 @@
                 </executions>
                 <configuration>
                     <image>
-                        <name>glandais/gpxtools-web:latest</name>
+                        <name>glandais/gpxtools-api:latest</name>
                     </image>
                 </configuration>
             </plugin>
