@@ -58,18 +58,18 @@ public class GpxProcessor {
     private final GPXDataComputer gpxDataComputer;
 
     public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
-            final GPXParser gpxParser,
-            final GPXElevationFixer gpxElevationFixer,
-            final MaxSpeedComputer maxSpeedComputer,
-            final PowerComputer powerComputer,
-            final FitFileWriter fitFileWriter,
-            final GPXPerSecond gpxPerSecond,
-            final GPXCharter gpxCharter,
-            final TileMapProducer tileImageProducer,
-            final SRTMMapProducer srtmImageProducer,
-            final GPXFileWriter gpxFileWriter,
-            final KMLFileWriter kmlFileWriter,
-            final GPXDataComputer gpxDataComputer) {
+                        final GPXParser gpxParser,
+                        final GPXElevationFixer gpxElevationFixer,
+                        final MaxSpeedComputer maxSpeedComputer,
+                        final PowerComputer powerComputer,
+                        final FitFileWriter fitFileWriter,
+                        final GPXPerSecond gpxPerSecond,
+                        final GPXCharter gpxCharter,
+                        final TileMapProducer tileImageProducer,
+                        final SRTMMapProducer srtmImageProducer,
+                        final GPXFileWriter gpxFileWriter,
+                        final KMLFileWriter kmlFileWriter,
+                        final GPXDataComputer gpxDataComputer) {
 
         this.simpleTimeComputer = simpleTimeComputer;
         this.gpxParser = gpxParser;
@@ -98,7 +98,7 @@ public class GpxProcessor {
             File pathFolder = new File(gpxFolder, path.getName());
             pathFolder.mkdirs();
 
-            gpxDataComputer.getWindNew(path);
+//            gpxDataComputer.getWindNew(path);
 
             if (options.isFixElevation()) {
                 gpxElevationFixer.fixElevation(path);

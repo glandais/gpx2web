@@ -14,13 +14,11 @@ public class GpxTool implements CommandLineRunner, ExitCodeGenerator {
 
     private final CommandLine.IFactory factory;
     private final RootCommand rootCommand;
-    private final GpxProcessor gpxProcessor;
     private int exitCode;
 
-    public GpxTool(CommandLine.IFactory factory, RootCommand rootCommand, GpxProcessor gpxProcessor) {
+    public GpxTool(CommandLine.IFactory factory, RootCommand rootCommand) {
         this.factory = factory;
         this.rootCommand = rootCommand;
-        this.gpxProcessor = gpxProcessor;
     }
 
     @Override

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class PowerComputer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PowerComputer.class);
 
-    // m/h, initial speed = 5km/h
+    // m/h, initial speed = 2km/h
     private static final double INITIAL_SPEED = 2.0 / 3.6;
 
     public void computeTrack(Course course) {
