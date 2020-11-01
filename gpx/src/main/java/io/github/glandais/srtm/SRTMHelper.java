@@ -5,10 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.graphhopper.reader.dem.*;
 import org.springframework.stereotype.Service;
-
-import com.graphhopper.reader.dem.ElevationProvider;
-import com.graphhopper.reader.dem.SRTMGL1Provider;
 
 import io.github.glandais.gpx.Point;
 
@@ -18,7 +16,14 @@ public class SRTMHelper {
 	private ElevationProvider elevationProvider;
 
 	public static void main(String[] args) throws Exception {
-		SRTMHelper srtmHelper = new SRTMHelper(new SRTMGL1Provider("cache"));
+		getElevations(new MultiSourceElevationProvider("cache"));
+		getElevations(new SRTMProvider("cache"));
+		getElevations(new SkadiProvider("cache"));
+		getElevations(new SRTMGL1Provider("cache"));
+	}
+
+	private static void getElevations(ElevationProvider elevationProvider) {
+		SRTMHelper srtmHelper = new SRTMHelper(elevationProvider);
 		System.out.println(srtmHelper.getElevation(-5, 45));
 		System.out.println(srtmHelper.getElevation(-4.999999999999, 45.000000000001));
 		System.out.println(srtmHelper.getElevation(-0.000000000001, 49.999999999999));
@@ -30,6 +35,7 @@ public class SRTMHelper {
 		// http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
 		// http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
 		System.out.println(srtmHelper.getElevation(-1.547876, 47.227357));
+		System.out.println("-------");
 	}
 
 	public SRTMHelper(ElevationProvider elevationProvider) {
@@ -38,7 +44,11 @@ public class SRTMHelper {
 	}
 
 	public synchronized double getElevation(double lon, double lat) {
-		return elevationProvider.getEle(lat, lon);
+		double ele = elevationProvider.getEle(lat, lon);
+		if (Double.isNaN(ele)) {
+			return 0.0;
+		}
+		return ele;
 	}
 
 	private double latToRow(double lat) {

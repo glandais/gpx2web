@@ -9,10 +9,6 @@
     </parent>
     <artifactId>gpxtools-docker</artifactId>
 
-    <properties>
-        <jib-maven-plugin.version>2.5.2</jib-maven-plugin.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.github.glandais</groupId>
