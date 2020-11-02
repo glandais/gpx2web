@@ -1,6 +1,6 @@
 package io.github.glandais;
 
-import io.github.glandais.map.Vector;
+import io.github.glandais.util.Vector;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

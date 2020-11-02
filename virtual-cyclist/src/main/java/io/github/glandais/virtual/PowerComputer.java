@@ -1,72 +1,66 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.Point;
-import io.github.glandais.map.MagicPower2MapSpace;
-import io.github.glandais.map.Vector;
 import io.github.glandais.util.Constants;
-
-import java.util.List;
-
+import io.github.glandais.util.MagicPower2MapSpace;
+import io.github.glandais.util.Vector;
+import io.github.glandais.virtual.wind.Wind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PowerComputer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PowerComputer.class);
 
-    // m/h, initial speed = 2km/h
+    // m.s-2, initial speed = 2km/h
     private static final double INITIAL_SPEED = 2.0 / 3.6;
 
     public void computeTrack(Course course) {
 
-        List<Point> points = course.getGpxPath()
-                .getPoints();
+        List<Point> points = course.getGpxPath().getPoints();
+        List<Point> newPoints = new ArrayList<>(points.size());
 
-        final long startTime = course.getStart()
-                .toInstant()
-                .toEpochMilli();
-        long currentTime = startTime;
+        ZonedDateTime start = course.getStart();
 
-        double u = INITIAL_SPEED;
-        double odo = 0.0;
-        for (int j = 0; j < points.size(); j++) {
-            Point to = points.get(j);
-            double dist = 0;
-            if (j > 0) {
-                Point from = points.get(j - 1);
-                from.getData()
-                        .put("v", 3.6 * u);
+        Point prev = null;
+
+        for (int i = 0; i < points.size(); i++) {
+            Point current = points.get(i);
+            if (prev != null) {
                 // meters
-                dist = 1000.0 * from.distanceTo(to);
+                double dist = prev.distanceTo(current);
                 if (dist > 0) {
                     // point to point result
-                    PointToPoint result = computePointToPoint(u, odo, from, to, currentTime - startTime, course);
-
-                    u = result.getEndSpeed();
-
-                    // ms ellapsed time
-                    long ts = Math.round(result.getTime() * 1000);
-                    currentTime = currentTime + ts;
+                    computePointToPoint(prev, current, start, course);
+                    newPoints.add(current);
+                    prev = current;
                 }
+            } else {
+                current.setSpeed(INITIAL_SPEED);
+                current.setTime(start);
+                newPoints.add(current);
+                prev = current;
             }
-            odo = odo + dist;
-            to.setTime(currentTime);
         }
-        course.getGpxPath()
-                .computeArrays();
+        course.getGpxPath().setPoints(newPoints);
+        course.getGpxPath().computeArrays();
     }
 
-    private PointToPoint computePointToPoint(double u, double odo, Point from, Point to, long currentTime, Course course) {
+    private void computePointToPoint(Point from, Point to, ZonedDateTime start, Course course) {
 
-        double dist = 1000.0 * from.distanceTo(to);
+        double dist = from.distanceTo(to);
 
         double dz = to.getZ() - from.getZ();
         double grad = dz / dist;
+        double speed = from.getSpeed();
 
-        LOGGER.debug("{} {} {} {} {}", odo, u, from, to, grad);
-
-        // max speeds
+        // max speeds, m.s-2
         double ms1 = from.getMaxSpeed();
         double ms2 = to.getMaxSpeed();
 
@@ -78,28 +72,29 @@ public class PowerComputer {
         // s
         double dt = 0.25;
 
-        double mKg = course.getCyclist()
-                .getMKg();
-        double cx = course.getCyclist()
-                .getCx();
-        double f = course.getCyclist()
-                .getF();
+        double mKg = course.getCyclist().getMKg();
+        double f = course.getCyclist().getF();
 
         // OK
         // (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)
         double p_grav, p_air, p_frot, p_cyclist, p_app, acc, c, ms, dx;
-        double prev_v, prev_d, prev_t;
+        double prev_speed, prev_d, prev_t;
+        ZonedDateTime now;
         while (true) {
-            prev_v = u;
+            prev_speed = speed;
             prev_d = d;
             prev_t = t;
-            // OK
-            // (http://fr.wikipedia.org/wiki/Puissance_musculaire_humaine_et_bicyclette)
-            p_grav = mKg * Constants.G * u * grad;
-            p_frot = f * Constants.G * mKg * u;
 
-            if (course.getWindSpeed() == 0) {
-                p_air = cx * u * u * u;
+            p_grav = mKg * Constants.G * speed * grad;
+            p_frot = f * Constants.G * mKg * speed;
+
+            now = from.getTime().plus(Duration.ofNanos((long) (t * 1000 * 1000 * 1000)));
+            Duration ellapsed = Duration.between(start, now);
+            double cx = course.getCxProvider().getCx(from, to, now, ellapsed, p_frot, p_grav, speed, grad);
+
+            Wind wind = course.getWindProvider().getWind(from, now, ellapsed);
+            if (wind.getWindSpeed() == 0) {
+                p_air = cx * speed * speed * speed;
             } else {
 
                 Vector v_from = project(from);
@@ -107,34 +102,32 @@ public class PowerComputer {
                 double dy2 = v_to.getY() - v_from.getY();
                 double dx2 = v_to.getX() - v_from.getX();
                 double bearing = Math.atan2(-dy2, dx2);
-                double windDirectionAsBearing = (Math.PI / 2) - course.getWindDirection();
+                double windDirectionAsBearing = (Math.PI / 2) - wind.getWindDirection();
 
                 double alpha = windDirectionAsBearing - bearing;
-                double v = course.getWindSpeed();
+                double v = wind.getWindSpeed();
 
                 // https://www.sheldonbrown.com/isvan/Power%20Management%20for%20Lightweight%20Vehicles.pdf
 
-                double l1 = u + v * Math.cos(alpha);
+                double l1 = speed + v * Math.cos(alpha);
                 double l2 = Math.pow(l1, 2);
-                double l3 = u * u + v * v + 2 * u * v * Math.cos(alpha);
+                double l3 = speed * speed + v * v + 2 * speed * v * Math.cos(alpha);
                 double l4 = l2 / l3;
 
                 double mu = 1.2;
                 double lambda = l4 + mu * (1 - l4);
 
-                p_air = cx * lambda * Math.sqrt(l3) * l1 * u;
+                p_air = cx * lambda * Math.sqrt(l3) * l1 * speed;
             }
 
-            p_cyclist = course.getPowerW(from, to, currentTime, p_air, p_frot, p_grav, u, grad);
-            from.getData()
-                    .put("p", p_cyclist);
+            p_cyclist = course.getPowerProvider().getPowerW(from, to, now, ellapsed, p_air, p_frot, p_grav, speed, grad);
 
             // p_app = cyclist power - resistance
             p_app = p_cyclist - p_air - p_frot - p_grav;
 
             // m.s-2
             acc = p_app / mKg;
-            u = u + acc * dt;
+            speed = speed + acc * dt;
 
             // Compute max speed
             if (d > dist) {
@@ -143,32 +136,40 @@ public class PowerComputer {
                 c = d / dist;
                 ms = ms1 + c * (ms2 - ms1);
             }
-            if (u > ms) {
-                u = ms;
+            if (speed > ms) {
+                speed = ms;
             }
-            if (u < INITIAL_SPEED) {
-                u = INITIAL_SPEED;
+            if (speed < INITIAL_SPEED) {
+                speed = INITIAL_SPEED;
             }
 
-            dx = dt * u;
+            dx = dt * speed;
             d = d + dx;
             t = t + dt;
             if (d > dist) {
                 double ratio = (dist - prev_d) / dx;
                 double lastTime = prev_t + dt * ratio;
-                double lastSpeed = prev_v + acc * dt * ratio;
+                double lastSpeed = prev_speed + acc * dt * ratio;
                 if (lastSpeed < INITIAL_SPEED) {
                     lastSpeed = INITIAL_SPEED;
                 }
-                return new PointToPoint(lastTime, lastSpeed);
+
+                now = from.getTime().plus(Duration.ofNanos((long) (lastTime * 1000 * 1000 * 1000)));
+                to.setTime(now);
+                to.getData().put("speed", lastSpeed);
+                to.getData().put("power", p_cyclist);
+                to.getData().put("p_air", p_air);
+                to.getData().put("p_frot", p_frot);
+                to.getData().put("p_grav", p_grav);
+                return;
             }
         }
     }
 
     private Vector project(final Point point) {
 
-        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLon(), 12),
-                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLat(), 12));
+        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLonDeg(), 12),
+                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLatDeg(), 12));
     }
 
 }

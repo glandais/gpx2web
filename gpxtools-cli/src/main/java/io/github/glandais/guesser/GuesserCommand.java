@@ -8,7 +8,10 @@ import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.GradeService;
 import io.github.glandais.util.SpeedService;
-import io.github.glandais.virtual.*;
+import io.github.glandais.virtual.Course;
+import io.github.glandais.virtual.Cyclist;
+import io.github.glandais.virtual.MaxSpeedComputer;
+import io.github.glandais.virtual.PowerComputer;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +21,6 @@ import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import java.io.File;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
@@ -76,13 +78,11 @@ public class GuesserCommand extends GpxCommand {
             File pathFolder = new File(gpxFolder, original.getName());
             pathFolder.mkdirs();
 
-//        Cyclist cyclist = new Cyclist(67.2, 0.0, 15, 90, 0.3, 0.2372, 0.0042);
+            Cyclist cyclist = new Cyclist(55, 15, 90, 0.3, 0.005);
+            Course course = constantsGuesser.guessWithPathWithPower(original, cyclist);
 
-            Cyclist cyclist = constantsGuesser.guessWithPathWithPower(original);
+            log.info("Guessed course : {}", course);
 
-            log.info("Guessed cyclist : {}", cyclist);
-
-            Course course = new CourseWithPower(original, cyclist, ZonedDateTime.now());
             maxSpeedComputer.computeMaxSpeeds(course);
             powerComputer.computeTrack(course);
             speedService.computeSpeed(original, "simulatedSpeed");

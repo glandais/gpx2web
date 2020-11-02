@@ -1,5 +1,6 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -9,9 +10,6 @@ import java.util.List;
 public class GPXFilter {
 
     private static final double TOLERANCE = 3.0;
-
-    private static final double a = 6378137.0;              //WGS-84 semi-major axis
-    private static final double e2 = 6.6943799901377997e-3;  //WGS-84 first eccentricity squared
 
     public static void filterPointsDouglasPeucker(GPXPath path) {
         filterPointsDouglasPeucker(path, TOLERANCE);
@@ -90,19 +88,15 @@ public class GPXFilter {
     }
 
     public static R3 geoToEcef(Point p) {
-        double lat = deg2rad(p.getLat());
-        double lon = deg2rad(p.getLon());
-        double alt = p.getZ();
-        double n = a / Math.sqrt(1 - e2 * Math.sin(lat) * Math.sin(lat));
+        double lat = p.getLat();
+        double lon = p.getLon();
+        // fake z : increase 3x
+        double alt = 3 * p.getZ();
+        double n = Constants.SEMI_MAJOR_AXIS / Math.sqrt(1 - Constants.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
         double x = (n + alt) * Math.cos(lat) * Math.cos(lon);    //ECEF x
         double y = (n + alt) * Math.cos(lat) * Math.sin(lon);    //ECEF y
-        double z = (n * (1 - e2) + alt) * Math.sin(lat);          //ECEF z
-        // fake z : increase 3x
-        return new R3(x, y, 3 * z);     //Return x, y, z in ECEF
-    }
-
-    private static double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
+        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + alt) * Math.sin(lat);         //ECEF z
+        return new R3(x, y, z);     //Return x, y, z in ECEF
     }
 
 }

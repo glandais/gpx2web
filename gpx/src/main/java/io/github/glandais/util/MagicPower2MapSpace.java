@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package io.github.glandais.map;
+package io.github.glandais.util;
 
 /**
  * Mercator projection with a world width and height of 256 * 2<sup>zoom</sup>
@@ -31,8 +31,7 @@ package io.github.glandais.map;
  * <p>
  * DO NOT TRY TO IMPLEMENT YOUR OWN. IT WILL NOT WORK!
  * </p>
- * 
- * @see MapSpace
+ *
  */
 public class MagicPower2MapSpace {
 

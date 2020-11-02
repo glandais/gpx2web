@@ -22,7 +22,7 @@ public class GPXElevationFixer {
     }
 
     public void fixElevation(GPXPath path) {
-        fixElevation(path, 0.3);
+        fixElevation(path, 300);
     }
 
     public void fixElevation(GPXPath path, double smoothing) {

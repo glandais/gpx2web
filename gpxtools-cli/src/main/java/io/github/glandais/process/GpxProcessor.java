@@ -18,14 +18,17 @@ import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
+import io.github.glandais.virtual.cx.CxProviderConstant;
+import io.github.glandais.virtual.power.PowerProviderConstant;
+import io.github.glandais.virtual.wind.Wind;
+import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -107,9 +110,14 @@ public class GpxProcessor {
             if (options.isVirtualTime()) {
                 ZonedDateTime start = options.getNextStart();
                 if (options.getSimpleVirtualSpeed() != null) {
-                    simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed());
+                    simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed() / 3.6);
                 } else {
-                    Course course = new Course(path, options.getCyclist(), start, options.getWindSpeed(), options.getWindDirection());
+                    Wind wind = new Wind(options.getWindSpeed(), options.getWindDirection());
+                    Course course = new Course(path, start,
+                            options.getCyclist(),
+                            new PowerProviderConstant(options.getPowerW()),
+                            new WindProviderConstant(wind),
+                            new CxProviderConstant(options.getCx()));
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }
@@ -139,7 +147,7 @@ public class GpxProcessor {
             }
 
             log.info("Writing GPX for {}", path.getName());
-            gpxFileWriter.writeGpxFile(Collections.singletonList(path), new File(pathFolder, path.getName() + ".gpx"));
+            gpxFileWriter.writeGpxFile(Collections.singletonList(path), new File(pathFolder, path.getName() + ".gpx"), true);
 
             if (options.isKml()) {
                 log.info("Writing KML for path {}", path.getName());

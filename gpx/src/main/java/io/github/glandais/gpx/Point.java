@@ -1,77 +1,91 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.util.Constants;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Data
-@NoArgsConstructor
+@Builder
 public class Point {
 
-	private double lon;
-	private double lat;
-	private double z;
-	private String caption;
-	private double dist;
-	private long time;
-	private double maxSpeed;
+    public static final ZonedDateTime EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC"));
 
-	private Map<String, Double> data = new HashMap<>();
+    public static int toSemiCircles(double rad) {
+        return (int) (rad * 2147483648.0 / Math.PI);
+    }
 
-	public Point(double lon, double lat) {
-		super();
-		this.lon = lon;
-		this.lat = lat;
-	}
+    // deg
+    private double lon;
+    // deg
+    private double lat;
+    // m
+    private double z;
 
-	public Point(double lon, double lat, double z) {
-		super();
-		this.lon = lon;
-		this.lat = lat;
-		this.z = z;
-	}
+    @Builder.Default
+    private ZonedDateTime time = EPOCH;
 
-	public Point(double lon, double lat, double z, long time) {
-		super();
-		this.lon = lon;
-		this.lat = lat;
-		this.z = z;
-		this.time = time;
-	}
+    @Builder.Default
+    private Map<String, Double> data = new HashMap<>();
 
-	public double distanceTo(Point otherPoint) {
-		double theta = lon - otherPoint.getLon();
-		double distance = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(otherPoint.getLat()))
-				+ Math.cos(deg2rad(lat)) * Math.cos(deg2rad(otherPoint.getLat())) * Math.cos(deg2rad(theta));
-		distance = Math.max(-1.0, Math.min(1.0, distance));
-		distance = Math.acos(distance);
-		distance = rad2deg(distance);
-		distance = distance * 60 * 1.1515;
-		distance = distance * 1.609344;
-		return distance;
-	}
+    public double distanceTo(Point otherPoint) {
+        double lat2 = otherPoint.getLat();
+        double lon2 = otherPoint.getLon();
 
-	private double deg2rad(double deg) {
-		return (deg * Math.PI / 180.0);
-	}
+        // great circle distance in radians
+        double a = Math.sin(lat) * Math.sin(lat2)
+                + Math.cos(lat) * Math.cos(lat2) * Math.cos(lon - lon2);
+        double alpha = Math.acos(Math.max(-1.0, Math.min(1.0, a)));
+        // WGS-84 semi-major axis
+        return alpha * Constants.SEMI_MAJOR_AXIS;
+    }
 
-	private double rad2deg(double rad) {
-		return (rad * 180.0 / Math.PI);
-	}
 
-	public int getLatSemi() {
-		return toSemiCircles(lat);
-	}
+    public int getLatSemi() {
+        return toSemiCircles(lat);
+    }
 
-	public int getLonSemi() {
-		return toSemiCircles(lon);
-	}
+    public int getLonSemi() {
+        return toSemiCircles(lon);
+    }
 
-	public static int toSemiCircles(double i) {
-		double d = i * 2147483648.0 / 180.0;
-		return (int) d;
-	}
+    public double getLatDeg() {
+        return Math.toDegrees(lat);
+    }
 
+    public double getLonDeg() {
+        return Math.toDegrees(lon);
+    }
+
+    public double getMaxSpeed() {
+        return data.get("max_speed");
+    }
+
+    public void setMaxSpeed(double maxSpeed) {
+        data.put("max_speed", maxSpeed);
+        data.put("max_speed_kmh", maxSpeed * 3.6);
+    }
+
+    public double getDist() {
+        return data.get("dist");
+    }
+
+    public void setDist(double dist) {
+        data.put("dist", dist);
+        data.put("dist_km", dist / 1000.0);
+    }
+
+    public double getSpeed() {
+        return data.get("speed");
+    }
+
+    public void setSpeed(double speed) {
+        data.put("speed", speed);
+        data.put("speed_kmh", speed * 3.6);
+    }
 }

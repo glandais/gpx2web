@@ -48,7 +48,7 @@ public class SRTMMapProducer {
 			for (int j = 0; j < height; j++) {
 				double lon = mapImage.getLon(i);
 				double lat = mapImage.getLat(j);
-				double z = srtmHelper.getElevation(lon, lat);
+				double z = srtmHelper.getElevationDeg(lon, lat);
 				if (z < minz) {
 					minz = z;
 				}
@@ -88,8 +88,8 @@ public class SRTMMapProducer {
 		graphics.setComposite(ac);
 
 		for (Point point : points) {
-			int i = mapImage.getX(point.getLon());
-			int j = mapImage.getY(point.getLat());
+			int i = mapImage.getX(point.getLonDeg());
+			int j = mapImage.getY(point.getLatDeg());
 			if (!first) {
 				int c = getColor(getRelativeZ(point.getZ(), trackminz, trackmaxz));
 				graphics.setColor(new Color(c));

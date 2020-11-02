@@ -83,7 +83,7 @@ public class GpxController {
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxElevationFixer.fixElevation(gpxPath);
-            float dist = Math.round(10.0 * gpxPath.getDist()) / 10.0f;
+            float dist = Math.round(10.0 * gpxPath.getDist()) / 10000.0f;
 
             return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()), (int) Math.round(gpxPath.getTotalElevationNegative()),
                     gpxDataComputer.getWind(gpxPath), gpxDataComputer.isCrossing(gpxPath));
@@ -115,9 +115,9 @@ public class GpxController {
                     Point point = gpxPath.getPoints()
                             .get(i);
                     bw.write("    [");
-                    bw.write(Float.toString((float) point.getLon()));
+                    bw.write(Float.toString((float) point.getLonDeg()));
                     bw.write(", ");
-                    bw.write(Float.toString((float) point.getLat()));
+                    bw.write(Float.toString((float) point.getLatDeg()));
                     bw.write("]");
                     if (i != gpxPath.getPoints()
                             .size() - 1) {

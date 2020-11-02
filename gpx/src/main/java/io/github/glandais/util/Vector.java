@@ -1,4 +1,4 @@
-package io.github.glandais.map;
+package io.github.glandais.util;
 
 import lombok.Value;
 
@@ -29,4 +29,10 @@ public class Vector {
 
         return new Vector(this.x * c, this.y * c);
     }
+
+
+    public Vector sub(Vector p) {
+        return new Vector(x - p.x, y - p.y);
+    }
+
 }

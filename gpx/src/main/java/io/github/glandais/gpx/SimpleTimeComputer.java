@@ -1,20 +1,26 @@
 package io.github.glandais.gpx;
 
-import java.time.ZonedDateTime;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.ZonedDateTime;
 
 @Service
 public class SimpleTimeComputer {
 
-	public void computeTime(GPXPath path, ZonedDateTime start, double speed) {
-		long startTime = 1000 * start.toEpochSecond();
-		for (Point point : path.getPoints()) {
-			long time = Math.round(3600 * 1000 * point.getDist() / speed);
-			point.setTime(startTime + time);
-		}
-		path.computeArrays();
-	}
+    /**
+     * Compute time on path with simple speed.
+     *
+     * @param path  the path
+     * @param start the start
+     * @param speed the speed in m.s-2
+     */
+    public void computeTime(GPXPath path, ZonedDateTime start, double speed) {
+        for (Point point : path.getPoints()) {
+            long time = Math.round(1000 * point.getDist() / speed);
+            point.setTime(start.plus(Duration.ofMillis(time)));
+        }
+        path.computeArrays();
+    }
 
 }

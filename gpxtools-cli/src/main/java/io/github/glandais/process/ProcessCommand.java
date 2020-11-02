@@ -13,7 +13,6 @@ import picocli.CommandLine.Option;
 import java.io.File;
 import java.time.ZonedDateTime;
 
-
 @Data
 @Slf4j
 @Component
@@ -38,7 +37,7 @@ public class ProcessCommand extends GpxCommand {
     @Option(names = {"--map-height"}, description = "Map height")
     private int height = 768;
 
-    @Option(names = {"--chart"}, negatable = true, description = "Chart")
+    @Option(names = {"--no-chart"}, negatable = true, description = "Chart")
     private boolean chart = true;
 
     @Option(names = {"--kml"}, negatable = true, description = "Output KML file")
@@ -47,16 +46,16 @@ public class ProcessCommand extends GpxCommand {
     @Option(names = {"--fit"}, negatable = true, description = "Output FIT file")
     private boolean fit = false;
 
-    @Option(names = {"--fix-elevation"}, negatable = true, description = "Fix elevation")
+    @Option(names = {"--no-fix-elevation"}, negatable = true, description = "Fix elevation")
     private boolean fixElevation = true;
 
-    @Option(names = {"--second-precision"}, negatable = true, description = "Create a point per second")
+    @Option(names = {"--no-second-precision"}, negatable = true, description = "Create a point per second")
     private boolean pointPerSecond = true;
 
-    @Option(names = {"--filter"}, negatable = true, description = "Filter output")
+    @Option(names = {"--no-filter"}, negatable = true, description = "Filter output")
     private boolean filter = true;
 
-    @Option(names = {"--virtual-time"}, negatable = true, description = "Simulate a cyclist")
+    @Option(names = {"--no-virtual-time"}, negatable = true, description = "Simulate a cyclist")
     private boolean virtualTime = true;
 
     @Option(names = {"--simple-virtual-speed"}, description = "Cyclist speed (km/h)")
@@ -76,6 +75,12 @@ public class ProcessCommand extends GpxCommand {
 
     @Option(names = {"--cyclist-max-brake"}, description = "Cyclist max brake (g)")
     private double maxBrakeG = 0.3;
+
+    @Option(names = {"--cyclist-cx"}, description = "Cyclist Cx")
+    double cx = 0.3;
+
+    @Option(names = {"--cyclist-f"}, description = "Cyclist f")
+    double f = 0.005;
 
     // m.s-2
     @Option(names = {"--wind-speed"}, description = "Wind speed (m.s-2)")
@@ -116,7 +121,7 @@ public class ProcessCommand extends GpxCommand {
         starts[0] = start;
 
 //        System.setProperty("gpx.data.cache", cacheValue);
-        cyclist = new Cyclist(mKg, powerW, maxAngleDeg, maxSpeedKmH, maxBrakeG);
+        cyclist = new Cyclist(mKg, maxAngleDeg, maxSpeedKmH, maxBrakeG, f);
         windDirection = Math.toRadians(windDirectionDegree);
         for (File gpxFile : gpxFiles) {
             gpxProcessor.process(gpxFile, this);
