@@ -86,8 +86,8 @@ public class ProcessCommand implements Runnable {
     double cx = 0.3;
 
     // m.s-2
-    @Option(names = {"--wind-speed"}, description = "Wind speed (m.s-2)")
-    private double windSpeed = 0.0;
+    @Option(names = {"--wind-speed"}, description = "Wind speed (km/s)")
+    private double windSpeedKmH = 0.0;
 
     @Option(names = {"--wind-direction"}, description = "Wind direction (°, clockwise, 0=N)")
     private double windDirectionDegree = 0.0;
@@ -125,6 +125,6 @@ public class ProcessCommand implements Runnable {
         starts[0] = ZonedDateTime.now().minusYears(1).toInstant();
 
 //        System.setProperty("gpx.data.cache", cacheValue);
-        wind = new Wind(windSpeed, Math.toRadians(windDirectionDegree));
+        wind = new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree));
     }
 }

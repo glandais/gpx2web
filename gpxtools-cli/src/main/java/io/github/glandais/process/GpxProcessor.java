@@ -11,6 +11,7 @@ import io.github.glandais.map.SRTMMapProducer;
 import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
 import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.util.SmootherService;
 import io.github.glandais.util.SpeedService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +134,7 @@ public class GpxProcessor {
                 } else {
                     PowerProvider powerProvider;
                     if (options.isGpxPower()) {
+                        smoothPower(path);
                         powerProvider = new PowerProviderFromData();
                     } else {
                         powerProvider = new PowerProviderConstant(options.getPowerW());
@@ -189,6 +192,25 @@ public class GpxProcessor {
         }
         gpxFileWriter.writeGpxFile(paths, new File(gpxFolder, gpxFile.getName()));
         log.info("Processed file {}", gpxFile.getName());
+    }
+
+    private void smoothPower(GPXPath path) {
+        log.info("Smoothing power");
+        List<Point> points = path.getPoints();
+        double[] power = new double[points.size()];
+        double[] time = new double[points.size()];
+        for (int i = 0; i < points.size(); i++) {
+            Double power1 = points.get(i).getData().get("power");
+            power[i] = power1 == null ? 0 : power1;
+            time[i] = points.get(i).getTime().toEpochMilli();
+        }
+        for (int j = 0; j < power.length; j++) {
+            double newPower = SmootherService.computeNewValue(j, 5000, power, time);
+            Point p = points.get(j);
+            p.getData().put("power", newPower);
+        }
+        path.computeArrays();
+        log.info("Smoothed power");
     }
 
 }

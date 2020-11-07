@@ -30,9 +30,19 @@ public class PowerComputer {
         final List<Point> newPoints = new ArrayList<>();
 
         final CyclistStatus status = new CyclistStatus();
+        status.speed = MINIMAL_SPEED;
 
+        int i = 0;
+        Point nextPoint = null;
         while (status.odo < course.getGpxPath().getDist()) {
-            newPoints.add(getNextPoint(course, status));
+            nextPoint = getNextPoint(course, status);
+            if (i % 4 == 0) {
+                newPoints.add(nextPoint);
+            }
+            i++;
+        }
+        if ((i - 1) % 4 == 0) {
+            newPoints.add(nextPoint);
         }
 
         course.getGpxPath().setPoints(newPoints);
@@ -59,7 +69,7 @@ public class PowerComputer {
 
         final double mKg = course.getCyclist().getMKg();
         // m.s-2
-        double acc = p_app / mKg;
+        double acc = p_app / (Constants.G * mKg);
         current.getData().put("5_2_acc", acc);
 
         status.speed = status.speed + acc * DT;
