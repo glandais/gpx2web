@@ -1,11 +1,7 @@
 package io.github.glandais.process;
 
-import io.github.glandais.GPXDataComputer;
 import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.GPXFilter;
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.GPXPerSecond;
-import io.github.glandais.gpx.SimpleTimeComputer;
+import io.github.glandais.gpx.*;
 import io.github.glandais.io.GPXCharter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
@@ -15,20 +11,25 @@ import io.github.glandais.map.SRTMMapProducer;
 import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
 import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.util.SpeedService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.cx.CxProviderConstant;
+import io.github.glandais.virtual.power.PowerProvider;
 import io.github.glandais.virtual.power.PowerProviderConstant;
-import io.github.glandais.virtual.wind.Wind;
+import io.github.glandais.virtual.power.PowerProviderFromData;
 import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -58,7 +59,7 @@ public class GpxProcessor {
 
     private final FitFileWriter fitFileWriter;
 
-    private final GPXDataComputer gpxDataComputer;
+    private final SpeedService speedService;
 
     public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
                         final GPXParser gpxParser,
@@ -72,7 +73,7 @@ public class GpxProcessor {
                         final SRTMMapProducer srtmImageProducer,
                         final GPXFileWriter gpxFileWriter,
                         final KMLFileWriter kmlFileWriter,
-                        final GPXDataComputer gpxDataComputer) {
+                        SpeedService speedService) {
 
         this.simpleTimeComputer = simpleTimeComputer;
         this.gpxParser = gpxParser;
@@ -86,7 +87,7 @@ public class GpxProcessor {
         this.srtmImageProducer = srtmImageProducer;
         this.gpxFileWriter = gpxFileWriter;
         this.kmlFileWriter = kmlFileWriter;
-        this.gpxDataComputer = gpxDataComputer;
+        this.speedService = speedService;
     }
 
     public void process(File gpxFile, ProcessCommand options) throws Exception {
@@ -101,26 +102,49 @@ public class GpxProcessor {
             File pathFolder = new File(gpxFolder, path.getName());
             pathFolder.mkdirs();
 
-//            gpxDataComputer.getWindNew(path);
+            path.computeArrays();
+            if (!options.isGpxData()) {
+                GPXFilter.filterPointsDouglasPeucker(path);
+            } else {
+                speedService.computeSpeed(path, "speed");
+                for (Point point : path.getPoints()) {
+                    point.getData().putAll(
+                            point.getData().entrySet().stream().collect(Collectors.toMap(
+                                    e -> e.getKey() + ".orig",
+                                    Map.Entry::getValue
+                            )));
+                }
+            }
 
             if (options.isFixElevation()) {
-                gpxElevationFixer.fixElevation(path);
+                gpxElevationFixer.fixElevation(path, !options.isGpxData());
                 log.info("D+ : {} m", path.getTotalElevation());
+
+                if (!options.isGpxData()) {
+                    GPXFilter.filterPointsDouglasPeucker(path);
+                }
             }
-            if (options.isVirtualTime()) {
-                ZonedDateTime start = options.getNextStart();
+
+            if (options.isSimulate()) {
+                Instant start = options.getNextStart();
                 if (options.getSimpleVirtualSpeed() != null) {
                     simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed() / 3.6);
                 } else {
-                    Wind wind = new Wind(options.getWindSpeed(), options.getWindDirection());
+                    PowerProvider powerProvider;
+                    if (options.isGpxPower()) {
+                        powerProvider = new PowerProviderFromData();
+                    } else {
+                        powerProvider = new PowerProviderConstant(options.getPowerW());
+                    }
                     Course course = new Course(path, start,
                             options.getCyclist(),
-                            new PowerProviderConstant(options.getPowerW()),
-                            new WindProviderConstant(wind),
+                            powerProvider,
+                            new WindProviderConstant(options.getWind()),
                             new CxProviderConstant(options.getCx()));
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }
+                speedService.computeSpeed(path, "speed");
             }
 
             if (options.isSrtmMap()) {
@@ -138,16 +162,18 @@ public class GpxProcessor {
                 gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
             }
 
-            if (options.isPointPerSecond()) {
+            if (options.isPointPerSecond() && !options.isGpxData()) {
                 gpxPerSecond.computeOnePointPerSecond(path);
-            }
-
-            if (options.isFilter()) {
                 GPXFilter.filterPointsDouglasPeucker(path);
             }
 
             log.info("Writing GPX for {}", path.getName());
             gpxFileWriter.writeGpxFile(Collections.singletonList(path), new File(pathFolder, path.getName() + ".gpx"), true);
+
+            if (options.isCsv()) {
+                log.info("Writing CSV for path {}", path.getName());
+                gpxFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
+            }
 
             if (options.isKml()) {
                 log.info("Writing KML for path {}", path.getName());

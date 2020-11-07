@@ -5,16 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @Builder
 public class Point {
-
-    public static final ZonedDateTime EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC"));
 
     public static int toSemiCircles(double rad) {
         return (int) (rad * 2147483648.0 / Math.PI);
@@ -28,7 +24,7 @@ public class Point {
     private double z;
 
     @Builder.Default
-    private ZonedDateTime time = EPOCH;
+    private Instant time = Instant.EPOCH;
 
     @Builder.Default
     private Map<String, Double> data = new HashMap<>();

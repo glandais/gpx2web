@@ -45,9 +45,9 @@ public class FitFileWriter {
 
         List<Point> points = path.getPoints();
         Point firstWayPoint = points.get(0);
-        Date startDate = Date.from(firstWayPoint.getTime().toInstant());
+        Date startDate = Date.from(firstWayPoint.getTime());
         Point lastWayPoint = points.get(points.size() - 1);
-        Date endDate = Date.from(lastWayPoint.getTime().toInstant());
+        Date endDate = Date.from(lastWayPoint.getTime());
 
         EventMesg eventMesg = new EventMesg();
         eventMesg.setLocalNum(0);
@@ -63,7 +63,7 @@ public class FitFileWriter {
             r.setPositionLat(point.getLatSemi());
             r.setPositionLong(point.getLonSemi());
             r.setDistance((float) (point.getDist()));
-            r.setTimestamp(new DateTime(Date.from(point.getTime().toInstant())));
+            r.setTimestamp(new DateTime(Date.from(point.getTime())));
             r.setAltitude((float) point.getZ());
             encode.write(r);
         }
@@ -80,9 +80,9 @@ public class FitFileWriter {
     private void writeLap(FileEncoder encode, GPXPath path) {
         List<Point> points = path.getPoints();
         Point firstWayPoint = points.get(0);
-        Date startDate = Date.from(firstWayPoint.getTime().toInstant());
+        Date startDate = Date.from(firstWayPoint.getTime());
         Point lastWayPoint = points.get(points.size() - 1);
-        Date endDate = Date.from(lastWayPoint.getTime().toInstant());
+        Date endDate = Date.from(lastWayPoint.getTime());
 
         float duration = (float) ((endDate.getTime() - startDate.getTime()) / 1000.0);
         float totaldist = (float) (path.getDist());

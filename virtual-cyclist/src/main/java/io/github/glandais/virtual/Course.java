@@ -6,14 +6,14 @@ import io.github.glandais.virtual.power.PowerProvider;
 import io.github.glandais.virtual.wind.WindProvider;
 import lombok.Data;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 @Data
 public class Course {
 
     protected final GPXPath gpxPath;
 
-    protected final ZonedDateTime start;
+    protected final Instant start;
 
     protected final Cyclist cyclist;
 

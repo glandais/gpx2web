@@ -69,7 +69,8 @@ public class GPXPath {
             dists[i] = dist;
             p.setDist(dists[i]);
             zs[i] = p.getZ();
-            time[i] = p.getTime().toInstant().toEpochMilli();
+            time[i] = p.getTime().toEpochMilli();
+            p.getData().put("ellapsed", (time[i] - time[0]) / 1000.0);
             previousPoint = p;
             i++;
         }

@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,9 @@ public class GPXFileWriter {
 
     private static final ThreadLocal<DecimalFormat> LAT_LON_FORMATTER = ThreadLocal
             .withInitial(() -> new DecimalFormat("0.00#####", new DecimalFormatSymbols(Locale.ENGLISH)));
+
+    private static final ThreadLocal<DecimalFormat> DIST_FORMATTER = ThreadLocal
+            .withInitial(() -> new DecimalFormat("0.###", new DecimalFormatSymbols(Locale.ENGLISH)));
 
     private static final ThreadLocal<DecimalFormat> ELEVATION_FORMATTER = ThreadLocal
             .withInitial(() -> new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.ENGLISH)));
@@ -110,25 +114,55 @@ public class GPXFileWriter {
     }
 
     public void writeCsvFile(GPXPath path, File file) throws IOException {
-        List<String> columns = new ArrayList<>();
-        Set<String> data = new LinkedHashSet<>();
         List<Point> points = path.getPoints();
+        Map<String, Function<Point, String>> columns = new LinkedHashMap<>();
+
+        columns.put("lon", p -> LAT_LON_FORMATTER.get().format(p.getLonDeg()));
+        columns.put("lat", p -> LAT_LON_FORMATTER.get().format(p.getLatDeg()));
+        columns.put("z", p -> ELEVATION_FORMATTER.get().format(p.getZ()));
+        columns.put("dist", p -> DIST_FORMATTER.get().format(p.getDist()));
+        columns.put("time", p -> DateTimeFormatter.ISO_INSTANT.format(p.getTime()));
+
+        Set<String> attributes = new TreeSet<>();
         for (Point point : points) {
-            point.getData().forEach((k, v) -> data.add(k));
+            point.getData().forEach((k, v) -> attributes.add(k));
         }
-        columns.addAll(List.of("lon", "lat", "z", "dist", "time"));
-        columns.addAll(data);
+        for (String attribute : attributes) {
+            if (!columns.containsKey(attribute)) {
+                columns.put(attribute, p -> {
+                    Double value = p.getData().get(attribute);
+                    if (value == null) {
+                        return "";
+                    } else {
+                        return DIST_FORMATTER.get().format(value);
+                    }
+                });
+            }
+        }
+
+        Map<String, List<String>> collections = new TreeMap<>();
+        for (Map.Entry<String, Function<Point, String>> entry : columns.entrySet()) {
+            List<String> collection = points.stream().map(entry.getValue()).collect(Collectors.toList());
+            // verify is same data already exist
+            boolean add = true;
+            for (List<String> otherCollection : collections.values()) {
+                if (add && collection.equals(otherCollection)) {
+                    add = false;
+                }
+            }
+            if (add) {
+                collections.put(entry.getKey(), collection);
+            }
+        }
 
         FileWriter fw = new FileWriter(file);
-        fw.write(columns.stream().collect(Collectors.joining(";")) + "\n");
-        for (Point point : points) {
-            String row = point.getLonDeg() + ";" + point.getLatDeg() + ";" + point.getZ() + ";" + point.getDist() + ";"
-                    + point.getTime();
-            fw.write(row);
-            for (String d : data) {
-                fw.write(";" + point.getData().get(d));
+        fw.write(collections.keySet().stream().collect(Collectors.joining(";")) + "\n");
+        for (int i = 0; i < points.size(); i++) {
+            List<String> line = new ArrayList<>(collections.size());
+            for (String collection : collections.keySet()) {
+                line.add(collections.get(collection).get(i));
             }
-            fw.write("\n");
+            fw.write(line.stream().collect(Collectors.joining(";")) + "\n");
         }
         fw.close();
     }

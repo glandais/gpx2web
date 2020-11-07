@@ -27,6 +27,7 @@ public class SpeedService {
                 }
             }
             point.getData().put(attribute, v);
+            point.getData().put(attribute + "_kmh", v * 3.6);
         }
     }
 

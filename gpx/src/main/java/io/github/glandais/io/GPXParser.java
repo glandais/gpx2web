@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.InputStream;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,11 +115,11 @@ public class GPXParser {
         double lat = Math.toRadians(Double.parseDouble(element.getAttribute("lat")));
         Element timeElement = findElement(element, "time");
         Element eleElement = findElement(element, "ele");
-        ZonedDateTime date = Point.EPOCH;
+        Instant date = Instant.EPOCH;
         if (timeElement != null) {
             String dateString = timeElement.getTextContent();
             try {
-                date = ZonedDateTime.parse(dateString);
+                date = Instant.parse(dateString);
             } catch (Exception e) {
                 // oops
             }

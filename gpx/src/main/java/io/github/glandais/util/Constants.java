@@ -5,7 +5,7 @@ public class Constants {
     // g, cyclist from earth
     public static final double G = 9.8;
 
-    //WGS-84 semi-major axis
+    // WGS-84 semi-major axis
     public static final double SEMI_MAJOR_AXIS = 6378137.0;
 
     // WGS-84 first eccentricity squared

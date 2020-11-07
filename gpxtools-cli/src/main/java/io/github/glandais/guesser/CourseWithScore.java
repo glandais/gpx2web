@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @ToString(callSuper = true)
@@ -21,7 +22,7 @@ public class CourseWithScore extends Course {
     @Setter
     private double score;
 
-    public CourseWithScore(GPXPath gpxPath, ZonedDateTime start, Cyclist cyclist, PowerProvider powerProvider, WindProvider windProvider, CxProvider cxProvider) {
+    public CourseWithScore(GPXPath gpxPath, Instant start, Cyclist cyclist, PowerProvider powerProvider, WindProvider windProvider, CxProvider cxProvider) {
         super(gpxPath, start, cyclist, powerProvider, windProvider, cxProvider);
     }
 }

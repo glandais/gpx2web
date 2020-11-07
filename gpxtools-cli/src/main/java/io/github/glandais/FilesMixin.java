@@ -10,11 +10,7 @@ import java.util.List;
 
 @Data
 @Slf4j
-public class GpxCommand implements Runnable {
-
-    // all other arguments
-    @CommandLine.Unmatched
-    private List<String> unmatched;
+public class FilesMixin {
 
     @CommandLine.Parameters(paramLabel = "FILE", description = "Files or folders to process")
     private List<File> input = new ArrayList<>();
@@ -27,8 +23,7 @@ public class GpxCommand implements Runnable {
 
     protected List<File> gpxFiles = new ArrayList<>();
 
-    @Override
-    public void run() {
+    public void initFiles() {
 
         if (input.isEmpty()) {
             CommandLine.usage(this, System.out);

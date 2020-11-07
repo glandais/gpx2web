@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -31,11 +33,8 @@ public class GPXPerSecond {
                     if (time[i + 1] - time[i] > 1) {
                         double c = (s - time[i]) / (1.0 * time[i + 1] - time[i]);
                         Point pp1 = points.get(i + 1);
-                        double lon = p.getLon() + c * (pp1.getLon() - p.getLon());
-                        double lat = p.getLat() + c * (pp1.getLat() - p.getLat());
-                        double z = p.getZ() + c * (pp1.getZ() - p.getZ());
-                        Point point = Point.builder().lon(lon).lat(lat).z(z)
-                                .time(Instant.ofEpochMilli(s).atZone(p.getTime().getZone())).build();
+
+                        Point point = getPoint(p, pp1, c, s);
                         newPoints.add(point);
                     } else {
                         newPoints.add(p);
@@ -49,6 +48,34 @@ public class GPXPerSecond {
 
         path.setPoints(newPoints);
         log.info("Done - a point per second for {}", path.getName());
+    }
+
+    public static Point getPoint(Point p, Point pp1, double coef, long epochMillis) {
+        double lon = p.getLon() + coef * (pp1.getLon() - p.getLon());
+        double lat = p.getLat() + coef * (pp1.getLat() - p.getLat());
+        double z = p.getZ() + coef * (pp1.getZ() - p.getZ());
+
+        Map<String, Double> data = new HashMap<>();
+        for (String key : p.getData().keySet()) {
+            Double v = p.getData().get(key);
+            Double vp1 = pp1.getData().get(key);
+            Double nv;
+            if (v != null && vp1 != null) {
+                nv = v + coef * (vp1 - v);
+            } else if (v != null) {
+                nv = v;
+            } else {
+                nv = vp1;
+            }
+            if (nv != null) {
+                data.put(key, nv);
+            }
+        }
+
+        Point point = Point.builder().lon(lon).lat(lat).z(z).data(data)
+                .time(Instant.ofEpochMilli(epochMillis)).build();
+        point.getData().put("coef", coef);
+        return point;
     }
 
 }

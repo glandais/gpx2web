@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -170,10 +171,10 @@ public class KMLFileWriter {
         fw.write("      <styleUrl>#" + style + "</styleUrl>\n");
         fw.write("<TimeSpan>\n");
         if (delta1 == delta2) {
-            fw.write("<begin>" + print(p.getTime().minus(Duration.ofMillis(delta1))) + "</begin>\n");
+            fw.write("<begin>" + print(p.getTime().minusMillis(delta1)) + "</begin>\n");
         } else {
-            fw.write("<begin>" + print(p.getTime().minus(Duration.ofMillis(delta1))) + "</begin>\n");
-            fw.write("<end>" + print(p.getTime().minus(Duration.ofMillis(delta2))) + "</end>\n");
+            fw.write("<begin>" + print(p.getTime().minusMillis(delta1)) + "</begin>\n");
+            fw.write("<end>" + print(p.getTime().minusMillis(delta2)) + "</end>\n");
         }
         fw.write("</TimeSpan>\n");
         fw.write("      <LineString>\n");
@@ -188,8 +189,8 @@ public class KMLFileWriter {
         fw.write("    </Placemark>\n");
     }
 
-    private String print(ZonedDateTime l) {
-        return DateTimeFormatter.ISO_DATE_TIME.format(l.toInstant());
+    private String print(Instant l) {
+        return DateTimeFormatter.ISO_DATE_TIME.format(l);
     }
 
 }

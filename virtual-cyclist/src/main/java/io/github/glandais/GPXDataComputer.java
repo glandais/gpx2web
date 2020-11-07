@@ -3,8 +3,8 @@ package io.github.glandais;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
-import io.github.glandais.util.MagicPower2MapSpace;
 import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.util.MagicPower2MapSpace;
 import io.github.glandais.util.Vector;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
@@ -18,7 +18,7 @@ import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -106,7 +106,7 @@ public class GPXDataComputer {
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
         long[] time = course.getGpxPath().getTime();
-        long durationMillis = time[time.length - 1] - time[0];
+        double duration = (time[time.length - 1] - time[0]) / 1000.0;
 
         int count = 18;
         long[] dur = new long[count];
@@ -116,7 +116,7 @@ public class GPXDataComputer {
             int deg = i * (360 / count);
 
             Wind wind = new Wind(3, Math.toRadians(deg));
-            course = getCourse(gpxPath, power, cyclist, wind, durationMillis);
+            course = getCourse(gpxPath, power, cyclist, wind, duration);
             powerComputer.computeTrack(course);
             time = course.getGpxPath().getTime();
             dur[i] = time[time.length - 1] - time[0];
@@ -133,14 +133,14 @@ public class GPXDataComputer {
         return getWind(gpxPath);
     }
 
-    private Course getCourse(GPXPath gpxPath, double power, Cyclist cyclist, Wind wind, long durationMillis) {
+    private Course getCourse(GPXPath gpxPath, double power, Cyclist cyclist, Wind wind, double duration) {
         PowerProviderConstant powerProvider;
-        if (durationMillis == 0) {
+        if (duration == 0) {
             powerProvider = new PowerProviderConstant(power);
         } else {
-            powerProvider = new PowerProviderConstantWithTiring(power, durationMillis);
+            powerProvider = new PowerProviderConstantWithTiring(power, duration);
         }
-        return new Course(gpxPath, ZonedDateTime.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant());
+        return new Course(gpxPath, Instant.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant());
     }
 
     public Vector getWind(GPXPath path) {

@@ -4,6 +4,7 @@ import io.github.glandais.gpx.Point;
 import lombok.AllArgsConstructor;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @AllArgsConstructor
@@ -15,7 +16,7 @@ public class CxProviderConstant implements CxProvider {
         this(0.30);
     }
 
-    public double getCx(Point from, Point to, ZonedDateTime now, Duration ellapsed, double p_frot, double p_grav, double v, double grad) {
+    public double getCx(Point location, double ellapsed, double speed, double grad) {
         return cx;
     }
 

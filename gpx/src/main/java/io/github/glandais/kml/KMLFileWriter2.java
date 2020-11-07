@@ -108,7 +108,7 @@ public class KMLFileWriter2 {
             Point pm1 = points.get(i - 1);
             Point p = points.get(i);
 
-            double sleep = (1.0 * (p.getTime().toInstant().toEpochMilli() - pm1.getTime().toInstant().toEpochMilli())) / 1000.0;
+            double sleep = (1.0 * (p.getTime().toEpochMilli() - pm1.getTime().toEpochMilli())) / 1000.0;
 
             fw.write(" <gx:AnimatedUpdate>\n");
             fw.write("  <gx:duration>3.0</gx:duration>\n");

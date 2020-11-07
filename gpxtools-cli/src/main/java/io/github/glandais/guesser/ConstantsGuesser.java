@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.function.Predicate;
 
 @Service
@@ -56,7 +56,7 @@ public class ConstantsGuesser {
         gradeService.computeGrade(original, "grade");
         speedService.computeSpeed(original, "originalSpeed");
 
-        CourseWithScore course = new CourseWithScore(original, ZonedDateTime.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
+        CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
 
         String originalJson = objectMapper.writeValueAsString(original);
         GPXPath simulated = objectMapper.readValue(originalJson, GPXPath.class);
@@ -84,7 +84,7 @@ public class ConstantsGuesser {
                         double m = mRange.getValue(k, nSteps);
 
                         Cyclist curCyclist = new Cyclist(m, 15, 90, 0.3, f);
-                        CourseWithScore current = new CourseWithScore(original, ZonedDateTime.now(), curCyclist,
+                        CourseWithScore current = new CourseWithScore(original, Instant.now(), curCyclist,
                                 new PowerProviderFromData(),
                                 new WindProviderNone(),
                                 new CxProviderConstant(cx));

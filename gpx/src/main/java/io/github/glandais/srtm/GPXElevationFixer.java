@@ -22,23 +22,38 @@ public class GPXElevationFixer {
     }
 
     public void fixElevation(GPXPath path) {
-        fixElevation(path, 300);
+        fixElevation(path, true);
     }
 
-    public void fixElevation(GPXPath path, double smoothing) {
+    public void fixElevation(GPXPath path, boolean interpolate) {
         log.info("Fixing elevation for {}", path.getName());
 
-        GPXFilter.filterPointsDouglasPeucker(path);
-        setZOnPath(path);
-        smoothZ(path, smoothing);
-        GPXFilter.filterPointsDouglasPeucker(path);
+        if (interpolate) {
+            GPXFilter.filterPointsDouglasPeucker(path);
+        }
+        setZOnPath(path, interpolate);
+        smoothZ(path, 300);
+        if (interpolate) {
+            GPXFilter.filterPointsDouglasPeucker(path);
+        }
 
         log.info("Fixed elevation for {}", path.getName());
     }
 
-    private void setZOnPath(GPXPath path) {
+    private void setZOnPath(GPXPath path, boolean interpolate) {
+        log.info("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
+
+        if (interpolate) {
+            setZOnPathInterpolate(path);
+        } else {
+            setZOnPathPerPoint(path);
+        }
+
+        log.info("Set elevations for {} ({})", path.getName(), path.getPoints().size());
+    }
+
+    private void setZOnPathInterpolate(GPXPath path) {
         List<Point> points = path.getPoints();
-        log.info("Setting elevations for {} ({})", path.getName(), points.size());
         List<Point> newPoints = new ArrayList<>();
         for (int j = 1; j < points.size() - 1; j++) {
             Point p0 = points.get(j - 1);
@@ -52,7 +67,12 @@ public class GPXElevationFixer {
             }
         }
         path.setPoints(newPoints);
-        log.info("Set elevations for {} ({})", path.getName(), newPoints.size());
+    }
+
+    private void setZOnPathPerPoint(GPXPath path) {
+        for (Point point : path.getPoints()) {
+            point.setZ(srtmHelper.getElevationRad(point.getLon(), point.getLat()));
+        }
     }
 
     public void smoothZ(GPXPath path, double buffer) {

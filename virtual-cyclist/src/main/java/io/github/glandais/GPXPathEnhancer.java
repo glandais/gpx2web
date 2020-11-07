@@ -9,6 +9,7 @@ import io.github.glandais.virtual.power.PowerProviderConstant;
 import io.github.glandais.virtual.wind.WindProviderNone;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Service
@@ -36,7 +37,7 @@ public class GPXPathEnhancer {
     public void virtualize(GPXPath gpxPath) {
         gpxElevationFixer.fixElevation(gpxPath);
         Cyclist cyclist = new Cyclist();
-        Course course = new Course(gpxPath, ZonedDateTime.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
+        Course course = new Course(gpxPath, Instant.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
         gpxPerSecond.computeOnePointPerSecond(gpxPath);
