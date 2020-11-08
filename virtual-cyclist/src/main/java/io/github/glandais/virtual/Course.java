@@ -2,7 +2,6 @@ package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.virtual.cx.CxProvider;
-import io.github.glandais.virtual.power.PowerProvider;
 import io.github.glandais.virtual.wind.WindProvider;
 import lombok.Data;
 
@@ -17,7 +16,7 @@ public class Course {
 
     protected final Cyclist cyclist;
 
-    protected final PowerProvider powerProvider;
+    protected final PowerProvider cyclistPowerProvider;
 
     protected final WindProvider windProvider;
 

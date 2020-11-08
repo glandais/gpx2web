@@ -12,15 +12,18 @@ import io.github.glandais.map.SRTMMapProducer;
 import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.PowerService;
+import io.github.glandais.util.SmoothService;
 import io.github.glandais.util.SpeedService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
+import io.github.glandais.virtual.PowerProvider;
+import io.github.glandais.virtual.cx.CxGuesser;
+import io.github.glandais.virtual.cx.CxProvider;
 import io.github.glandais.virtual.cx.CxProviderConstant;
-import io.github.glandais.virtual.power.PowerProvider;
-import io.github.glandais.virtual.power.PowerProviderConstant;
-import io.github.glandais.virtual.power.PowerProviderFromData;
+import io.github.glandais.virtual.cx.CxProviderFromData;
+import io.github.glandais.virtual.cyclist.PowerProviderConstant;
+import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,8 +63,11 @@ public class GpxProcessor {
 
     private final SpeedService speedService;
 
-    private final PowerService powerService;
+    private final SmoothService smoothService;
+
     private final CSVFileWriter csvFileWriter;
+
+    private final CxGuesser cxGuesser;
 
     public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
                         final GPXParser gpxParser,
@@ -76,8 +82,9 @@ public class GpxProcessor {
                         final GPXFileWriter gpxFileWriter,
                         final KMLFileWriter kmlFileWriter,
                         final SpeedService speedService,
-                        final PowerService powerService,
-                        final CSVFileWriter csvFileWriter) {
+                        final SmoothService smoothService,
+                        final CSVFileWriter csvFileWriter,
+                        CxGuesser cxGuesser) {
 
         this.simpleTimeComputer = simpleTimeComputer;
         this.gpxParser = gpxParser;
@@ -92,8 +99,9 @@ public class GpxProcessor {
         this.gpxFileWriter = gpxFileWriter;
         this.kmlFileWriter = kmlFileWriter;
         this.speedService = speedService;
-        this.powerService = powerService;
+        this.smoothService = smoothService;
         this.csvFileWriter = csvFileWriter;
+        this.cxGuesser = cxGuesser;
     }
 
     public void process(File gpxFile, ProcessCommand options) throws Exception {
@@ -133,9 +141,16 @@ public class GpxProcessor {
                     simpleTimeComputer.computeTime(path, start, options.getSimpleVirtualSpeed() / 3.6);
                 } else {
                     PowerProvider powerProvider;
+                    CxProvider cxProvider = new CxProviderConstant(options.getCx());
                     if (options.isGpxPower()) {
-                        powerService.smoothPower(path);
+                        smoothService.smoothPower(path);
                         powerProvider = new PowerProviderFromData();
+                        if (options.isGuessCx()) {
+                            cxGuesser.guess(path, options.getCyclist(),
+                                    new WindProviderConstant(options.getWind()));
+                            smoothService.smoothCx(path);
+                            cxProvider = new CxProviderFromData();
+                        }
                     } else {
                         powerProvider = new PowerProviderConstant(options.getPowerW());
                     }
@@ -143,7 +158,7 @@ public class GpxProcessor {
                             options.getCyclist(),
                             powerProvider,
                             new WindProviderConstant(options.getWind()),
-                            new CxProviderConstant(options.getCx()));
+                            cxProvider);
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }

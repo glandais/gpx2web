@@ -1,11 +1,10 @@
-package io.github.glandais.virtual.power;
+package io.github.glandais.virtual.cyclist;
 
 import io.github.glandais.gpx.Point;
+import io.github.glandais.virtual.Course;
+import io.github.glandais.virtual.CyclistStatus;
+import io.github.glandais.virtual.PowerProvider;
 import lombok.AllArgsConstructor;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 public class PowerProviderConstant implements PowerProvider {
@@ -17,14 +16,15 @@ public class PowerProviderConstant implements PowerProvider {
     }
 
     @Override
-    public double getPowerW(Point location, double ellapsed, double p_air, double p_frot, double p_grav, double v, double grad) {
+    public double getPowerW(Course course, Point location, CyclistStatus status) {
 
-        if (grad < -0.06) {
+        double grade = location.getGrade();
+        if (grade < -0.06) {
             return 0;
-        } else if (grad < 0) {
+        } else if (grade < 0) {
             // -6% : 0%
             // 0% : 100%
-            double c = 1 + (grad / 0.06);
+            double c = 1 + (grade / 0.06);
             return power * c;
         } else {
             return power;

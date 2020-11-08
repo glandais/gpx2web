@@ -4,7 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.cx.CxProvider;
-import io.github.glandais.virtual.power.PowerProvider;
+import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.wind.WindProvider;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,7 +12,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)

@@ -3,14 +3,16 @@ package io.github.glandais;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.virtual.*;
+import io.github.glandais.virtual.Course;
+import io.github.glandais.virtual.Cyclist;
+import io.github.glandais.virtual.MaxSpeedComputer;
+import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.cx.CxProviderConstant;
-import io.github.glandais.virtual.power.PowerProviderConstant;
+import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.wind.WindProviderNone;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 @Service
 public class GPXPathEnhancer {

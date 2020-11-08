@@ -76,6 +76,9 @@ public class ProcessCommand implements Runnable {
     @Option(names = {"--gpx-power"}, negatable = true, description = "Reuse GPX power data")
     private boolean gpxPower = false;
 
+    @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
+    private boolean guessCx = false;
+
     @Option(names = {"--simulate-speed"}, description = "Cyclist speed (km/h)\nDisable the computation using power, wind, etc")
     private Double simpleVirtualSpeed = null;
 

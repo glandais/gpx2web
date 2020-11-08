@@ -11,7 +11,7 @@ import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.cx.CxProviderConstant;
-import io.github.glandais.virtual.power.PowerProviderFromData;
+import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.wind.WindProviderNone;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
