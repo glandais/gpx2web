@@ -1,9 +1,6 @@
 package io.github.glandais.gpx.storage;
 
-import io.github.glandais.gpx.storage.convert.DateUnit;
-import io.github.glandais.gpx.storage.convert.DegreesUnit;
-import io.github.glandais.gpx.storage.convert.EpochMillisUnit;
-import io.github.glandais.gpx.storage.convert.SemiCirclesUnit;
+import io.github.glandais.gpx.storage.convert.*;
 import io.github.glandais.gpx.storage.unit.*;
 
 import java.time.Instant;
@@ -18,6 +15,7 @@ public interface Unit<J> {
     // instant
     StorageUnit<Instant> INSTANT = new InstantUnit();
     Unit<Long> EPOCH_MILLIS = new EpochMillisUnit();
+    Unit<Double> EPOCH_SECONDS = new EpochSecondsUnit();
     Unit<Date> DATE = new DateUnit();
 
     // duration

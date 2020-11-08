@@ -43,6 +43,10 @@ public class Point {
         return debug;
     }
 
+    public <J> J get(String key, Unit<J> unit) {
+        return data.get(key, unit);
+    }
+
     public <J> void put(String key, J value, Unit<J> unit) {
         data.put(key, value, unit);
     }
@@ -127,6 +131,10 @@ public class Point {
 
     public long getEpochMilli() {
         return data.get("time", Unit.EPOCH_MILLIS);
+    }
+
+    public double getEpochSeconds() {
+        return data.get("time", Unit.EPOCH_SECONDS);
     }
 
     public double getMaxSpeed() {
