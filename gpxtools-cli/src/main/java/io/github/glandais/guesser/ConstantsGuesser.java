@@ -53,7 +53,7 @@ public class ConstantsGuesser {
 
     public Course guessWithPathWithPower(GPXPath original, Cyclist cyclist) throws IOException {
         gpxElevationFixer.smoothZ(original, 100);
-        gradeService.computeGrade(original, "grade");
+        gradeService.computeGrade(original);
         speedService.computeSpeed(original, "originalSpeed");
 
         CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
@@ -134,7 +134,7 @@ public class ConstantsGuesser {
         double s = 0;
         for (int i = 0; i < original.size(); i++) {
             Point originalPoint = original.getPoints().get(i);
-            if (i > 0 && predicate.test(originalPoint.getData().get("grade"))) {
+            if (i > 0 && predicate.test(originalPoint.getGrade())) {
                 Point simulatedPoint = simulated.getPoints().get(i);
                 double dv = Math
                         .abs(originalPoint.getSpeed() - simulatedPoint.getSpeed());

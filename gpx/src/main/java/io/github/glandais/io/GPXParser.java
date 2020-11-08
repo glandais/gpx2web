@@ -2,6 +2,7 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Unit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -15,7 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -128,7 +128,11 @@ public class GPXParser {
         if (eleElement != null) {
             z = Double.valueOf(eleElement.getTextContent());
         }
-        Point p = Point.builder().lon(lon).lat(lat).z(z).time(date).build();
+        Point p = new Point();
+        p.setLon(lon);
+        p.setLat(lat);
+        p.setZ(z);
+        p.setTime(date);
         Element extensions = findElement(element, "extensions");
         if (extensions != null) {
             NodeList childNodes = extensions.getChildNodes();
@@ -138,7 +142,7 @@ public class GPXParser {
                     Element child = (Element) node;
                     try {
                         double value = Double.parseDouble(child.getTextContent());
-                        p.getData().put(child.getTagName(), value);
+                        p.put(child.getTagName(), value, Unit.DOUBLE_ANY);
                     } catch (NumberFormatException e) {
                         // oops
                     }

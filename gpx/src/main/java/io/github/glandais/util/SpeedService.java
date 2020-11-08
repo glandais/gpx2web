@@ -2,6 +2,7 @@ package io.github.glandais.util;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Unit;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,8 +27,7 @@ public class SpeedService {
                     v = path.getPoints().get(i - 1).getSpeed();
                 }
             }
-            point.getData().put(attribute, v);
-            point.getData().put(attribute + "_kmh", v * 3.6);
+            point.put(attribute, v, Unit.SPEED_S_M);
         }
     }
 

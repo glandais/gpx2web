@@ -34,7 +34,7 @@ public class GPXPerSecond {
                         double c = (s - time[i]) / (1.0 * time[i + 1] - time[i]);
                         Point pp1 = points.get(i + 1);
 
-                        Point point = getPoint(p, pp1, c, s);
+                        Point point = Point.interpolate(p, pp1, c, s);
                         newPoints.add(point);
                     } else {
                         newPoints.add(p);
@@ -48,34 +48,6 @@ public class GPXPerSecond {
 
         path.setPoints(newPoints);
         log.info("Done - a point per second for {}", path.getName());
-    }
-
-    public static Point getPoint(Point p, Point pp1, double coef, long epochMillis) {
-        double lon = p.getLon() + coef * (pp1.getLon() - p.getLon());
-        double lat = p.getLat() + coef * (pp1.getLat() - p.getLat());
-        double z = p.getZ() + coef * (pp1.getZ() - p.getZ());
-
-        Map<String, Double> data = new HashMap<>();
-        for (String key : p.getData().keySet()) {
-            Double v = p.getData().get(key);
-            Double vp1 = pp1.getData().get(key);
-            Double nv;
-            if (v != null && vp1 != null) {
-                nv = v + coef * (vp1 - v);
-            } else if (v != null) {
-                nv = v;
-            } else {
-                nv = vp1;
-            }
-            if (nv != null) {
-                data.put(key, nv);
-            }
-        }
-
-        Point point = Point.builder().lon(lon).lat(lat).z(z).data(data)
-                .time(Instant.ofEpochMilli(epochMillis)).build();
-        point.getData().put("coef", coef);
-        return point;
     }
 
 }

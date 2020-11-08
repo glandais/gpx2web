@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GradeService {
 
-    public void computeGrade(GPXPath path, String attribute) {
+    public void computeGrade(GPXPath path) {
         for (int i = 0; i < path.size(); i++) {
             Point point = path.getPoints().get(i);
             double g;
@@ -19,10 +19,10 @@ public class GradeService {
                 if (d > 0.002) {
                     g = 100 * dz / d;
                 } else {
-                    g = path.getPoints().get(i - 1).getData().get(attribute);
+                    g = path.getPoints().get(i - 1).getGrade();
                 }
             }
-            point.getData().put(attribute, g);
+            point.setGrade(g);
         }
     }
 

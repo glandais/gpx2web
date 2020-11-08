@@ -1,10 +1,8 @@
 package io.github.glandais.virtual;
 
-import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.util.Constants;
-import io.github.glandais.util.MagicPower2MapSpace;
-import io.github.glandais.util.Vector;
 import io.github.glandais.virtual.wind.Wind;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -55,8 +53,8 @@ public class PowerComputer {
         Point current = getPoint(course, status.odo, now);
         current.setTime(Instant.ofEpochMilli(now));
 
-        current.getData().put("0_0_odo", status.odo);
-        current.getData().put("0_1_speed", status.speed);
+        current.putDebug("0_0_odo", status.odo, Unit.METERS);
+        current.putDebug("0_1_speed", status.speed, Unit.SPEED_S_M);
 
         double p_grav = computePGrav(course, status, current);
         double p_frot = computePFrot(course, status, current);
@@ -65,23 +63,25 @@ public class PowerComputer {
 
         // p_app = cyclist power - resistance
         double p_app = p_cyclist - p_air - p_frot - p_grav;
-        current.getData().put("5_1_p_app", p_app);
+        current.putDebug("5_1_p_app", p_app, Unit.WATTS);
 
         final double mKg = course.getCyclist().getMKg();
         // m.s-2
         double acc = p_app / (Constants.G * mKg);
-        current.getData().put("5_2_acc", acc);
+        current.putDebug("5_2_acc", acc, Unit.DOUBLE_ANY);
 
         status.speed = status.speed + acc * DT;
-        current.getData().put("5_3_new_speed", status.speed);
+        current.putDebug("5_3_new_speed", status.speed, Unit.SPEED_S_M);
+
+        current.putDebug("5_4_max_speed", current.getMaxSpeed(), Unit.SPEED_S_M);
 
         status.speed = Math.max(MINIMAL_SPEED, Math.min(current.getMaxSpeed(), status.speed));
-        current.getData().put("5_4_fixed_speed", status.speed);
+        current.putDebug("5_5_fixed_speed", status.speed, Unit.SPEED_S_M);
 
         current.setSpeed(status.speed);
 
         double dx = DT * status.speed;
-        current.getData().put("5_5_dx", dx);
+        current.putDebug("5_6_dx", dx, Unit.METERS);
 
         status.odo = status.odo + dx;
         status.ellapsed = status.ellapsed + DT;
@@ -90,17 +90,17 @@ public class PowerComputer {
     }
 
     private double getPCyclist(Course course, CyclistStatus status, Point current, double p_grav, double p_frot, double p_air) {
-        double grad = current.getData().get("grad");
+        double grad = current.getGrade();
         double p_cyclist = course.getPowerProvider().getPowerW(current, status.ellapsed, p_air, p_frot, p_grav, status.speed, grad);
-        current.getData().put("5_0_p_cyclist", p_cyclist);
+        current.putDebug("5_0_p_cyclist", p_cyclist, Unit.WATTS);
         return p_cyclist;
     }
 
     private double computePGrav(Course course, CyclistStatus status, Point current) {
         final double mKg = course.getCyclist().getMKg();
-        double grad = current.getData().get("grad");
+        double grad = current.getGrade();
         double p_grav = mKg * Constants.G * status.speed * grad;
-        current.getData().put("2_2_p_grav", p_grav);
+        current.putDebug("2_2_p_grav", p_grav, Unit.WATTS);
         return p_grav;
     }
 
@@ -108,36 +108,36 @@ public class PowerComputer {
         final double mKg = course.getCyclist().getMKg();
         final double f = course.getCyclist().getF();
         double p_frot = mKg * Constants.G * status.speed * f;
-        current.getData().put("3_0_f", f);
-        current.getData().put("3_1_p_frot", p_frot);
+        current.putDebug("3_0_f", f, Unit.PERCENTAGE);
+        current.putDebug("3_1_p_frot", p_frot, Unit.WATTS);
         return p_frot;
     }
 
     private double computePAir(Course course, CyclistStatus status, Point current) {
-        double grad = current.getData().get("grad");
+        double grad = current.getGrade();
         final double cx = course.getCxProvider().getCx(current, status.ellapsed, status.speed, grad);
         final Wind wind = course.getWindProvider().getWind(current, status.ellapsed);
-        current.getData().put("4_0_cx", cx);
-        current.getData().put("4_1_wind_speed", wind.getWindSpeed());
-        current.getData().put("4_2_wind_direction", wind.getWindDirection());
+        current.putDebug("4_0_cx", cx, Unit.CX);
+        current.putDebug("4_1_wind_speed", wind.getWindSpeed(), Unit.SPEED_S_M);
+        current.putDebug("4_2_wind_direction", wind.getWindDirection(), Unit.RADIANS);
         double p_air;
         if (wind.getWindSpeed() == 0) {
             p_air = cx * status.speed * status.speed * status.speed;
         } else {
             p_air = computePAirWithWind(status, current, cx, wind);
         }
-        current.getData().put("4_6_p_air", p_air);
+        current.putDebug("4_6_p_air", p_air, Unit.WATTS);
         return p_air;
     }
 
     private double computePAirWithWind(CyclistStatus status, Point current, double cx, Wind wind) {
-        double bearing = current.getData().get("bearing");
-        current.getData().put("4_3_cyclist_bearing", bearing);
+        double bearing = current.getBearing();
+        current.putDebug("4_3_cyclist_bearing", bearing, Unit.RADIANS);
         double windDirectionAsBearing = (Math.PI / 2) - wind.getWindDirection();
-        current.getData().put("4_4_wind_bearing", windDirectionAsBearing);
+        current.putDebug("4_4_wind_bearing", windDirectionAsBearing, Unit.RADIANS);
 
         double alpha = windDirectionAsBearing - bearing;
-        current.getData().put("4_5_wind_alpha", alpha);
+        current.putDebug("4_5_wind_alpha", alpha, Unit.RADIANS);
 
         double v = wind.getWindSpeed();
 
@@ -161,9 +161,6 @@ public class PowerComputer {
         for (int i = 0; i < points.size(); i++) {
             if (d <= dists[i]) {
                 if (i == 0) {
-                    points.get(0).getData().put("i", 0.0);
-                    points.get(0).getData().put("grad", 0.0);
-                    points.get(0).getData().put("bearing", 0.0);
                     return points.get(0);
                 } else {
                     Point p = points.get(i - 1);
@@ -172,31 +169,15 @@ public class PowerComputer {
                         continue;
                     }
 
-                    double dz = pp1.getZ() - p.getZ();
-                    double grad = dz / (dists[i] - dists[i - 1]);
-
-                    Vector v_from = project(p);
-                    Vector v_to = project(pp1);
-                    double dy2 = v_to.getY() - v_from.getY();
-                    double dx2 = v_to.getX() - v_from.getX();
-                    double bearing = Math.atan2(-dy2, dx2);
-
                     double ratio = (d - dists[i - 1]) / (dists[i] - dists[i - 1]);
-                    Point result = GPXPerSecond.getPoint(p, pp1, ratio, now);
-                    result.getData().put("i", (double) (i - 1));
-                    result.getData().put("grad", grad);
-                    result.getData().put("bearing", bearing);
+                    Point result = Point.interpolate(p, pp1, ratio, now);
+                    result.setGrade(p.getGrade());
+                    result.setBearing(p.getBearing());
                     return result;
                 }
             }
         }
         throw new IllegalStateException();
-    }
-
-    private Vector project(final Point point) {
-
-        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLonDeg(), 12),
-                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLatDeg(), 12));
     }
 
 }

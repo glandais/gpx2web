@@ -2,6 +2,7 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.unit.StorageUnit;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -10,9 +11,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Writes a GPX file.
@@ -99,7 +99,8 @@ public class GPXFileWriter {
                 point.getData().forEach((k, v) -> {
                     if (v != null) {
                         out.append("<" + k + ">");
-                        out.append(String.valueOf(v));
+                        StorageUnit unit = v.getUnit();
+                        out.append(unit.formatData(v.getValue()));
                         out.append("</" + k + ">");
                     }
                 });
@@ -111,60 +112,6 @@ public class GPXFileWriter {
 
         fw.write("\t\t" + "</trkseg>" + "\n");
         fw.write("\t" + "</trk>" + "\n");
-    }
-
-    public void writeCsvFile(GPXPath path, File file) throws IOException {
-        List<Point> points = path.getPoints();
-        Map<String, Function<Point, String>> columns = new LinkedHashMap<>();
-
-        columns.put("lon", p -> LAT_LON_FORMATTER.get().format(p.getLonDeg()));
-        columns.put("lat", p -> LAT_LON_FORMATTER.get().format(p.getLatDeg()));
-        columns.put("z", p -> ELEVATION_FORMATTER.get().format(p.getZ()));
-        columns.put("dist", p -> DIST_FORMATTER.get().format(p.getDist()));
-        columns.put("time", p -> DateTimeFormatter.ISO_INSTANT.format(p.getTime()));
-
-        Set<String> attributes = new TreeSet<>();
-        for (Point point : points) {
-            point.getData().forEach((k, v) -> attributes.add(k));
-        }
-        for (String attribute : attributes) {
-            if (!columns.containsKey(attribute)) {
-                columns.put(attribute, p -> {
-                    Double value = p.getData().get(attribute);
-                    if (value == null) {
-                        return "";
-                    } else {
-                        return DIST_FORMATTER.get().format(value);
-                    }
-                });
-            }
-        }
-
-        Map<String, List<String>> collections = new TreeMap<>();
-        for (Map.Entry<String, Function<Point, String>> entry : columns.entrySet()) {
-            List<String> collection = points.stream().map(entry.getValue()).collect(Collectors.toList());
-            // verify is same data already exist
-            boolean add = true;
-            for (List<String> otherCollection : collections.values()) {
-                if (add && collection.equals(otherCollection)) {
-                    add = false;
-                }
-            }
-            if (add) {
-                collections.put(entry.getKey(), collection);
-            }
-        }
-
-        FileWriter fw = new FileWriter(file);
-        fw.write(collections.keySet().stream().collect(Collectors.joining(";")) + "\n");
-        for (int i = 0; i < points.size(); i++) {
-            List<String> line = new ArrayList<>(collections.size());
-            for (String collection : collections.keySet()) {
-                line.add(collections.get(collection).get(i));
-            }
-            fw.write(line.stream().collect(Collectors.joining(";")) + "\n");
-        }
-        fw.close();
     }
 
 }

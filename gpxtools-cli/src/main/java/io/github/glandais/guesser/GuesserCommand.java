@@ -4,6 +4,8 @@ import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
@@ -53,6 +55,9 @@ public class GuesserCommand implements Runnable {
     @Autowired
     private MaxSpeedComputer maxSpeedComputer;
 
+    @Autowired
+    private CSVFileWriter csvFileWriter;
+
     @Delegate
     @CommandLine.Mixin
     private FilesMixin filesMixin;
@@ -91,12 +96,12 @@ public class GuesserCommand implements Runnable {
             powerComputer.computeTrack(course);
             speedService.computeSpeed(original, "simulatedSpeed");
             for (Point p : original.getPoints()) {
-                double dv = p.getData().get("simulatedSpeed") - p.getData().get("originalSpeed");
-                p.getData().put("speedDifference", dv);
+                double dv = p.getData().get("simulatedSpeed", Unit.SPEED_S_M) - p.getData().get("originalSpeed", Unit.SPEED_S_M);
+                p.getData().put("speedDifference", dv, Unit.SPEED_S_M);
             }
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);
-            gpxFileWriter.writeCsvFile(original, new File(pathFolder, "sim.csv"));
+            csvFileWriter.writeCsvFile(original, new File(pathFolder, "sim.csv"));
         }
     }
 

@@ -1,5 +1,7 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.util.Vector;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,8 +61,8 @@ public class GPXPath {
         dists = new double[points.size()];
         zs = new double[points.size()];
         time = new long[points.size()];
-        int i = 0;
-        for (Point p : points) {
+        for (int i = 0; i < points.size(); i++) {
+            Point p = points.get(i);
             zs[i] = p.getZ();
             if (previousPoint != null) {
                 double d = previousPoint.distanceTo(p);
@@ -69,10 +71,9 @@ public class GPXPath {
             dists[i] = dist;
             p.setDist(dists[i]);
             zs[i] = p.getZ();
-            time[i] = p.getTime().toEpochMilli();
-            p.getData().put("ellapsed", (time[i] - time[0]) / 1000.0);
+            time[i] = p.getEpochMilli();
+            p.put("ellapsed", (time[i] - time[0]) / 1000.0, Unit.SECONDS);
             previousPoint = p;
-            i++;
         }
 
         minElevation = Double.MAX_VALUE;
@@ -107,6 +108,35 @@ public class GPXPath {
             }
             previousElevation = elevation;
         }
+
+        Point cur = points.get(0);
+        cur.putDebug("i", 0, Unit.INT_ANY);
+        cur.setGrade(0.0);
+        cur.setBearing(0.0);
+        for (int i = 1; i < points.size(); i++) {
+            Point p = points.get(i - 1);
+            p.putDebug("i", i - 1, Unit.INT_ANY);
+
+            Point pp1 = points.get(i);
+            if (dists[i] - dists[i - 1] == 0) {
+                p.setGrade(cur.getGrade());
+                p.setBearing(cur.getBearing());
+            } else {
+                double dz = pp1.getZ() - p.getZ();
+                double grad = dz / (dists[i] - dists[i - 1]);
+
+                Vector v_from = p.project();
+                Vector v_to = pp1.project();
+                double dy2 = v_to.getY() - v_from.getY();
+                double dx2 = v_to.getX() - v_from.getX();
+                double bearing = Math.atan2(-dy2, dx2);
+
+                p.setGrade(grad);
+                p.setBearing(bearing);
+                cur = p;
+            }
+        }
+
         log.debug("{} {} {} {} {} {}", minlon, maxlon, minlat, maxlat, minElevation, maxElevation);
     }
 

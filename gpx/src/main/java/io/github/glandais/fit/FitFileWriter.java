@@ -3,6 +3,7 @@ package io.github.glandais.fit;
 import com.garmin.fit.*;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.convert.SemiCirclesUnit;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -45,9 +46,9 @@ public class FitFileWriter {
 
         List<Point> points = path.getPoints();
         Point firstWayPoint = points.get(0);
-        Date startDate = Date.from(firstWayPoint.getTime());
+        Date startDate = firstWayPoint.getDate();
         Point lastWayPoint = points.get(points.size() - 1);
-        Date endDate = Date.from(lastWayPoint.getTime());
+        Date endDate = lastWayPoint.getDate();
 
         EventMesg eventMesg = new EventMesg();
         eventMesg.setLocalNum(0);
@@ -63,7 +64,7 @@ public class FitFileWriter {
             r.setPositionLat(point.getLatSemi());
             r.setPositionLong(point.getLonSemi());
             r.setDistance((float) (point.getDist()));
-            r.setTimestamp(new DateTime(Date.from(point.getTime())));
+            r.setTimestamp(new DateTime(point.getDate()));
             r.setAltitude((float) point.getZ());
             encode.write(r);
         }
@@ -80,9 +81,9 @@ public class FitFileWriter {
     private void writeLap(FileEncoder encode, GPXPath path) {
         List<Point> points = path.getPoints();
         Point firstWayPoint = points.get(0);
-        Date startDate = Date.from(firstWayPoint.getTime());
+        Date startDate = firstWayPoint.getDate();
         Point lastWayPoint = points.get(points.size() - 1);
-        Date endDate = Date.from(lastWayPoint.getTime());
+        Date endDate = lastWayPoint.getDate();
 
         float duration = (float) ((endDate.getTime() - startDate.getTime()) / 1000.0);
         float totaldist = (float) (path.getDist());
@@ -109,12 +110,12 @@ public class FitFileWriter {
 
         double maxSpeed = 0.0;
         for (Point point : points) {
-            Double v = point.getData().get("v");
+            Double v = point.getSpeed();
             if (v != null && v > maxSpeed) {
                 maxSpeed = v;
             }
         }
-        lapMesg.setMaxSpeed((float) (maxSpeed / 3.6));
+        lapMesg.setMaxSpeed((float) maxSpeed);
 
         lapMesg.setMinAltitude((float) path.getMinElevation());
         lapMesg.setMaxAltitude((float) path.getMaxElevation());
@@ -124,10 +125,10 @@ public class FitFileWriter {
         lapMesg.addField(BOUND_MIN_LAT);
         lapMesg.addField(BOUND_MIN_LON);
 
-        lapMesg.setFieldValue(27, 0, Point.toSemiCircles(path.getMaxlat()), '\uffff');
-        lapMesg.setFieldValue(28, 0, Point.toSemiCircles(path.getMaxlon()), '\uffff');
-        lapMesg.setFieldValue(29, 0, Point.toSemiCircles(path.getMinlat()), '\uffff');
-        lapMesg.setFieldValue(30, 0, Point.toSemiCircles(path.getMinlon()), '\uffff');
+        lapMesg.setFieldValue(27, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlat()), '\uffff');
+        lapMesg.setFieldValue(28, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlon()), '\uffff');
+        lapMesg.setFieldValue(29, 0, SemiCirclesUnit.toSemiCircles(path.getMinlat()), '\uffff');
+        lapMesg.setFieldValue(30, 0, SemiCirclesUnit.toSemiCircles(path.getMinlon()), '\uffff');
         encode.write(lapMesg);
     }
 

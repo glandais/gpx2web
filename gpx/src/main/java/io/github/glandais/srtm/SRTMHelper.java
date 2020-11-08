@@ -93,7 +93,9 @@ public class SRTMHelper {
             for (int col = mincol + 1; col <= maxcol; col++) {
                 double c = (col - dcol1) / (dcol2 - dcol1);
                 double drow = drow1 + c * (drow2 - drow1);
-                Point p = Point.builder().lon(colToLon(col)).lat(rowToLat(drow)).build();
+                Point p = new Point();
+                p.setLon(colToLon(col));
+                p.setLat(rowToLat(drow));
                 p.setZ(getElevationRad(p.getLon(), p.getLat()));
                 result.add(p);
             }
@@ -102,7 +104,9 @@ public class SRTMHelper {
             for (int row = minrow + 1; row <= maxrow; row++) {
                 double c = (row - drow1) / (drow2 - drow1);
                 double dcol = dcol1 + c * (dcol2 - dcol1);
-                Point p = Point.builder().lon(colToLon(dcol)).lat(rowToLat(row)).build();
+                Point p = new Point();
+                p.setLon(colToLon(dcol));
+                p.setLat(rowToLat(row));
                 p.setZ(getElevationRad(p.getLon(), p.getLat()));
                 result.add(p);
             }
