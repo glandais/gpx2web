@@ -1,4 +1,4 @@
-package io.github.glandais.virtual.power;
+package io.github.glandais.virtual.frot;
 
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.Unit;
@@ -9,13 +9,21 @@ import io.github.glandais.virtual.PowerProvider;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GravPowerProvider implements PowerProvider {
+public class FrotPowerProvider implements PowerProvider {
+
+    @Override
+    public String getId() {
+        return "frot";
+    }
+
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
+
         final double mKg = course.getCyclist().getMKg();
-        double grad = location.getGrade();
-        double p_grav = -mKg * Constants.G * status.getSpeed() * grad;
-        location.putDebug("2_p_grav", p_grav, Unit.WATTS);
-        return p_grav;
+        final double f = course.getCyclist().getF();
+        double p_frot = -mKg * Constants.G * status.getSpeed() * f;
+        location.putDebug("3_0_f", f, Unit.PERCENTAGE);
+        location.putDebug("3_1_p_frot", p_frot, Unit.WATTS);
+        return p_frot;
     }
 }

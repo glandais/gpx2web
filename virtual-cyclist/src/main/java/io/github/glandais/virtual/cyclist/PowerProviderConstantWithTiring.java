@@ -8,6 +8,11 @@ public class PowerProviderConstantWithTiring extends PowerProviderConstant {
 
     private final double duration;
 
+    @Override
+    public String getId() {
+        return "tiring";
+    }
+
     public PowerProviderConstantWithTiring(double power, double duration) {
         super(power);
         this.duration = duration;

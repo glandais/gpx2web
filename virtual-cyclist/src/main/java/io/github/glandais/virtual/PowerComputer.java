@@ -68,7 +68,7 @@ public class PowerComputer {
         int i = 0;
         for (PowerProvider provider : providers) {
             double w = provider.getPowerW(course, current, status);
-            current.putDebug("1_" + i++ + "_power", w, Unit.WATTS);
+            current.putDebug("1_" + provider.getId() + "_power", w, Unit.WATTS);
             p_app = p_app + w;
         }
 

@@ -79,6 +79,9 @@ public class ProcessCommand implements Runnable {
     @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
     private boolean guessCx = false;
 
+    @Option(names = {"--guess-weight"}, negatable = true, description = "Guess Cx")
+    private boolean guessWeight = false;
+
     @Option(names = {"--simulate-speed"}, description = "Cyclist speed (km/h)\nDisable the computation using power, wind, etc")
     private Double simpleVirtualSpeed = null;
 

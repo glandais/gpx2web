@@ -13,40 +13,34 @@ import java.util.List;
 public class SmoothService {
 
     public void smoothPower(GPXPath path) {
-        log.info("Smoothing power");
-        List<Point> points = path.getPoints();
-        double[] power = new double[points.size()];
-        double[] time = new double[points.size()];
-        for (int i = 0; i < points.size(); i++) {
-            Double power1 = points.get(i).getPower();
-            power[i] = power1 == null ? 0 : power1;
-            time[i] = points.get(i).getEpochMilli();
-        }
-        for (int j = 0; j < power.length; j++) {
-            double newPower = SmootherService.computeNewValue(j, 5000, power, time);
-            Point p = points.get(j);
-            p.setPower(newPower);
-        }
-        path.computeArrays();
-        log.info("Smoothed power");
+        smooth(path, "power", 5000);
     }
 
     public void smoothCx(GPXPath path) {
-        log.info("Smoothing cx");
+        smooth(path, "cx", 30000);
+    }
+
+    public void smoothSpeed(GPXPath path) {
+        smooth(path, "speed", 10000);
+    }
+
+    private void smooth(GPXPath path, String attribute, double dist) {
+        log.info("Smoothing {}", attribute);
         List<Point> points = path.getPoints();
-        double[] cx = new double[points.size()];
+        double[] data = new double[points.size()];
         double[] time = new double[points.size()];
         for (int i = 0; i < points.size(); i++) {
-            Double power1 = points.get(i).getData().get("cx", Unit.CX);
-            cx[i] = power1 == null ? 0 : power1;
+            Double value = points.get(i).getData().get(attribute, Unit.DOUBLE_ANY);
+            data[i] = value == null ? 0 : value;
             time[i] = points.get(i).getEpochMilli();
         }
-        for (int j = 0; j < cx.length; j++) {
-            double newCx = SmootherService.computeNewValue(j, 30000, cx, time);
+        for (int j = 0; j < data.length; j++) {
+            double newValue = SmootherService.computeNewValue(j, dist, data, time);
             Point p = points.get(j);
-            p.put("cx", newCx, Unit.CX);
+            p.put(attribute, newValue, Unit.DOUBLE_ANY);
         }
         path.computeArrays();
-        log.info("Smoothed cx");
+        log.info("Smoothed {}", attribute);
     }
+
 }

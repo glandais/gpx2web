@@ -16,6 +16,11 @@ public class PowerProviderConstant implements PowerProvider {
     }
 
     @Override
+    public String getId() {
+        return "constant";
+    }
+
+    @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
 
         double grade = location.getGrade();

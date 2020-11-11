@@ -10,6 +10,11 @@ import lombok.AllArgsConstructor;
 public class PowerProviderFromData implements PowerProvider {
 
     @Override
+    public String getId() {
+        return "provided";
+    }
+
+    @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
 
         Double p = location.getPower();

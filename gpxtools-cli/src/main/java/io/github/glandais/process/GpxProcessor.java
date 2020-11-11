@@ -24,6 +24,7 @@ import io.github.glandais.virtual.cx.CxProviderConstant;
 import io.github.glandais.virtual.cx.CxProviderFromData;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
+import io.github.glandais.virtual.cyclist.WeightGuesser;
 import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,8 @@ public class GpxProcessor {
 
     private final CxGuesser cxGuesser;
 
+    private final WeightGuesser weightGuesser;
+
     public GpxProcessor(final SimpleTimeComputer simpleTimeComputer,
                         final GPXParser gpxParser,
                         final GPXElevationFixer gpxElevationFixer,
@@ -84,7 +87,8 @@ public class GpxProcessor {
                         final SpeedService speedService,
                         final SmoothService smoothService,
                         final CSVFileWriter csvFileWriter,
-                        CxGuesser cxGuesser) {
+                        CxGuesser cxGuesser,
+                        WeightGuesser weightGuesser) {
 
         this.simpleTimeComputer = simpleTimeComputer;
         this.gpxParser = gpxParser;
@@ -102,6 +106,7 @@ public class GpxProcessor {
         this.smoothService = smoothService;
         this.csvFileWriter = csvFileWriter;
         this.cxGuesser = cxGuesser;
+        this.weightGuesser = weightGuesser;
     }
 
     public void process(File gpxFile, ProcessCommand options) throws Exception {
@@ -142,22 +147,28 @@ public class GpxProcessor {
                 } else {
                     PowerProvider powerProvider;
                     CxProvider cxProvider = new CxProviderConstant(options.getCx());
+                    WindProviderConstant windProvider = new WindProviderConstant(options.getWind());
                     if (options.isGpxPower()) {
                         smoothService.smoothPower(path);
+                        smoothService.smoothSpeed(path);
                         powerProvider = new PowerProviderFromData();
+                        if (options.isGuessWeight()) {
+                            weightGuesser.guess(path, options.getCyclist(), windProvider, cxProvider);
+                        }
                         if (options.isGuessCx()) {
                             cxGuesser.guess(path, options.getCyclist(),
-                                    new WindProviderConstant(options.getWind()));
+                                    windProvider);
                             smoothService.smoothCx(path);
                             cxProvider = new CxProviderFromData();
                         }
+                        speedService.computeSpeed(path, "speed");
                     } else {
                         powerProvider = new PowerProviderConstant(options.getPowerW());
                     }
                     Course course = new Course(path, start,
                             options.getCyclist(),
                             powerProvider,
-                            new WindProviderConstant(options.getWind()),
+                            windProvider,
                             cxProvider);
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);

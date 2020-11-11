@@ -1,4 +1,4 @@
-package io.github.glandais.virtual.power;
+package io.github.glandais.virtual.cyclist;
 
 import io.github.glandais.gpx.Point;
 import io.github.glandais.virtual.Course;
@@ -8,6 +8,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CyclistPowerProvider implements PowerProvider {
+
+    @Override
+    public String getId() {
+        return "cyclist";
+    }
 
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {

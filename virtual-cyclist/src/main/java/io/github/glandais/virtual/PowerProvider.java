@@ -6,4 +6,5 @@ public interface PowerProvider {
 
     double getPowerW(Course course, Point location, CyclistStatus status);
 
+    String getId();
 }
