@@ -10,4 +10,9 @@ public abstract class StorageUnit<J> implements Unit<J> {
 
     public abstract String formatHuman(J j);
 
+    public abstract String getFormat();
+
+    public abstract String getFormulaPartHumanToSI();
+
+    public abstract String getFormulaPartSIToHuman();
 }

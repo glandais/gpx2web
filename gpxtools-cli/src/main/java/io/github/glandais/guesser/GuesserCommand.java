@@ -6,12 +6,11 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.GradeService;
-import io.github.glandais.util.SpeedService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
@@ -39,9 +38,6 @@ public class GuesserCommand implements Runnable {
     private ConstantsGuesser constantsGuesser;
 
     @Autowired
-    private SpeedService speedService;
-
-    @Autowired
     private PowerComputer powerComputer;
 
     @Autowired
@@ -49,9 +45,6 @@ public class GuesserCommand implements Runnable {
 
     @Autowired
     private GPXElevationFixer gpxElevationFixer;
-
-    @Autowired
-    private GradeService gradeService;
 
     @Autowired
     private MaxSpeedComputer maxSpeedComputer;
@@ -95,10 +88,10 @@ public class GuesserCommand implements Runnable {
 
             maxSpeedComputer.computeMaxSpeeds(course);
             powerComputer.computeTrack(course);
-            speedService.computeSpeed(original, PointField.simulatedSpeed);
+//            speedService.computeSpeed(original, PointField.simulatedSpeed, ValueKind.computed);
             for (Point p : original.getPoints()) {
-                double dv = p.get(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.get(PointField.simulatedSpeed, Unit.SPEED_S_M);
-                p.put(PointField.speedDifference, dv, Unit.SPEED_S_M);
+                double dv = p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M);
+                p.put(PointField.speedDifference, dv, Unit.SPEED_S_M, ValueKind.computed);
             }
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);

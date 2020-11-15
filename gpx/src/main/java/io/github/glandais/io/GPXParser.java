@@ -4,6 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKind;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -55,7 +56,7 @@ public class GPXParser {
         }
         processElement(gpxDocument.getDocumentElement(), metadataName, paths);
         for (GPXPath gpxPath : paths) {
-            gpxPath.computeArrays();
+            gpxPath.computeArrays(ValueKind.source);
         }
         return paths;
     }
@@ -132,8 +133,8 @@ public class GPXParser {
         Point p = new Point();
         p.setLon(lon);
         p.setLat(lat);
-        p.setEle(ele);
-        p.setTime(date);
+        p.setEle(ele, ValueKind.source);
+        p.setTime(date, ValueKind.source);
         Element extensions = findElement(element, "extensions");
         getExtensionValues(p, extensions);
         paths.get(paths.size() - 1).addPoint(p);
@@ -151,9 +152,9 @@ public class GPXParser {
                         String tagName = child.getTagName();
                         PointField pointField = PointField.fromGpxTag(tagName);
                         if (pointField != null) {
-                            p.put(pointField, value, Unit.DOUBLE_ANY);
+                            p.put(pointField, value, Unit.DOUBLE_ANY, ValueKind.source);
                         } else {
-                            p.putDebug(tagName, value, Unit.DOUBLE_ANY);
+                            //p.putDebug(tagName, value, Unit.DOUBLE_ANY);
                         }
                     } catch (NumberFormatException e) {
                         // oops

@@ -2,6 +2,7 @@ package io.github.glandais.srtm;
 
 import com.graphhopper.reader.dem.*;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.ValueKind;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -75,8 +76,8 @@ public class SRTMHelper {
         result.add(p1);
         result.add(p2);
 
-        p1.setEle(getElevationRad(p1.getLon(), p1.getLat()));
-        p2.setEle(getElevationRad(p2.getLon(), p2.getLat()));
+        p1.setEle(getElevationRad(p1.getLon(), p1.getLat()), ValueKind.srtm);
+        p2.setEle(getElevationRad(p2.getLon(), p2.getLat()), ValueKind.srtm);
 
         double dcol1 = lonToCol(p1.getLonDeg());
         double drow1 = latToRow(p1.getLatDeg());
@@ -96,7 +97,7 @@ public class SRTMHelper {
                 Point p = new Point();
                 p.setLon(colToLon(col));
                 p.setLat(rowToLat(drow));
-                p.setEle(getElevationRad(p.getLon(), p.getLat()));
+                p.setEle(getElevationRad(p.getLon(), p.getLat()), ValueKind.srtm);
                 result.add(p);
             }
         }
@@ -107,7 +108,7 @@ public class SRTMHelper {
                 Point p = new Point();
                 p.setLon(colToLon(dcol));
                 p.setLat(rowToLat(row));
-                p.setEle(getElevationRad(p.getLon(), p.getLat()));
+                p.setEle(getElevationRad(p.getLon(), p.getLat()), ValueKind.srtm);
                 result.add(p);
             }
         }

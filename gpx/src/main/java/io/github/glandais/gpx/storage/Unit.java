@@ -40,4 +40,10 @@ public interface Unit<J> {
 
     // cx
     StorageUnit<Double> CX = new CxUnit();
+
+    // formula
+    StorageUnit<Formul> FORMULA_WATTS = new FormulaUnit(WATTS);
+    StorageUnit<Formul> FORMULA_SPEED_S_M = new FormulaUnit(SPEED_S_M);
+    StorageUnit<Formul> FORMULA_METERS = new FormulaUnit(METERS);
+
 }

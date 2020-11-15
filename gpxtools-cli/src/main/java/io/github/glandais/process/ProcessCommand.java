@@ -55,6 +55,9 @@ public class ProcessCommand implements Runnable {
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     private boolean csv = false;
 
+    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+    private boolean xlsx = false;
+
     @Option(names = {"--kml"}, negatable = true, description = "Output KML file")
     private boolean kml = false;
 

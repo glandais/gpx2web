@@ -14,4 +14,6 @@ public class Constants {
     // Earth perimeter
     public static final double CIRC = SEMI_MAJOR_AXIS * 2 * Math.PI;
 
+    public static final boolean VERIFIED = false;
+
 }

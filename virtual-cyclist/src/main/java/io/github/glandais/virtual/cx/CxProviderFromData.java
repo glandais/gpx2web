@@ -8,6 +8,6 @@ public class CxProviderFromData implements CxProvider {
 
     @Override
     public double getCx(Point location, double ellapsed, double speed, double grade) {
-        return location.get(PointField.cx, Unit.CX);
+        return location.getCurrent(PointField.cx, Unit.CX);
     }
 }

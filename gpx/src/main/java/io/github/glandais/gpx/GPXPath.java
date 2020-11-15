@@ -1,6 +1,7 @@
 package io.github.glandais.gpx;
 
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Vector;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,35 +47,21 @@ public class GPXPath {
         this.name = name;
     }
 
-    public void setPoints(List<Point> points) {
+    public void setPoints(List<Point> points, ValueKind kind) {
         this.points = points;
-        computeArrays();
+        computeArrays(kind);
     }
 
     public void addPoint(Point p) {
         points.add(p);
     }
 
-    public void computeArrays() {
+    public void computeArrays(ValueKind kind) {
         Point previousPoint = null;
         dist = 0;
         dists = new double[points.size()];
         eles = new double[points.size()];
         time = new long[points.size()];
-        for (int i = 0; i < points.size(); i++) {
-            Point p = points.get(i);
-            eles[i] = p.getEle();
-            if (previousPoint != null) {
-                double d = previousPoint.distanceTo(p);
-                dist += d;
-            }
-            dists[i] = dist;
-            p.setDist(dists[i]);
-            eles[i] = p.getEle();
-            time[i] = p.getEpochMilli();
-            p.put(PointField.ellapsed, (time[i] - time[0]) / 1000.0, Unit.SECONDS);
-            previousPoint = p;
-        }
 
         minElevation = Double.MAX_VALUE;
         maxElevation = -Double.MAX_VALUE;
@@ -85,55 +72,73 @@ public class GPXPath {
         minlat = Double.MAX_VALUE;
         maxlat = -Double.MAX_VALUE;
 
-        double previousElevation = 0;
-        for (int j = 0; j < points.size(); j++) {
-            Point p = points.get(j);
+        for (int i = 0; i < points.size(); i++) {
+            Point p = points.get(i);
+            eles[i] = p.getEle();
+            time[i] = p.getEpochMilli();
+
             double lon = p.getLon();
             double lat = p.getLat();
             minlon = Math.min(minlon, lon);
             maxlon = Math.max(maxlon, lon);
             minlat = Math.min(minlat, lat);
             maxlat = Math.max(maxlat, lat);
+            minElevation = Math.min(minElevation, eles[i]);
+            maxElevation = Math.max(maxElevation, eles[i]);
 
-            double elevation = p.getEle();
-            minElevation = Math.min(minElevation, elevation);
-            maxElevation = Math.max(maxElevation, elevation);
-            if (j > 0) {
-                double dele = elevation - previousElevation;
+            if (previousPoint != null) {
+                double d = previousPoint.distanceTo(p);
+                dist += d;
+                double dele = eles[i] - previousPoint.getEle();
                 if (dele > 0) {
                     totalElevation += dele;
                 } else {
                     totalElevationNegative += dele;
                 }
             }
-            previousElevation = elevation;
+            dists[i] = dist;
+            p.setDist(dists[i], kind);
+            p.put(PointField.ellapsed, (time[i] - time[0]) / 1000.0, Unit.SECONDS, kind);
+
+            previousPoint = p;
         }
 
-        Point cur = points.get(0);
-        cur.putDebug("i", 0, Unit.INT_ANY);
-        cur.setGrade(0.0);
-        cur.setBearing(0.0);
-        for (int i = 1; i < points.size(); i++) {
-            Point p = points.get(i - 1);
-            p.putDebug("i", i - 1, Unit.INT_ANY);
+        for (int i = 0; i < points.size(); i++) {
+            Point p = points.get(i);
 
-            Point pp1 = points.get(i);
-            if (dists[i] - dists[i - 1] == 0) {
-                p.setGrade(cur.getGrade());
-                p.setBearing(cur.getBearing());
-            } else {
-                double dele = pp1.getEle() - p.getEle();
-                double grade = dele / (dists[i] - dists[i - 1]);
+            int mini = i - 1;
+            while (mini >= 0 && dists[i] - dists[mini] == 0) {
+                mini--;
+            }
+            mini = Math.max(0, mini);
 
-                Vector v_from = p.project();
-                Vector v_to = pp1.project();
+            int maxi = i + 1;
+            while (maxi < dists.length && (dists[maxi] - dists[i] == 0)) {
+                maxi++;
+            }
+            maxi = Math.min(dists.length - 1, maxi);
+
+            double dist = dists[maxi] - dists[mini];
+            if (dist > 0) {
+                double dele = eles[maxi] - eles[mini];
+                double grade = dele / dist;
+                p.setGrade(grade, kind);
+
+                double dt = time[maxi] - time[mini];
+                p.setSpeed(1000.0 * dist / dt, kind);
+
+                Point pmin = points.get(mini);
+                Point pmax = points.get(maxi);
+                Vector v_from = pmin.project();
+                Vector v_to = pmax.project();
                 double dy2 = v_to.getY() - v_from.getY();
                 double dx2 = v_to.getX() - v_from.getX();
                 double bearing = Math.atan2(-dy2, dx2);
 
-                p.setGrade(grade);
-                p.setBearing(bearing);
-                cur = p;
+                p.setBearing(bearing, kind);
+            } else {
+                p.setGrade(0.0, kind);
+                p.setBearing(0.0, kind);
             }
         }
 

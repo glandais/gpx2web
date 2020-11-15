@@ -4,6 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
@@ -54,7 +55,6 @@ public class WeightGuesser {
                     }
                 }
                 p.putDebug("gw_p_grav", p_grav, Unit.WATTS);
-                p.putDebug("gw_grad", grade, Unit.PERCENTAGE);
 
                 double coef = Math.sin(Math.atan(grade));
                 //double p_grav = -mKg * Constants.G * status.getSpeed() * coef;
@@ -68,7 +68,7 @@ public class WeightGuesser {
             }
 
             if (mKg > 0) {
-                p.put(PointField.mKg, mKg, Unit.DOUBLE_ANY);
+                p.put(PointField.mKg, mKg, Unit.DOUBLE_ANY, ValueKind.guessed);
             }
         }
     }

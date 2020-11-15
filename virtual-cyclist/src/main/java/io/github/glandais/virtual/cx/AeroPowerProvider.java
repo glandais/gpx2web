@@ -1,7 +1,10 @@
 package io.github.glandais.virtual.cx;
 
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Formul;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKey;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
@@ -10,6 +13,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AeroPowerProvider implements PowerProvider {
+
+    public static final Formul FORMUL_SIMPLE = new Formul("-cx*POWER(speed,3)", Unit.WATTS,
+            new ValueKey("cx", ValueKind.debug),
+            new ValueKey("speed", ValueKind.staging)
+    );
 
     @Override
     public String getId() {
@@ -21,29 +29,31 @@ public class AeroPowerProvider implements PowerProvider {
         double grade = location.getGrade();
         double speed = status.getSpeed();
         final double cx = course.getCxProvider().getCx(location, status.getEllapsed(), speed, grade);
+        location.putDebug("cx", cx, Unit.CX);
         final Wind wind = course.getWindProvider().getWind(location, status.getEllapsed());
-        location.putDebug("4_0_cx", cx, Unit.CX);
         double p_air;
         if (wind.getWindSpeed() == 0) {
+            location.putDebug("p_" + getId(), FORMUL_SIMPLE, Unit.FORMULA_WATTS);
             p_air = -cx * speed * speed * speed;
         } else {
             p_air = computePAirWithWind(status, location, cx, wind);
+            // FIXME formulas
+            location.putDebug("p_" + getId(), p_air, Unit.WATTS);
         }
-        location.putDebug("4_6_p_air", p_air, Unit.WATTS);
         return p_air;
     }
 
     private double computePAirWithWind(CyclistStatus status, Point current, double cx, Wind wind) {
         double speed = status.getSpeed();
         double bearing = current.getBearing();
-        current.putDebug("4_1_wind_speed", wind.getWindSpeed(), Unit.SPEED_S_M);
-        current.putDebug("4_2_wind_direction", wind.getWindDirection(), Unit.RADIANS);
-        current.putDebug("4_3_cyclist_bearing", bearing, Unit.RADIANS);
+        current.putDebug("wind_speed", wind.getWindSpeed(), Unit.SPEED_S_M);
+        current.putDebug("wind_direction", wind.getWindDirection(), Unit.RADIANS);
+        current.putDebug("cyclist_bearing", bearing, Unit.RADIANS);
         double windDirectionAsBearing = (Math.PI / 2) - wind.getWindDirection();
-        current.putDebug("4_4_wind_bearing", windDirectionAsBearing, Unit.RADIANS);
+        current.putDebug("wind_bearing", windDirectionAsBearing, Unit.RADIANS);
 
         double alpha = windDirectionAsBearing - bearing;
-        current.putDebug("4_5_wind_alpha", alpha, Unit.RADIANS);
+        current.putDebug("wind_alpha", alpha, Unit.RADIANS);
 
         double v = wind.getWindSpeed();
 

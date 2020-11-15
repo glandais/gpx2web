@@ -1,7 +1,10 @@
 package io.github.glandais.virtual.rolling;
 
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Formul;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKey;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
@@ -10,6 +13,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RollingResistancePowerProvider implements PowerProvider {
+
+    public static final Formul FORMUL = new Formul("-(crr)*mKg*9.81*(speed)*COS(ATAN(grade))",
+            Unit.WATTS,
+            new ValueKey("crr", ValueKind.debug),
+            new ValueKey("mKg", ValueKind.debug),
+            new ValueKey("speed", ValueKind.staging),
+            new ValueKey("grade", ValueKind.staging)
+    );
 
     @Override
     public String getId() {
@@ -26,8 +37,7 @@ public class RollingResistancePowerProvider implements PowerProvider {
         double coef = Math.cos(Math.atan(grade));
         double p_rr = -coef * mKg * Constants.G * status.getSpeed() * crr;
 
-        location.putDebug("3_0_crr", crr, Unit.PERCENTAGE);
-        location.putDebug("3_1_p_rr", p_rr, Unit.WATTS);
+        location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
         return p_rr;
     }
 }

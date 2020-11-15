@@ -3,7 +3,8 @@ package io.github.glandais.srtm;
 import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
-import io.github.glandais.util.SmootherService;
+import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.util.SmoothService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +15,14 @@ import java.util.List;
 @Slf4j
 public class GPXElevationFixer {
 
-    private SRTMHelper srtmHelper;
+    private final SRTMHelper srtmHelper;
 
-    public GPXElevationFixer(SRTMHelper srtmHelper) {
+    private final SmoothService smoothService;
+
+    public GPXElevationFixer(SRTMHelper srtmHelper, SmoothService smoothService) {
         super();
         this.srtmHelper = srtmHelper;
+        this.smoothService = smoothService;
     }
 
     public void fixElevation(GPXPath path) {
@@ -32,7 +36,7 @@ public class GPXElevationFixer {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
         setEleOnPath(path, interpolate);
-        smoothEle(path, 300);
+        smoothService.smoothEle(path, 300);
         if (interpolate) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
@@ -66,28 +70,13 @@ public class GPXElevationFixer {
                 newPoints.add(subPoints.get(i));
             }
         }
-        path.setPoints(newPoints);
+        path.setPoints(newPoints, ValueKind.computed);
     }
 
     private void setEleOnPathPerPoint(GPXPath path) {
         for (Point point : path.getPoints()) {
-            point.setEle(srtmHelper.getElevationRad(point.getLon(), point.getLat()));
+            point.setEle(srtmHelper.getElevationRad(point.getLon(), point.getLat()), ValueKind.srtm);
         }
-    }
-
-    public void smoothEle(GPXPath path, double buffer) {
-        log.info("Smoothing elevation");
-        List<Point> points = path.getPoints();
-        double[] eles = path.getEles();
-        double[] dists = path.getDists();
-        double[] newEles = new double[eles.length];
-        for (int j = 0; j < newEles.length; j++) {
-            newEles[j] = SmootherService.computeNewValue(j, buffer, eles, dists);
-            Point p = points.get(j);
-            p.setEle(newEles[j]);
-        }
-        path.computeArrays();
-        log.info("Smoothed elevation");
     }
 
 }

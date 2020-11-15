@@ -17,4 +17,18 @@ public class IntegerUnit extends StorageUnit<Integer> {
         return String.valueOf(integer);
     }
 
+    @Override
+    public String getFormat() {
+        return "0";
+    }
+
+    @Override
+    public String getFormulaPartHumanToSI() {
+        return null;
+    }
+
+    @Override
+    public String getFormulaPartSIToHuman() {
+        return null;
+    }
 }

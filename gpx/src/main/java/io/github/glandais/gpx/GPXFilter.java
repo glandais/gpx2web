@@ -1,5 +1,6 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +27,8 @@ public class GPXFilter {
         log.info("Filtering {} ({})", path.getName(), points.size());
 
         List<Point> newPoints = simplifyDouglasPeucker(points, tolerance);
-        path.setPoints(newPoints);
+        path.setPoints(newPoints, ValueKind.computed);
         log.info("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
-        path.computeArrays();
     }
 
     /**

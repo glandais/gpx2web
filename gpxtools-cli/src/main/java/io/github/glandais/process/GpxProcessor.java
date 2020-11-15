@@ -1,11 +1,12 @@
 package io.github.glandais.process;
 
 import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.*;
-import io.github.glandais.io.CSVFileWriter;
-import io.github.glandais.io.GPXCharter;
-import io.github.glandais.io.GPXFileWriter;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.gpx.GPXFilter;
+import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.GPXPerSecond;
+import io.github.glandais.gpx.SimpleTimeComputer;
+import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.io.*;
 import io.github.glandais.kml.KMLFileWriter;
 import io.github.glandais.map.MapImage;
 import io.github.glandais.map.SRTMMapProducer;
@@ -13,7 +14,6 @@ import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.SmoothService;
-import io.github.glandais.util.SpeedService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
@@ -62,11 +62,11 @@ public class GpxProcessor {
 
     private final FitFileWriter fitFileWriter;
 
-    private final SpeedService speedService;
-
     private final SmoothService smoothService;
 
     private final CSVFileWriter csvFileWriter;
+
+    private final XLSXFileWriter xlsxFileWriter;
 
     private final CxGuesser cxGuesser;
 
@@ -84,10 +84,9 @@ public class GpxProcessor {
                         final SRTMMapProducer srtmImageProducer,
                         final GPXFileWriter gpxFileWriter,
                         final KMLFileWriter kmlFileWriter,
-                        final SpeedService speedService,
                         final SmoothService smoothService,
                         final CSVFileWriter csvFileWriter,
-                        CxGuesser cxGuesser,
+                        XLSXFileWriter xlsxFileWriter, CxGuesser cxGuesser,
                         WeightGuesser weightGuesser) {
 
         this.simpleTimeComputer = simpleTimeComputer;
@@ -102,9 +101,9 @@ public class GpxProcessor {
         this.srtmImageProducer = srtmImageProducer;
         this.gpxFileWriter = gpxFileWriter;
         this.kmlFileWriter = kmlFileWriter;
-        this.speedService = speedService;
         this.smoothService = smoothService;
         this.csvFileWriter = csvFileWriter;
+        this.xlsxFileWriter = xlsxFileWriter;
         this.cxGuesser = cxGuesser;
         this.weightGuesser = weightGuesser;
     }
@@ -118,17 +117,12 @@ public class GpxProcessor {
         gpxFolder.mkdirs();
         for (GPXPath path : paths) {
             log.info("Processing path {}", path.getName());
+
             File pathFolder = new File(gpxFolder, path.getName());
             pathFolder.mkdirs();
 
-            path.computeArrays();
             if (!options.isGpxData()) {
                 GPXFilter.filterPointsDouglasPeucker(path);
-            } else {
-                speedService.computeSpeed(path);
-                for (Point point : path.getPoints()) {
-                    point.backupToDebug();
-                }
             }
 
             if (options.isFixElevation()) {
@@ -150,18 +144,8 @@ public class GpxProcessor {
                     WindProviderConstant windProvider = new WindProviderConstant(options.getWind());
                     if (options.isGpxPower()) {
                         smoothService.smoothPower(path);
-                        smoothService.smoothSpeed(path);
                         powerProvider = new PowerProviderFromData();
-                        if (options.isGuessWeight()) {
-                            weightGuesser.guess(path, options.getCyclist(), windProvider, cxProvider);
-                        }
-                        if (options.isGuessCx()) {
-                            cxGuesser.guess(path, options.getCyclist(),
-                                    windProvider);
-                            smoothService.smoothCx(path);
-                            cxProvider = new CxProviderFromData();
-                        }
-                        speedService.computeSpeed(path);
+                        cxProvider = guess(options, path, cxProvider, windProvider);
                     } else {
                         powerProvider = new PowerProviderConstant(options.getPowerW());
                     }
@@ -173,7 +157,7 @@ public class GpxProcessor {
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }
-                speedService.computeSpeed(path);
+                path.computeArrays(ValueKind.computed);
             }
 
             if (options.isSrtmMap()) {
@@ -204,6 +188,11 @@ public class GpxProcessor {
                 csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
             }
 
+            if (options.isXlsx()) {
+                log.info("Writing XLSX for path {}", path.getName());
+                xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
+            }
+
             if (options.isKml()) {
                 log.info("Writing KML for path {}", path.getName());
                 kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
@@ -218,6 +207,27 @@ public class GpxProcessor {
         }
         gpxFileWriter.writeGpxFile(paths, new File(gpxFolder, gpxFile.getName()));
         log.info("Processed file {}", gpxFile.getName());
+    }
+
+    private CxProvider guess(ProcessCommand options, GPXPath path, CxProvider cxProvider, WindProviderConstant windProvider) {
+        if (options.isGuessWeight() || options.isGuessCx()) {
+            smoothService.smoothSpeed(path);
+        }
+
+        if (options.isGuessWeight()) {
+            weightGuesser.guess(path, options.getCyclist(), windProvider, cxProvider);
+        }
+        if (options.isGuessCx()) {
+            cxGuesser.guess(path, options.getCyclist(),
+                    windProvider);
+            smoothService.smoothCx(path);
+            cxProvider = new CxProviderFromData();
+        }
+
+        if (options.isGuessWeight() || options.isGuessCx()) {
+            path.computeArrays(ValueKind.computed);
+        }
+        return cxProvider;
     }
 
 }

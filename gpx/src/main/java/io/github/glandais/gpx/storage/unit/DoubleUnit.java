@@ -12,4 +12,13 @@ public abstract class DoubleUnit extends StorageUnit<Double> {
         return Double.toString(aDouble);
     }
 
+    @Override
+    public String getFormulaPartHumanToSI() {
+        return null;
+    }
+
+    @Override
+    public String getFormulaPartSIToHuman() {
+        return null;
+    }
 }

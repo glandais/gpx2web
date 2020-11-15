@@ -17,4 +17,18 @@ public class LongUnit extends StorageUnit<Long> {
         return String.valueOf(l);
     }
 
+    @Override
+    public String getFormat() {
+        return "0";
+    }
+
+    @Override
+    public String getFormulaPartHumanToSI() {
+        return null;
+    }
+
+    @Override
+    public String getFormulaPartSIToHuman() {
+        return null;
+    }
 }

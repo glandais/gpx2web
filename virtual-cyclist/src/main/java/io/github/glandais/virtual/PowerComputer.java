@@ -1,7 +1,10 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.storage.Formul;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKey;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,7 +24,7 @@ public class PowerComputer {
     // m.s-2, minimal speed = 2km/h
     private static final double MINIMAL_SPEED = 2.0 / 3.6;
     // Hz
-    private static final int FREQ = 4;
+    private static final int FREQ = 1;
     // s
     private static final double DT = 1.0 / FREQ;
 
@@ -51,59 +55,77 @@ public class PowerComputer {
             newPoints.add(nextPoint);
         }
 
-        course.getGpxPath().setPoints(newPoints);
-        course.getGpxPath().computeArrays();
+        course.getGpxPath().setPoints(newPoints, ValueKind.computed);
     }
 
     private Point getNextPoint(Course course, CyclistStatus status) {
         final long startMillis = course.getStart().toEpochMilli();
         long now = startMillis + ((long) (1000 * status.ellapsed));
-        Point current = getPoint(course, status.odo, now);
-        current.setTime(Instant.ofEpochMilli(now));
-
-        current.putDebug("0_0_odo", status.odo, Unit.METERS);
-        current.putDebug("0_1_speed", status.speed, Unit.SPEED_S_M);
-
-        double p_app = 0;
-        int i = 0;
-        for (PowerProvider provider : providers) {
-            double w = provider.getPowerW(course, current, status);
-            current.putDebug("1_" + provider.getId() + "_power", w, Unit.WATTS);
-            p_app = p_app + w;
-        }
-
-        // p_app = cyclist power - resistance
-        current.putDebug("5_1_p_app", p_app, Unit.WATTS);
+        Point current = getPoint(course, status.odo, now, ValueKind.computed);
+        current.setTime(Instant.ofEpochMilli(now), ValueKind.computed);
+        current.setSpeed(status.speed, ValueKind.staging);
+        current.setGrade(current.getGrade(), ValueKind.staging);
 
         final double mKg = course.getCyclist().getMKg();
+        current.putDebug("mKg", mKg, Unit.DOUBLE_ANY);
 
-        // p_app = 0.5 * (mKg + (0.14 / (0.7*0.7))) * (new_speed * new_speed - speed * speed) / DT
-        // (new_speed * new_speed - speed * speed) = DT * p_app / (0.5 * (mKg + (0.14 / (0.7*0.7))))
-        double new_speed_squared = DT * p_app / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + status.speed * status.speed;
+        final double crr = course.getCyclist().getCrr();
+        current.putDebug("crr", crr, Unit.PERCENTAGE);
+
+        double p_sum = 0;
+        List<String> components = new ArrayList<>();
+        for (PowerProvider provider : providers) {
+            double w = provider.getPowerW(course, current, status);
+            if (Constants.VERIFIED) {
+                current.putDebug("p_" + provider.getId() + "_verified", w, Unit.WATTS);
+            }
+            components.add("p_" + provider.getId());
+            p_sum = p_sum + w;
+        }
+        current.putDebug("p_sum", new Formul(components.stream().collect(Collectors.joining("+")),
+                Unit.WATTS,
+                components.stream().map(c -> new ValueKey(c, ValueKind.debug)).collect(Collectors.toList())
+        ), Unit.FORMULA_WATTS);
+
+        // p_sum = 0.5 * (mKg + (0.14 / (0.7*0.7))) * (new_speed * new_speed - speed * speed) / DT
+        // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7*0.7))))
+        double new_speed_squared = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + status.speed * status.speed;
         if (new_speed_squared < 0) {
             status.speed = MINIMAL_SPEED;
         } else {
             status.speed = Math.sqrt(new_speed_squared);
         }
-        current.putDebug("5_3_new_speed", status.speed, Unit.SPEED_S_M);
 
-        current.putDebug("5_4_max_speed", current.getMaxSpeed(), Unit.SPEED_S_M);
+        String formula = "SQRT(" + DT + " * p_sum / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + (speed) * (speed))";
+
+        current.putDebug("new_speed", new Formul(formula,
+                Unit.SPEED_S_M,
+                new ValueKey("p_sum", ValueKind.debug),
+                new ValueKey("mKg", ValueKind.debug),
+                new ValueKey("speed", ValueKind.staging)
+        ), Unit.FORMULA_SPEED_S_M);
+        if (Constants.VERIFIED) {
+            current.putDebug("new_speed_verified", status.speed, Unit.SPEED_S_M);
+        }
 
         status.speed = Math.max(MINIMAL_SPEED, Math.min(current.getMaxSpeed(), status.speed));
-        current.putDebug("5_5_fixed_speed", status.speed, Unit.SPEED_S_M);
+        current.putDebug("fixed_speed", status.speed, Unit.SPEED_S_M);
 
-        current.setSpeed(status.speed);
+        current.setSpeed(status.speed, ValueKind.computed);
 
         double dx = DT * status.speed;
-        current.putDebug("5_6_dx", dx, Unit.METERS);
+
+        current.putDebug("dx", new Formul(DT + " * new_speed", Unit.METERS, new ValueKey("new_speed", ValueKind.debug)), Unit.FORMULA_METERS);
+        if (Constants.VERIFIED) {
+            current.putDebug("dx_verified", dx, Unit.METERS);
+        }
 
         status.odo = status.odo + dx;
         status.ellapsed = status.ellapsed + DT;
-        //log.info("{}s {}m", ellapsed, odo);
         return current;
     }
 
-    private Point getPoint(Course course, double d, long now) {
+    private Point getPoint(Course course, double d, long now, ValueKind kind) {
 
         List<Point> points = course.getGpxPath().getPoints();
         double[] dists = course.getGpxPath().getDists();
@@ -120,8 +142,7 @@ public class PowerComputer {
 
                     double ratio = (d - dists[i - 1]) / (dists[i] - dists[i - 1]);
                     Point result = Point.interpolate(p, pp1, ratio, now);
-                    result.setGrade(p.getGrade());
-                    result.setBearing(p.getBearing());
+                    result.setBearing(p.getBearing(), kind);
                     return result;
                 }
             }

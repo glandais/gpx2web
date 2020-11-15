@@ -20,4 +20,19 @@ public class InstantUnit extends StorageUnit<Instant> {
     public String formatHuman(Instant instant) {
         return DateTimeFormatter.ISO_INSTANT.format(instant);
     }
+
+    @Override
+    public String getFormat() {
+        return null;
+    }
+
+    @Override
+    public String getFormulaPartHumanToSI() {
+        return null;
+    }
+
+    @Override
+    public String getFormulaPartSIToHuman() {
+        return null;
+    }
 }

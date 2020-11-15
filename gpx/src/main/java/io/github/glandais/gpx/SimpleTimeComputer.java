@@ -1,5 +1,6 @@
 package io.github.glandais.gpx;
 
+import io.github.glandais.gpx.storage.ValueKind;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -17,9 +18,9 @@ public class SimpleTimeComputer {
     public void computeTime(GPXPath path, Instant start, double speed) {
         for (Point point : path.getPoints()) {
             long time = Math.round(1000 * point.getDist() / speed);
-            point.setTime(start.plusMillis(time));
+            point.setTime(start.plusMillis(time), ValueKind.computed);
         }
-        path.computeArrays();
+        path.computeArrays(ValueKind.computed);
     }
 
 }

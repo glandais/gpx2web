@@ -5,11 +5,17 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 public class DoubleAnyUnit extends DoubleUnit {
+    public static final String PATTERN = "0.#####";
     private static final ThreadLocal<DecimalFormat> DOUBLE_FORMATTER = ThreadLocal
-            .withInitial(() -> new DecimalFormat("0.#####", new DecimalFormatSymbols(Locale.ENGLISH)));
+            .withInitial(() -> new DecimalFormat(PATTERN, new DecimalFormatSymbols(Locale.ENGLISH)));
 
     @Override
     public String formatHuman(Double aDouble) {
         return DOUBLE_FORMATTER.get().format(aDouble);
+    }
+
+    @Override
+    public String getFormat() {
+        return PATTERN;
     }
 }

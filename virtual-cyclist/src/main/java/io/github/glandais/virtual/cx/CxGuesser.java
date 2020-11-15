@@ -4,6 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
+import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.CyclistStatus;
@@ -65,7 +66,7 @@ public class CxGuesser {
                 }
             }
 
-            p.put(PointField.cx, cx, Unit.CX);
+            p.put(PointField.cx, cx, Unit.CX, ValueKind.guessed);
         }
     }
 

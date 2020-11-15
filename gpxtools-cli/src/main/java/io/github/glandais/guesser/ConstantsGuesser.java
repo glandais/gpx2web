@@ -3,10 +3,7 @@ package io.github.glandais.guesser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.PointField;
-import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.GradeService;
-import io.github.glandais.util.SpeedService;
+import io.github.glandais.util.SmoothService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -29,33 +26,25 @@ public class ConstantsGuesser {
 
     private final PowerComputer powerComputer;
 
-    private final GPXElevationFixer gpxElevationFixer;
-
     private final MaxSpeedComputer maxSpeedComputer;
 
-    private final GradeService gradeService;
-
-    private final SpeedService speedService;
+    private final SmoothService smoothService;
 
     public ConstantsGuesser(final ObjectMapper objectMapper,
                             final PowerComputer powerComputer,
-                            final GPXElevationFixer gpxElevationFixer,
                             final MaxSpeedComputer maxSpeedComputer,
-                            final GradeService gradeService,
-                            final SpeedService speedService) {
+                            final SmoothService smoothService) {
 
         this.objectMapper = objectMapper;
         this.powerComputer = powerComputer;
-        this.gpxElevationFixer = gpxElevationFixer;
         this.maxSpeedComputer = maxSpeedComputer;
-        this.gradeService = gradeService;
-        this.speedService = speedService;
+        this.smoothService = smoothService;
     }
 
     public Course guessWithPathWithPower(GPXPath original, Cyclist cyclist) throws IOException {
-        gpxElevationFixer.smoothEle(original, 100);
-        gradeService.computeGrade(original);
-        speedService.computeSpeed(original, PointField.originalSpeed);
+        smoothService.smoothEle(original, 100);
+//        gradeService.computeGrade(original, ValueKind.computed);
+//        speedService.computeSpeed(original, PointField.originalSpeed, ValueKind.computed);
 
         CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
 
@@ -124,7 +113,7 @@ public class ConstantsGuesser {
     private void setScore(GPXPath original, GPXPath simulated, CourseWithScore course) {
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
-        speedService.computeSpeed(simulated);
+//        speedService.computeSpeed(simulated, ValueKind.computed);
         double scoreCx = getScore(original, simulated, g -> Math.abs(g) < 0.5);
         double scoreM = getScore(original, simulated, g -> Math.abs(g) > 2.5);
         double scoreCrr = getScore(original, simulated, g -> true);
