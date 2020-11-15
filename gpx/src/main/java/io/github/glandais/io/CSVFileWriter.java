@@ -2,7 +2,6 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.storage.Value;
 import io.github.glandais.gpx.storage.Values;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +19,7 @@ public class CSVFileWriter {
         List<Point> points = path.getPoints();
         Map<String, List<String>> collections = new TreeMap<>();
 
-        getCollections(points, collections, Point::getData);
-        getCollections(points, collections, Point::getDebug);
+        getCollections(points, collections, Point::getCsvData);
 
         FileWriter fw = new FileWriter(file);
         fw.write(collections.keySet().stream().collect(Collectors.joining(";")) + "\n");
@@ -36,18 +34,15 @@ public class CSVFileWriter {
     }
 
     private void getCollections(List<Point> points, Map<String, List<String>> collections, Function<Point, Values> valuesGetter) {
+        List<Values> valuesList = points.stream().map(valuesGetter).collect(Collectors.toList());
+
         Set<String> columns = new LinkedHashSet<>();
-        for (Point point : points) {
-            valuesGetter.apply(point).forEach((k, v) -> columns.add(k));
-        }
+        valuesList.forEach(values -> values.forEach((k, v) -> columns.add(k)));
+
         for (String column : columns) {
-            List<String> collection = points.stream().map(p -> {
-                Value value = valuesGetter.apply(p).get(column);
-                if (value == null) {
-                    return "";
-                }
-                return value.getUnit().formatHuman(value.getValue());
-            }).collect(Collectors.toList());
+            List<String> collection = valuesList.stream()
+                    .map(values -> values.get(column))
+                    .map(value -> value == null ? "" : value.getUnit().formatHuman(value.getValue())).collect(Collectors.toList());
 
             // verify is same data already exist
             boolean add = true;

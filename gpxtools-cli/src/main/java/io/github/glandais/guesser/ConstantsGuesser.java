@@ -3,6 +3,7 @@ package io.github.glandais.guesser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.PointField;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.GradeService;
 import io.github.glandais.util.SpeedService;
@@ -52,9 +53,9 @@ public class ConstantsGuesser {
     }
 
     public Course guessWithPathWithPower(GPXPath original, Cyclist cyclist) throws IOException {
-        gpxElevationFixer.smoothZ(original, 100);
+        gpxElevationFixer.smoothEle(original, 100);
         gradeService.computeGrade(original);
-        speedService.computeSpeed(original, "originalSpeed");
+        speedService.computeSpeed(original, PointField.originalSpeed);
 
         CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
 
@@ -65,10 +66,10 @@ public class ConstantsGuesser {
         log.info("{}", cyclist);
 
         ConstantRange cxRange = new ConstantRange(0.05, 0.35);
-        ConstantRange fRange = new ConstantRange(0.0002, 0.015);
+        ConstantRange crrRange = new ConstantRange(0.0002, 0.015);
         ConstantRange mRange = new ConstantRange(50.0, 100.0);
 
-        printRanges(cxRange, fRange, mRange);
+        printRanges(cxRange, crrRange, mRange);
 
         CourseWithScore minCourse = null;
         int nSteps = 5;
@@ -79,11 +80,11 @@ public class ConstantsGuesser {
             for (int i = 0; i < nSteps; i++) {
                 double cx = cxRange.getValue(i, nSteps);
                 for (int j = 0; j < nSteps; j++) {
-                    double f = fRange.getValue(j, nSteps);
+                    double crr = crrRange.getValue(j, nSteps);
                     for (int k = 0; k < nSteps; k++) {
                         double m = mRange.getValue(k, nSteps);
 
-                        Cyclist curCyclist = new Cyclist(m, 15, 90, 0.3, f);
+                        Cyclist curCyclist = new Cyclist(m, 15, 90, 0.3, crr);
                         CourseWithScore current = new CourseWithScore(original, Instant.now(), curCyclist,
                                 new PowerProviderFromData(),
                                 new WindProviderNone(),
@@ -100,34 +101,34 @@ public class ConstantsGuesser {
                 }
             }
             double cx = ((CxProviderConstant) minCourse.getCxProvider()).getCx();
-            double f = minCourse.getCyclist().getF();
+            double crr = minCourse.getCyclist().getCrr();
             double mKg = minCourse.getCyclist().getMKg();
             cxRange = new ConstantRange(cx - cxRange.getStep(nSteps),
                     cx + cxRange.getStep(nSteps));
-            fRange = new ConstantRange(f - fRange.getStep(nSteps),
-                    f + fRange.getStep(nSteps));
+            crrRange = new ConstantRange(crr - crrRange.getStep(nSteps),
+                    crr + crrRange.getStep(nSteps));
             mRange = new ConstantRange(mKg - mRange.getStep(nSteps),
                     mKg + mRange.getStep(nSteps));
-            printRanges(cxRange, fRange, mRange);
+            printRanges(cxRange, crrRange, mRange);
         }
 
         return minCourse;
     }
 
-    private void printRanges(ConstantRange cxRange, ConstantRange fRange, ConstantRange mRange) {
+    private void printRanges(ConstantRange cxRange, ConstantRange crrRange, ConstantRange mRange) {
         log.info("cx {}", cxRange);
-        log.info("f {}", fRange);
+        log.info("crr {}", crrRange);
         log.info("m {}", mRange);
     }
 
     private void setScore(GPXPath original, GPXPath simulated, CourseWithScore course) {
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
-        speedService.computeSpeed(simulated, "speed");
+        speedService.computeSpeed(simulated);
         double scoreCx = getScore(original, simulated, g -> Math.abs(g) < 0.5);
         double scoreM = getScore(original, simulated, g -> Math.abs(g) > 2.5);
-        double scoreF = getScore(original, simulated, g -> true);
-        course.setScore(scoreCx * scoreM * scoreF);
+        double scoreCrr = getScore(original, simulated, g -> true);
+        course.setScore(scoreCx * scoreM * scoreCrr);
     }
 
     private double getScore(GPXPath original, GPXPath simulated, Predicate<Double> predicate) {

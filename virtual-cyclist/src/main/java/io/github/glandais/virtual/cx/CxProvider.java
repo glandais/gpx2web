@@ -8,6 +8,6 @@ import java.time.ZonedDateTime;
 
 public interface CxProvider {
 
-    double getCx(Point location, double ellapsed, double speed, double grad);
+    double getCx(Point location, double ellapsed, double speed, double grade);
 
 }

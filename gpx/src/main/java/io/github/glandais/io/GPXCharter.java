@@ -18,7 +18,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -50,7 +49,7 @@ public class GPXCharter {
 		XYSeries dataSeries = new XYSeries("");
 		long[] time = gpxPath.getTime();
 		for (int i = 0; i < time.length; i++) {
-			dataSeries.add(time[i], gpxPath.getZs()[i]);
+			dataSeries.add(time[i], gpxPath.getEles()[i]);
 		}
 		XYSeriesCollection xyDataset = new XYSeriesCollection(dataSeries);
 
@@ -95,7 +94,7 @@ public class GPXCharter {
 
 	public void createChartSmall(GPXPath gpxPath, File file) {
 		log.info("start createChartSmall");
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", getDataSet(gpxPath), PlotOrientation.VERTICAL,
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "ele", getDataSet(gpxPath), PlotOrientation.VERTICAL,
 				false, false, false);
 
 		chart.getXYPlot().getDomainAxis().setVisible(false);
@@ -115,7 +114,7 @@ public class GPXCharter {
 
 	public void createChartBig(GPXPath gpxPath, File file) {
 		log.info("start createChartBig");
-		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "z", getDataSet(gpxPath), PlotOrientation.VERTICAL,
+		JFreeChart chart = ChartFactory.createXYLineChart("", "d", "ele", getDataSet(gpxPath), PlotOrientation.VERTICAL,
 				false, false, false);
 		XYPlot plot = (XYPlot) chart.getPlot();
 		XYItemRenderer rendu = new XYLineAndShapeRenderer();
@@ -135,7 +134,7 @@ public class GPXCharter {
 	}
 
 	public double[][] getSerie(GPXPath gpxPath) {
-		return new double[][] { gpxPath.getDists(), gpxPath.getZs() };
+		return new double[][] { gpxPath.getDists(), gpxPath.getEles() };
 	}
 
 }

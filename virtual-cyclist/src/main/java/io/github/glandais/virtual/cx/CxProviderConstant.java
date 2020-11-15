@@ -16,7 +16,7 @@ public class CxProviderConstant implements CxProvider {
         this(0.30);
     }
 
-    public double getCx(Point location, double ellapsed, double speed, double grad) {
+    public double getCx(Point location, double ellapsed, double speed, double grade) {
         return cx;
     }
 

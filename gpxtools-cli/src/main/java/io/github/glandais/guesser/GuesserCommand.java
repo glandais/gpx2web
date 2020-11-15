@@ -4,6 +4,7 @@ import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
@@ -94,10 +95,10 @@ public class GuesserCommand implements Runnable {
 
             maxSpeedComputer.computeMaxSpeeds(course);
             powerComputer.computeTrack(course);
-            speedService.computeSpeed(original, "simulatedSpeed");
+            speedService.computeSpeed(original, PointField.simulatedSpeed);
             for (Point p : original.getPoints()) {
-                double dv = p.getData().get("simulatedSpeed", Unit.SPEED_S_M) - p.getData().get("originalSpeed", Unit.SPEED_S_M);
-                p.getData().put("speedDifference", dv, Unit.SPEED_S_M);
+                double dv = p.get(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.get(PointField.simulatedSpeed, Unit.SPEED_S_M);
+                p.put(PointField.speedDifference, dv, Unit.SPEED_S_M);
             }
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
             gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);

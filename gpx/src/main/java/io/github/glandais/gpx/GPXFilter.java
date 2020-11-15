@@ -91,11 +91,11 @@ public class GPXFilter {
         double lat = p.getLat();
         double lon = p.getLon();
         // fake z : increase 3x
-        double alt = 3 * p.getZ();
+        double ele = 3 * p.getEle();
         double n = Constants.SEMI_MAJOR_AXIS / Math.sqrt(1 - Constants.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
-        double x = (n + alt) * Math.cos(lat) * Math.cos(lon);    //ECEF x
-        double y = (n + alt) * Math.cos(lat) * Math.sin(lon);    //ECEF y
-        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + alt) * Math.sin(lat);         //ECEF z
+        double x = (n + ele) * Math.cos(lat) * Math.cos(lon);    //ECEF x
+        double y = (n + ele) * Math.cos(lat) * Math.sin(lon);    //ECEF y
+        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + ele) * Math.sin(lat);         //ECEF z
         return new R3(x, y, z);     //Return x, y, z in ECEF
     }
 

@@ -2,6 +2,7 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -124,16 +125,21 @@ public class GPXParser {
                 // oops
             }
         }
-        double z = 0;
+        double ele = 0;
         if (eleElement != null) {
-            z = Double.valueOf(eleElement.getTextContent());
+            ele = Double.valueOf(eleElement.getTextContent());
         }
         Point p = new Point();
         p.setLon(lon);
         p.setLat(lat);
-        p.setZ(z);
+        p.setEle(ele);
         p.setTime(date);
         Element extensions = findElement(element, "extensions");
+        getExtensionValues(p, extensions);
+        paths.get(paths.size() - 1).addPoint(p);
+    }
+
+    private void getExtensionValues(Point p, Element extensions) {
         if (extensions != null) {
             NodeList childNodes = extensions.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
@@ -142,14 +148,20 @@ public class GPXParser {
                     Element child = (Element) node;
                     try {
                         double value = Double.parseDouble(child.getTextContent());
-                        p.put(child.getTagName(), value, Unit.DOUBLE_ANY);
+                        String tagName = child.getTagName();
+                        PointField pointField = PointField.fromGpxTag(tagName);
+                        if (pointField != null) {
+                            p.put(pointField, value, Unit.DOUBLE_ANY);
+                        } else {
+                            p.putDebug(tagName, value, Unit.DOUBLE_ANY);
+                        }
                     } catch (NumberFormatException e) {
                         // oops
                     }
+                    getExtensionValues(p, child);
                 }
             }
         }
-        paths.get(paths.size() - 1).addPoint(p);
     }
 
     private Element findElement(Element element, String string) {

@@ -65,7 +65,7 @@ public class FitFileWriter {
             r.setPositionLong(point.getLonSemi());
             r.setDistance((float) (point.getDist()));
             r.setTimestamp(new DateTime(point.getDate()));
-            r.setAltitude((float) point.getZ());
+            r.setAltitude((float) point.getEle());
             encode.write(r);
         }
 

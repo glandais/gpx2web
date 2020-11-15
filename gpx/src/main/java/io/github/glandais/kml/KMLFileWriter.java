@@ -9,9 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -150,8 +148,8 @@ public class KMLFileWriter {
             Point pm1 = points.get(i - 1);
             Point p = points.get(i);
 
-            String coordm1 = df.format(pm1.getLonDeg()) + "," + df.format(pm1.getLatDeg()) + "," + df.format(pm1.getZ());
-            String coord = df.format(p.getLonDeg()) + "," + df.format(p.getLatDeg()) + "," + df.format(p.getZ());
+            String coordm1 = df.format(pm1.getLonDeg()) + "," + df.format(pm1.getLatDeg()) + "," + df.format(pm1.getEle());
+            String coord = df.format(p.getLonDeg()) + "," + df.format(p.getLatDeg()) + "," + df.format(p.getEle());
 
             writeTrackPoint(fw, gpxPath, i, p, coordm1, coord, 300000 - 300000, 250000 - 300000, "line0");
             writeTrackPoint(fw, gpxPath, i, p, coordm1, coord, 250000 - 300000, 200000 - 300000, "line1");

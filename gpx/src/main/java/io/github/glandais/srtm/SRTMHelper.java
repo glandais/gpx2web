@@ -75,8 +75,8 @@ public class SRTMHelper {
         result.add(p1);
         result.add(p2);
 
-        p1.setZ(getElevationRad(p1.getLon(), p1.getLat()));
-        p2.setZ(getElevationRad(p2.getLon(), p2.getLat()));
+        p1.setEle(getElevationRad(p1.getLon(), p1.getLat()));
+        p2.setEle(getElevationRad(p2.getLon(), p2.getLat()));
 
         double dcol1 = lonToCol(p1.getLonDeg());
         double drow1 = latToRow(p1.getLatDeg());
@@ -96,7 +96,7 @@ public class SRTMHelper {
                 Point p = new Point();
                 p.setLon(colToLon(col));
                 p.setLat(rowToLat(drow));
-                p.setZ(getElevationRad(p.getLon(), p.getLat()));
+                p.setEle(getElevationRad(p.getLon(), p.getLat()));
                 result.add(p);
             }
         }
@@ -107,7 +107,7 @@ public class SRTMHelper {
                 Point p = new Point();
                 p.setLon(colToLon(dcol));
                 p.setLat(rowToLat(row));
-                p.setZ(getElevationRad(p.getLon(), p.getLat()));
+                p.setEle(getElevationRad(p.getLon(), p.getLat()));
                 result.add(p);
             }
         }

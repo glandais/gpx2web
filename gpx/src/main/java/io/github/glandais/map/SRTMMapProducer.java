@@ -30,41 +30,41 @@ public class SRTMMapProducer {
 	public MapImage createSRTMMap(GPXPath path, int maxsize, double margin) throws IOException {
 		log.info("start createSRTMMap");
 		MapImage mapImage = new MapImage(path, margin, maxsize);
-		fillWithZ(mapImage);
+		fillWithEle(mapImage);
 		addPoints(mapImage, path);
 		log.info("end createSRTMMap");
 		return mapImage;
 	}
 
-	protected void fillWithZ(MapImage mapImage) {
+	protected void fillWithEle(MapImage mapImage) {
 		int width = mapImage.getWidth();
 		int height = mapImage.getHeight();
 		BufferedImage image = mapImage.getImage();
-		double[][] zs = new double[width][];
-		double minz = Double.MAX_VALUE;
-		double maxz = -Double.MAX_VALUE;
+		double[][] eles = new double[width][];
+		double minele = Double.MAX_VALUE;
+		double maxele = -Double.MAX_VALUE;
 		for (int i = 0; i < width; i++) {
-			zs[i] = new double[height];
+			eles[i] = new double[height];
 			for (int j = 0; j < height; j++) {
 				double lon = mapImage.getLon(i);
 				double lat = mapImage.getLat(j);
-				double z = srtmHelper.getElevationDeg(lon, lat);
-				if (z < minz) {
-					minz = z;
+				double ele = srtmHelper.getElevationDeg(lon, lat);
+				if (ele < minele) {
+					minele = ele;
 				}
-				if (z > maxz) {
-					maxz = z;
+				if (ele > maxele) {
+					maxele = ele;
 				}
-				zs[i][j] = z;
+				eles[i][j] = ele;
 			}
 		}
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				double z = zs[i][j];
-				if (z <= 0) {
+				double ele = eles[i][j];
+				if (ele <= 0) {
 
 				}
-				int rgb = getRgb(getRelativeZ(z, minz, maxz));
+				int rgb = getRgb(getRelativeEle(ele, minele, maxele));
 				image.setRGB(i, j, rgb);
 			}
 		}
@@ -72,8 +72,8 @@ public class SRTMMapProducer {
 
 	protected void addPoints(MapImage mapImage, GPXPath path) {
 		List<Point> points = path.getPoints();
-		double trackminz = path.getMinElevation();
-		double trackmaxz = path.getMaxElevation();
+		double trackminele = path.getMinElevation();
+		double trackmaxele = path.getMaxElevation();
 
 		Graphics2D graphics = mapImage.getGraphics();
 
@@ -91,7 +91,7 @@ public class SRTMMapProducer {
 			int i = mapImage.getX(point.getLonDeg());
 			int j = mapImage.getY(point.getLatDeg());
 			if (!first) {
-				int c = getColor(getRelativeZ(point.getZ(), trackminz, trackmaxz));
+				int c = getColor(getRelativeEle(point.getEle(), trackminele, trackmaxele));
 				graphics.setColor(new Color(c));
 				graphics.drawLine(previ, prevj, i, j);
 			}
@@ -101,8 +101,8 @@ public class SRTMMapProducer {
 		}
 	}
 
-	private double getRelativeZ(double z, double minz, double maxz) {
-		return (z - minz) / (maxz - minz);
+	private double getRelativeEle(double ele, double minele, double maxele) {
+		return (ele - minele) / (maxele - minele);
 	}
 
 	private int getRgb(double d) {
@@ -125,16 +125,16 @@ public class SRTMMapProducer {
 		return (r << 16) + (g << 8) + b;
 	}
 
-	private int getColor(double z) {
+	private int getColor(double ele) {
 		int r = 0;
 		int g = 0;
 		int b = 0;
-		if (z < 0.5) {
+		if (ele < 0.5) {
 			r = 0;
-			g = (int) Math.round(511 * z);
+			g = (int) Math.round(511 * ele);
 			b = 255 - g;
 		} else {
-			r = (int) Math.round(511 * (z - 0.5));
+			r = (int) Math.round(511 * (ele - 0.5));
 			g = 255 - r;
 			b = 0;
 		}

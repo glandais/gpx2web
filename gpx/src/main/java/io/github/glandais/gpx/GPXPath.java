@@ -37,7 +37,7 @@ public class GPXPath {
     // m
     private double dist;
     // m
-    private double[] zs;
+    private double[] eles;
     // epoch millis
     private long[] time;
 
@@ -59,20 +59,20 @@ public class GPXPath {
         Point previousPoint = null;
         dist = 0;
         dists = new double[points.size()];
-        zs = new double[points.size()];
+        eles = new double[points.size()];
         time = new long[points.size()];
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
-            zs[i] = p.getZ();
+            eles[i] = p.getEle();
             if (previousPoint != null) {
                 double d = previousPoint.distanceTo(p);
                 dist += d;
             }
             dists[i] = dist;
             p.setDist(dists[i]);
-            zs[i] = p.getZ();
+            eles[i] = p.getEle();
             time[i] = p.getEpochMilli();
-            p.put("ellapsed", (time[i] - time[0]) / 1000.0, Unit.SECONDS);
+            p.put(PointField.ellapsed, (time[i] - time[0]) / 1000.0, Unit.SECONDS);
             previousPoint = p;
         }
 
@@ -95,15 +95,15 @@ public class GPXPath {
             minlat = Math.min(minlat, lat);
             maxlat = Math.max(maxlat, lat);
 
-            double elevation = p.getZ();
+            double elevation = p.getEle();
             minElevation = Math.min(minElevation, elevation);
             maxElevation = Math.max(maxElevation, elevation);
             if (j > 0) {
-                double dz = elevation - previousElevation;
-                if (dz > 0) {
-                    totalElevation += dz;
+                double dele = elevation - previousElevation;
+                if (dele > 0) {
+                    totalElevation += dele;
                 } else {
-                    totalElevationNegative += dz;
+                    totalElevationNegative += dele;
                 }
             }
             previousElevation = elevation;
@@ -122,8 +122,8 @@ public class GPXPath {
                 p.setGrade(cur.getGrade());
                 p.setBearing(cur.getBearing());
             } else {
-                double dz = pp1.getZ() - p.getZ();
-                double grad = dz / (dists[i] - dists[i - 1]);
+                double dele = pp1.getEle() - p.getEle();
+                double grade = dele / (dists[i] - dists[i - 1]);
 
                 Vector v_from = p.project();
                 Vector v_to = pp1.project();
@@ -131,7 +131,7 @@ public class GPXPath {
                 double dx2 = v_to.getX() - v_from.getX();
                 double bearing = Math.atan2(-dy2, dx2);
 
-                p.setGrade(grad);
+                p.setGrade(grade);
                 p.setBearing(bearing);
                 cur = p;
             }

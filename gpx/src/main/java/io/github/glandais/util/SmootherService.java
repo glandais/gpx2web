@@ -19,17 +19,17 @@ public class SmootherService {
 		}
 
 		double totc = 0;
-		double totz = 0;
+		double totv = 0;
 		for (int j = mini; j < maxi; j++) {
 			double c = 1 - (Math.abs(dists[j] - ac) / dist);
 			totc = totc + c;
-			totz = totz + data[j] * c;
+			totv = totv + data[j] * c;
 		}
 
 		if (totc == 0) {
 			return data[i];
 		} else {
-			return totz / totc;
+			return totv / totc;
 		}
 
 	}

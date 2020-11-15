@@ -31,8 +31,8 @@ public class GPXElevationFixer {
         if (interpolate) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
-        setZOnPath(path, interpolate);
-        smoothZ(path, 300);
+        setEleOnPath(path, interpolate);
+        smoothEle(path, 300);
         if (interpolate) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
@@ -40,19 +40,19 @@ public class GPXElevationFixer {
         log.info("Fixed elevation for {}", path.getName());
     }
 
-    private void setZOnPath(GPXPath path, boolean interpolate) {
+    private void setEleOnPath(GPXPath path, boolean interpolate) {
         log.info("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
 
         if (interpolate) {
-            setZOnPathInterpolate(path);
+            setEleOnPathInterpolate(path);
         } else {
-            setZOnPathPerPoint(path);
+            setEleOnPathPerPoint(path);
         }
 
         log.info("Set elevations for {} ({})", path.getName(), path.getPoints().size());
     }
 
-    private void setZOnPathInterpolate(GPXPath path) {
+    private void setEleOnPathInterpolate(GPXPath path) {
         List<Point> points = path.getPoints();
         List<Point> newPoints = new ArrayList<>();
         for (int j = 1; j < points.size() - 1; j++) {
@@ -69,25 +69,25 @@ public class GPXElevationFixer {
         path.setPoints(newPoints);
     }
 
-    private void setZOnPathPerPoint(GPXPath path) {
+    private void setEleOnPathPerPoint(GPXPath path) {
         for (Point point : path.getPoints()) {
-            point.setZ(srtmHelper.getElevationRad(point.getLon(), point.getLat()));
+            point.setEle(srtmHelper.getElevationRad(point.getLon(), point.getLat()));
         }
     }
 
-    public void smoothZ(GPXPath path, double buffer) {
-        log.info("Smoothing zs");
+    public void smoothEle(GPXPath path, double buffer) {
+        log.info("Smoothing elevation");
         List<Point> points = path.getPoints();
-        double[] zs = path.getZs();
+        double[] eles = path.getEles();
         double[] dists = path.getDists();
-        double[] newZs = new double[zs.length];
-        for (int j = 0; j < newZs.length; j++) {
-            newZs[j] = SmootherService.computeNewValue(j, buffer, zs, dists);
+        double[] newEles = new double[eles.length];
+        for (int j = 0; j < newEles.length; j++) {
+            newEles[j] = SmootherService.computeNewValue(j, buffer, eles, dists);
             Point p = points.get(j);
-            p.setZ(newZs[j]);
+            p.setEle(newEles[j]);
         }
         path.computeArrays();
-        log.info("Smoothed zs");
+        log.info("Smoothed elevation");
     }
 
 }

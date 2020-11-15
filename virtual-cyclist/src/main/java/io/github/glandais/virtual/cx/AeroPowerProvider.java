@@ -18,9 +18,9 @@ public class AeroPowerProvider implements PowerProvider {
 
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
-        double grad = location.getGrade();
+        double grade = location.getGrade();
         double speed = status.getSpeed();
-        final double cx = course.getCxProvider().getCx(location, status.getEllapsed(), speed, grad);
+        final double cx = course.getCxProvider().getCx(location, status.getEllapsed(), speed, grade);
         final Wind wind = course.getWindProvider().getWind(location, status.getEllapsed());
         location.putDebug("4_0_cx", cx, Unit.CX);
         double p_air;

@@ -156,8 +156,8 @@ public class KMLFileWriter2 {
             fw.write("        <tessellate>1</tessellate>\n");
             fw.write("        <altitudeMode>clampToGround</altitudeMode>\n");
             fw.write("        <coordinates>\n");
-            fw.write(df.format(pm1.getLonDeg()) + "," + df.format(pm1.getLatDeg()) + "," + df.format(pm1.getZ()) + "\n");
-            fw.write(df.format(p.getLonDeg()) + "," + df.format(p.getLatDeg()) + "," + df.format(p.getZ()) + "\n");
+            fw.write(df.format(pm1.getLonDeg()) + "," + df.format(pm1.getLatDeg()) + "," + df.format(pm1.getEle()) + "\n");
+            fw.write(df.format(p.getLonDeg()) + "," + df.format(p.getLatDeg()) + "," + df.format(p.getEle()) + "\n");
             fw.write("        </coordinates>\n");
             fw.write("      </LineString>\n");
             fw.write("    </Placemark>\n");

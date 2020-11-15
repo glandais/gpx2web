@@ -76,11 +76,15 @@ public class PowerComputer {
         current.putDebug("5_1_p_app", p_app, Unit.WATTS);
 
         final double mKg = course.getCyclist().getMKg();
-        // m.s-2
-        double acc = p_app / (Constants.G * mKg);
-        current.putDebug("5_2_acc", acc, Unit.DOUBLE_ANY);
 
-        status.speed = status.speed + acc * DT;
+        // p_app = 0.5 * (mKg + (0.14 / (0.7*0.7))) * (new_speed * new_speed - speed * speed) / DT
+        // (new_speed * new_speed - speed * speed) = DT * p_app / (0.5 * (mKg + (0.14 / (0.7*0.7))))
+        double new_speed_squared = DT * p_app / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + status.speed * status.speed;
+        if (new_speed_squared < 0) {
+            status.speed = MINIMAL_SPEED;
+        } else {
+            status.speed = Math.sqrt(new_speed_squared);
+        }
         current.putDebug("5_3_new_speed", status.speed, Unit.SPEED_S_M);
 
         current.putDebug("5_4_max_speed", current.getMaxSpeed(), Unit.SPEED_S_M);

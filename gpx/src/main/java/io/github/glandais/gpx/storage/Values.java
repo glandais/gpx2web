@@ -2,6 +2,7 @@ package io.github.glandais.gpx.storage;
 
 import io.github.glandais.gpx.storage.convert.ConvertableUnit;
 import io.github.glandais.gpx.storage.unit.StorageUnit;
+import lombok.Getter;
 import lombok.experimental.Delegate;
 
 import java.util.Map;
@@ -11,29 +12,30 @@ import java.util.stream.Collectors;
 public class Values {
 
     @Delegate
-    private Map<String, Value<?, ?>> values = new TreeMap<>();
+    @Getter
+    private Map<String, Value<?, ?>> data = new TreeMap<>();
 
     @Override
     public String toString() {
-        return String.valueOf(values);
+        return String.valueOf(data);
     }
 
     public <J> void put(String key, J value, Unit<J> unit) {
         if (unit instanceof StorageUnit) {
-            values.put(key, new Value(value, (StorageUnit) unit));
+            data.put(key, new Value(value, (StorageUnit) unit));
         } else {
             ConvertableUnit convertableUnit = (ConvertableUnit) unit;
             J j = null;
             if (value != null) {
                 j = (J) convertableUnit.convertToStorage(value);
             }
-            values.put(key, new Value(j, convertableUnit.getStorageUnit()));
+            data.put(key, new Value(j, convertableUnit.getStorageUnit()));
         }
     }
 
     public <J> J get(String key, Unit<J> unit) {
 
-        Value v = values.get(key);
+        Value v = data.get(key);
         if (v == null) {
             return null;
         }
@@ -52,10 +54,10 @@ public class Values {
 
     public static Values interpolate(Values from, Values to, double coef) {
         Values data = new Values();
-        for (String key : from.values.keySet()) {
+        for (String key : from.data.keySet()) {
 
-            Value v = from.values.get(key);
-            Value vp1 = to.values.get(key);
+            Value v = from.data.get(key);
+            Value vp1 = to.data.get(key);
             Object ov = v == null ? null : v.getValue();
             Object ovp1 = vp1 == null ? null : vp1.getValue();
             Object nv;
@@ -71,14 +73,5 @@ public class Values {
             }
         }
         return data;
-    }
-
-    public void putAllSuffixed(Values data, String s) {
-        values.putAll(
-                data.values.entrySet().stream().collect(Collectors.toMap(
-                        e -> e.getKey() + ".orig",
-                        Map.Entry::getValue
-                ))
-        );
     }
 }

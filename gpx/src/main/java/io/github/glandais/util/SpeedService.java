@@ -2,13 +2,18 @@ package io.github.glandais.util;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SpeedService {
 
-    public void computeSpeed(GPXPath path, String attribute) {
+    public void computeSpeed(GPXPath path) {
+        computeSpeed(path, PointField.speed);
+    }
+
+    public void computeSpeed(GPXPath path, PointField attribute) {
         for (int i = 0; i < path.size(); i++) {
             Point point = path.getPoints().get(i);
             double v;

@@ -24,7 +24,7 @@ import io.github.glandais.virtual.cx.CxProviderConstant;
 import io.github.glandais.virtual.cx.CxProviderFromData;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
-import io.github.glandais.virtual.cyclist.WeightGuesser;
+import io.github.glandais.virtual.grav.WeightGuesser;
 import io.github.glandais.virtual.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -125,9 +125,9 @@ public class GpxProcessor {
             if (!options.isGpxData()) {
                 GPXFilter.filterPointsDouglasPeucker(path);
             } else {
-                speedService.computeSpeed(path, "speed");
+                speedService.computeSpeed(path);
                 for (Point point : path.getPoints()) {
-                    point.getDebug().putAllSuffixed(point.getData(), ".orig");
+                    point.backupToDebug();
                 }
             }
 
@@ -161,7 +161,7 @@ public class GpxProcessor {
                             smoothService.smoothCx(path);
                             cxProvider = new CxProviderFromData();
                         }
-                        speedService.computeSpeed(path, "speed");
+                        speedService.computeSpeed(path);
                     } else {
                         powerProvider = new PowerProviderConstant(options.getPowerW());
                     }
@@ -173,7 +173,7 @@ public class GpxProcessor {
                     maxSpeedComputer.computeMaxSpeeds(course);
                     powerComputer.computeTrack(course);
                 }
-                speedService.computeSpeed(path, "speed");
+                speedService.computeSpeed(path);
             }
 
             if (options.isSrtmMap()) {

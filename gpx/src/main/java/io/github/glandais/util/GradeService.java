@@ -15,9 +15,9 @@ public class GradeService {
                 g = 0.0;
             } else {
                 double d = path.getDists()[i] - path.getDists()[i - 1];
-                double dz = path.getZs()[i] - path.getZs()[i - 1];
+                double dele = path.getEles()[i] - path.getEles()[i - 1];
                 if (d > 0.002) {
-                    g = 100 * dz / d;
+                    g = 100 * dele / d;
                 } else {
                     g = path.getPoints().get(i - 1).getGrade();
                 }
