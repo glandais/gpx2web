@@ -14,9 +14,7 @@ import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
-import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,55 +23,55 @@ import picocli.CommandLine;
 import java.io.File;
 import java.util.List;
 
-@Data
 @Slf4j
 @Component
 @CommandLine.Command(name = "guesser", mixinStandardHelpOptions = true)
 public class GuesserCommand implements Runnable {
 
     @Autowired
-    private GPXParser gpxParser;
+    protected GPXParser gpxParser;
 
     @Autowired
-    private ConstantsGuesser constantsGuesser;
+    protected ConstantsGuesser constantsGuesser;
 
     @Autowired
-    private PowerComputer powerComputer;
+    protected PowerComputer powerComputer;
 
     @Autowired
-    private GPXFileWriter gpxFileWriter;
+    protected GPXFileWriter gpxFileWriter;
 
     @Autowired
-    private GPXElevationFixer gpxElevationFixer;
+    protected GPXElevationFixer gpxElevationFixer;
 
     @Autowired
-    private MaxSpeedComputer maxSpeedComputer;
+    protected MaxSpeedComputer maxSpeedComputer;
 
     @Autowired
-    private CSVFileWriter csvFileWriter;
+    protected CSVFileWriter csvFileWriter;
 
-    @Delegate
     @CommandLine.Mixin
-    private FilesMixin filesMixin;
+    protected FilesMixin filesMixin;
 
-    @Delegate
     @CommandLine.Mixin
-    private CyclistMixin cyclistMixin;
+    protected CyclistMixin cyclistMixin;
+
+    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
+    protected File output = new File("output");
 
     @Override
     public void run() {
 
-        initFiles();
-        initCyclist();
+        filesMixin.initFiles();
+        cyclistMixin.initCyclist();
 
         filesMixin.getGpxFiles().stream().forEach(this::guess);
     }
 
     @SneakyThrows
-    private void guess(File file) {
+    protected void guess(File file) {
 
         List<GPXPath> paths = gpxParser.parsePaths(file);
-        File gpxFolder = new File(filesMixin.getOutput(), file.getName()
+        File gpxFolder = new File(output, file.getName()
                 .replace(".gpx", ""));
         gpxFolder.mkdirs();
         for (GPXPath original : paths) {
@@ -82,7 +80,7 @@ public class GuesserCommand implements Runnable {
             File pathFolder = new File(gpxFolder, original.getName());
             pathFolder.mkdirs();
 
-            Course course = constantsGuesser.guessWithPathWithPower(original, getCyclist());
+            Course course = constantsGuesser.guessWithPathWithPower(original, cyclistMixin.getCyclist());
 
             log.info("Guessed course : {}", course);
 

@@ -7,9 +7,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class ConstantRange {
 
-    private double min;
+    protected double min;
 
-    private double max;
+    protected double max;
 
     public double getValue(int i, int nSteps) {
         return min + i * getStep(nSteps);

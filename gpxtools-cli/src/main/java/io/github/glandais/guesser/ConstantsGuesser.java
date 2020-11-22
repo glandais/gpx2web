@@ -9,8 +9,8 @@ import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.aero.cx.CxProviderConstant;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
+import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +22,13 @@ import java.util.function.Predicate;
 @Slf4j
 public class ConstantsGuesser {
 
-    private final ObjectMapper objectMapper;
+    protected final ObjectMapper objectMapper;
 
-    private final PowerComputer powerComputer;
+    protected final PowerComputer powerComputer;
 
-    private final MaxSpeedComputer maxSpeedComputer;
+    protected final MaxSpeedComputer maxSpeedComputer;
 
-    private final SmoothService smoothService;
+    protected final SmoothService smoothService;
 
     public ConstantsGuesser(final ObjectMapper objectMapper,
                             final PowerComputer powerComputer,
@@ -104,13 +104,13 @@ public class ConstantsGuesser {
         return minCourse;
     }
 
-    private void printRanges(ConstantRange cxRange, ConstantRange crrRange, ConstantRange mRange) {
+    protected void printRanges(ConstantRange cxRange, ConstantRange crrRange, ConstantRange mRange) {
         log.info("cx {}", cxRange);
         log.info("crr {}", crrRange);
         log.info("m {}", mRange);
     }
 
-    private void setScore(GPXPath original, GPXPath simulated, CourseWithScore course) {
+    protected void setScore(GPXPath original, GPXPath simulated, CourseWithScore course) {
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
 //        speedService.computeSpeed(simulated, ValueKind.computed);
@@ -120,7 +120,7 @@ public class ConstantsGuesser {
         course.setScore(scoreCx * scoreM * scoreCrr);
     }
 
-    private double getScore(GPXPath original, GPXPath simulated, Predicate<Double> predicate) {
+    protected double getScore(GPXPath original, GPXPath simulated, Predicate<Double> predicate) {
         double s = 0;
         for (int i = 0; i < original.size(); i++) {
             Point originalPoint = original.getPoints().get(i);

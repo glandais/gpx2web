@@ -1,6 +1,5 @@
 package io.github.glandais;
 
-import io.github.glandais.process.GpxProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;

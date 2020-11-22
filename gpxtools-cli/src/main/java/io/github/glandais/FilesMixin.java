@@ -15,12 +15,6 @@ public class FilesMixin {
     @CommandLine.Parameters(paramLabel = "FILE", description = "Files or folders to process")
     private List<File> input = new ArrayList<>();
 
-    @CommandLine.Option(names = {"--cache"}, description = "Cache folder")
-    protected File cache = new File("cache");
-
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
-    protected File output = new File("output");
-
     protected List<File> gpxFiles = new ArrayList<>();
 
     public void initFiles() {

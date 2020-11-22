@@ -188,7 +188,7 @@ public class KMLFileWriter {
     }
 
     private String print(Instant l) {
-        return DateTimeFormatter.ISO_DATE_TIME.format(l);
+        return l.toString();
     }
 
 }
