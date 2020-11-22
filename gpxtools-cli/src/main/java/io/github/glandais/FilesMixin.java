@@ -1,14 +1,16 @@
 package io.github.glandais;
 
-import lombok.Data;
+import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.io.GPXParser;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-@Data
 @Slf4j
 public class FilesMixin {
 
@@ -17,7 +19,8 @@ public class FilesMixin {
 
     protected List<File> gpxFiles = new ArrayList<>();
 
-    public void initFiles() {
+    @SneakyThrows
+    public void processFiles(GPXParser gpxParser, BiConsumer<GPXPath, File> gpxAndFolderConsumer) {
 
         if (input.isEmpty()) {
             CommandLine.usage(this, System.out);
@@ -25,6 +28,26 @@ public class FilesMixin {
         }
         gpxFiles = new ArrayList<>();
         input.stream().forEach(this::checkFile);
+
+        for (File gpxFile : gpxFiles) {
+            log.info("Processing GPX {}", gpxFile.toString());
+
+            List<GPXPath> paths = gpxParser.parsePaths(gpxFile);
+            File gpxFolder = new File(gpxFile.getParentFile(), gpxFile.getName()
+                    .replace(".gpx", ""));
+            gpxFolder.mkdirs();
+            for (GPXPath path : paths) {
+                log.info("Processing path {}", path.getName());
+
+                File pathFolder = new File(gpxFolder, path.getName());
+                pathFolder.mkdirs();
+
+                gpxAndFolderConsumer.accept(path, pathFolder);
+
+                log.info("Processed path {}", path.getName());
+            }
+            log.info("Processed GPX {}", gpxFile.toString());
+        }
 
     }
 

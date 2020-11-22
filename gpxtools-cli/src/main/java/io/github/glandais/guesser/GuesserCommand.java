@@ -60,41 +60,29 @@ public class GuesserCommand implements Runnable {
 
     @Override
     public void run() {
-
-        filesMixin.initFiles();
         cyclistMixin.initCyclist();
 
-        filesMixin.getGpxFiles().stream().forEach(this::guess);
+        filesMixin.processFiles(gpxParser, this::guess);
     }
 
+
     @SneakyThrows
-    protected void guess(File file) {
+    protected void guess(GPXPath original, File pathFolder) {
 
-        List<GPXPath> paths = gpxParser.parsePaths(file);
-        File gpxFolder = new File(output, file.getName()
-                .replace(".gpx", ""));
-        gpxFolder.mkdirs();
-        for (GPXPath original : paths) {
+        Course course = constantsGuesser.guessWithPathWithPower(original, cyclistMixin.getCyclist());
 
-            log.info("Processing path {}", original.getName());
-            File pathFolder = new File(gpxFolder, original.getName());
-            pathFolder.mkdirs();
+        log.info("Guessed course : {}", course);
 
-            Course course = constantsGuesser.guessWithPathWithPower(original, cyclistMixin.getCyclist());
-
-            log.info("Guessed course : {}", course);
-
-            maxSpeedComputer.computeMaxSpeeds(course);
-            powerComputer.computeTrack(course);
+        maxSpeedComputer.computeMaxSpeeds(course);
+        powerComputer.computeTrack(course);
 //            speedService.computeSpeed(original, PointField.simulatedSpeed, ValueKind.computed);
-            for (Point p : original.getPoints()) {
-                double dv = p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M);
-                p.put(PointField.speedDifference, dv, Unit.SPEED_S_M, ValueKind.computed);
-            }
-            gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
-            gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);
-            csvFileWriter.writeCsvFile(original, new File(pathFolder, "sim.csv"));
+        for (Point p : original.getPoints()) {
+            double dv = p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M);
+            p.put(PointField.speedDifference, dv, Unit.SPEED_S_M, ValueKind.computed);
         }
+        gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
+        gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);
+        csvFileWriter.writeCsvFile(original, new File(pathFolder, "sim.csv"));
     }
 
 }

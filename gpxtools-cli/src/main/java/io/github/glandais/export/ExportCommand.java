@@ -2,8 +2,11 @@ package io.github.glandais.export;
 
 import io.github.glandais.FilesMixin;
 import io.github.glandais.fit.FitFileWriter;
+import io.github.glandais.gpx.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.io.GPXCharter;
+import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.kml.KMLFileWriter;
 import io.github.glandais.map.MapImage;
@@ -51,6 +54,9 @@ public class ExportCommand implements Runnable {
     @CommandLine.Option(names = {"--fit"}, negatable = true, description = "Output FIT file")
     protected boolean fit = false;
 
+    @CommandLine.Option(names = {"--gpx"}, negatable = true, description = "Output GPX file compatible with GPS and softwares")
+    protected boolean gpx = false;
+
     @Autowired
     protected GPXParser gpxParser;
 
@@ -69,55 +75,55 @@ public class ExportCommand implements Runnable {
     @Autowired
     protected FitFileWriter fitFileWriter;
 
+    @Autowired
+    protected GPXPerSecond gpxPerSecond;
+
+    @Autowired
+    protected GPXFileWriter gpxFileWriter;
+
     @Override
     public void run() {
-
-        filesMixin.initFiles();
-
-        filesMixin.getGpxFiles().stream().forEach(this::process);
+        filesMixin.processFiles(gpxParser, this::process);
     }
 
     @SneakyThrows
-    protected void process(File gpxFile) {
+    private void process(GPXPath path, File pathFolder) {
 
-        List<GPXPath> paths = gpxParser.parsePaths(gpxFile);
-        File gpxFolder = new File(gpxFile.getParentFile(), gpxFile.getName()
-                .replace(".gpx", ""));
-        gpxFolder.mkdirs();
-        for (GPXPath path : paths) {
-            log.info("Processing path {}", path.getName());
+        gpxPerSecond.computeOnePointPerSecond(path);
+        GPXFilter.filterPointsDouglasPeucker(path);
 
-            File pathFolder = new File(gpxFolder, path.getName());
-            pathFolder.mkdirs();
-
-            if (srtmMap) {
-                File file = new File(pathFolder, "srtm.png");
-                MapImage map = srtmImageProducer.createSRTMMap(path, Math.max(width, height), 0.2);
-                map.saveImage(file);
-            }
-
-            if (tileMap) {
-                File file = new File(pathFolder, "map.png");
-                TileMapImage map =
-                        tileImageProducer.createTileMap(path, tileUrl, 0.2, width, height);
-                map.saveImage(file);
-            }
-
-            if (chart) {
-                gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
-            }
-
-            if (kml) {
-                log.info("Writing KML for path {}", path.getName());
-                kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
-            }
-
-            if (fit) {
-                log.info("Writing FIT for path {}", path.getName());
-                fitFileWriter.writeFitFile(path, new File(pathFolder, path.getName() + ".fit"));
-            }
-
+        if (srtmMap) {
+            File file = new File(pathFolder, "srtm.png");
+            MapImage map = srtmImageProducer.createSRTMMap(path, Math.max(width, height), 0.2);
+            map.saveImage(file);
         }
+
+        if (tileMap) {
+            File file = new File(pathFolder, "map.png");
+            TileMapImage map =
+                    tileImageProducer.createTileMap(path, tileUrl, 0.2, width, height);
+            map.saveImage(file);
+        }
+
+        if (chart) {
+            gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
+        }
+
+        if (kml) {
+            log.info("Writing KML for path {}", path.getName());
+            kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
+        }
+
+        if (fit) {
+            log.info("Writing FIT for path {}", path.getName());
+            fitFileWriter.writeFitFile(path, new File(pathFolder, path.getName() + ".fit"));
+        }
+
+        if (gpx) {
+            log.info("Writing GPX for path {}", path.getName());
+            gpxFileWriter.writeGpxFile(List.of(path), new File(pathFolder, path.getName() + ".gpx"));
+        }
+
     }
 
 }
