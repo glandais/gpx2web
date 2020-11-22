@@ -1,4 +1,4 @@
-package io.github.glandais.virtual.cx;
+package io.github.glandais.virtual.aero;
 
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.Formul;
@@ -8,7 +8,7 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import io.github.glandais.virtual.wind.Wind;
+import io.github.glandais.virtual.aero.wind.Wind;
 import org.springframework.stereotype.Service;
 
 @Service

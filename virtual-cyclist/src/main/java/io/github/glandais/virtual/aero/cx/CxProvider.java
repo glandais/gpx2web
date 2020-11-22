@@ -1,10 +1,6 @@
-package io.github.glandais.virtual.cx;
+package io.github.glandais.virtual.aero.cx;
 
 import io.github.glandais.gpx.Point;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 
 public interface CxProvider {
 

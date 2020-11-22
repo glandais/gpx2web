@@ -1,4 +1,4 @@
-package io.github.glandais.virtual.wind;
+package io.github.glandais.virtual.aero.wind;
 
 import lombok.Data;
 

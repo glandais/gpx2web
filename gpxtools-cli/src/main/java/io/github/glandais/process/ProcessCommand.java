@@ -2,7 +2,7 @@ package io.github.glandais.process;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.virtual.wind.Wind;
+import io.github.glandais.virtual.aero.wind.Wind;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;

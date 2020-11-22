@@ -10,6 +10,10 @@
 
     <artifactId>gpx</artifactId>
 
+    <properties>
+        <poi-ooxml.version>4.1.2</poi-ooxml.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.glandais</groupId>
@@ -35,7 +39,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.2</version>
+            <version>${poi-ooxml.version}</version>
         </dependency>
     </dependencies>
 </project>

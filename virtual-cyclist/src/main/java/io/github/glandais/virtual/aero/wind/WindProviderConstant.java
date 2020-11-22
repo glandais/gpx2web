@@ -1,9 +1,7 @@
-package io.github.glandais.virtual.wind;
+package io.github.glandais.virtual.aero.wind;
 
 import io.github.glandais.gpx.Point;
 import lombok.AllArgsConstructor;
-
-import java.time.Instant;
 
 @AllArgsConstructor
 public class WindProviderConstant implements WindProvider {

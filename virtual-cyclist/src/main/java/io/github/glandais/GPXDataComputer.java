@@ -10,11 +10,11 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
-import io.github.glandais.virtual.cx.CxProviderConstant;
+import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstantWithTiring;
-import io.github.glandais.virtual.wind.Wind;
-import io.github.glandais.virtual.wind.WindProviderConstant;
+import io.github.glandais.virtual.aero.wind.Wind;
+import io.github.glandais.virtual.aero.wind.WindProviderConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

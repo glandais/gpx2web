@@ -7,9 +7,9 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
-import io.github.glandais.virtual.cx.CxProviderConstant;
+import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
-import io.github.glandais.virtual.wind.WindProviderNone;
+import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

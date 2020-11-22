@@ -1,4 +1,4 @@
-package io.github.glandais.virtual.cx;
+package io.github.glandais.virtual.aero.cx;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
@@ -10,7 +10,7 @@ import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
-import io.github.glandais.virtual.wind.WindProvider;
+import io.github.glandais.virtual.aero.wind.WindProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

@@ -1,8 +1,8 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.virtual.cx.CxProvider;
-import io.github.glandais.virtual.wind.WindProvider;
+import io.github.glandais.virtual.aero.cx.CxProvider;
+import io.github.glandais.virtual.aero.wind.WindProvider;
 import lombok.Data;
 
 import java.time.Instant;
