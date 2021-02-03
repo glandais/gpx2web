@@ -90,7 +90,7 @@ public class FitFileWriter {
 
         LapMesg lapMesg = new LapMesg();
         lapMesg.setLocalNum(0);
-        lapMesg.setTimestamp(new DateTime(startDate));
+        lapMesg.setTimestamp(new DateTime(endDate));
         lapMesg.setStartTime(new DateTime(startDate));
 
         lapMesg.setStartPositionLat(firstWayPoint.getLatSemi());
