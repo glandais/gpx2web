@@ -1,10 +1,7 @@
 package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.storage.Value;
-import io.github.glandais.gpx.storage.ValueKey;
 import io.github.glandais.gpx.storage.ValueKind;
-import io.github.glandais.gpx.storage.Values;
 import io.github.glandais.gpx.storage.unit.StorageUnit;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;

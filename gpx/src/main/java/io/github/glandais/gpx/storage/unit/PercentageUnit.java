@@ -1,7 +1,5 @@
 package io.github.glandais.gpx.storage.unit;
 
-import io.github.glandais.gpx.storage.Unit;
-
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;

@@ -11,8 +11,8 @@ import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.cx.CxProvider;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.aero.wind.WindProvider;
+import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

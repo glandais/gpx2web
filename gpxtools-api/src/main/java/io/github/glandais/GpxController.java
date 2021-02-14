@@ -7,7 +7,6 @@ import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,10 +33,10 @@ public class GpxController {
     private final GPXElevationFixer gpxElevationFixer;
 
     public GpxController(final GPXParser gpxParser,
-            final GPXPathEnhancer gpxPathEnhancer,
-            final GPXFileWriter gpxFileWriter,
-            final GPXDataComputer gpxDataComputer,
-            final GPXElevationFixer gpxElevationFixer) {
+                         final GPXPathEnhancer gpxPathEnhancer,
+                         final GPXFileWriter gpxFileWriter,
+                         final GPXDataComputer gpxDataComputer,
+                         final GPXElevationFixer gpxElevationFixer) {
 
         this.gpxParser = gpxParser;
         this.gpxPathEnhancer = gpxPathEnhancer;
@@ -56,7 +55,7 @@ public class GpxController {
         List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
-            if (!StringUtils.isEmpty(name)) {
+            if (StringUtils.hasText(name)) {
                 gpxPath.setName(name);
             }
             gpxPathEnhancer.virtualize(gpxPath);
