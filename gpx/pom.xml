@@ -11,7 +11,7 @@
     <artifactId>gpx</artifactId>
 
     <properties>
-        <poi-ooxml.version>4.1.2</poi-ooxml.version>
+        <poi-ooxml.version>5.0.0</poi-ooxml.version>
     </properties>
 
     <dependencies>
