@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>cycling-tools</artifactId>
-        <groupId>io.github.glandais</groupId>
+        <groupId>io.github.glandais.gpx2web</groupId>
         <version>1.0.11-SNAPSHOT</version>
     </parent>
 
@@ -13,12 +13,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.glandais</groupId>
+            <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
             <version>1.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.glandais</groupId>
+            <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>virtual-cyclist</artifactId>
             <version>1.0.11-SNAPSHOT</version>
         </dependency>
