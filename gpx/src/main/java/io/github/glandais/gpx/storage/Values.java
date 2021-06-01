@@ -92,20 +92,22 @@ public class Values {
 
             for (ValueKind valueKind : ValueKind.values()) {
                 Value v = fromByKind.get(valueKind);
-                Value vp1 = toByKind.get(valueKind);
+                if (v != null) {
+                    Value vp1 = toByKind.get(valueKind);
 
-                Object ov = v == null ? null : v.getValue();
-                Object ovp1 = vp1 == null ? null : vp1.getValue();
-                Object nv;
-                if (ov != null && ovp1 != null) {
-                    nv = v.getUnit().interpolate(ov, ovp1, coef);
-                } else if (ov != null) {
-                    nv = ov;
-                } else {
-                    nv = ovp1;
-                }
-                if (nv != null) {
-                    data.putInternal(key, nv, v.getUnit(), valueKind);
+                    Object ov = v == null ? null : v.getValue();
+                    Object ovp1 = vp1 == null ? null : vp1.getValue();
+                    Object nv;
+                    if (ov != null && ovp1 != null) {
+                        nv = v.getUnit().interpolate(ov, ovp1, coef);
+                    } else if (ov != null) {
+                        nv = ov;
+                    } else {
+                        nv = ovp1;
+                    }
+                    if (nv != null) {
+                        data.putInternal(key, nv, v.getUnit(), valueKind);
+                    }
                 }
             }
         }
