@@ -26,33 +26,41 @@ import java.util.function.BiFunction;
 @Slf4j
 public class GPXParser {
     public List<GPXPath> parsePaths(InputStream is) throws Exception {
+        return parsePaths(is, null);
+    }
+
+    public List<GPXPath> parsePaths(InputStream is, String defaultName) throws Exception {
         return parsePaths(is, (db, f) -> {
             try {
                 return db.parse(f);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, defaultName);
     }
 
     public List<GPXPath> parsePaths(File file) throws Exception {
+        return parsePaths(file, null);
+    }
+
+    public List<GPXPath> parsePaths(File file, String defaultName) throws Exception {
         return parsePaths(file, (db, f) -> {
             try {
                 return db.parse(f);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, defaultName);
     }
 
-    private <T> List<GPXPath> parsePaths(T file, BiFunction<DocumentBuilder, T, Document> parser) throws Exception {
+    private <T> List<GPXPath> parsePaths(T file, BiFunction<DocumentBuilder, T, Document> parser, String defaultName) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document gpxDocument = parser.apply(db, file);
         List<GPXPath> paths = new ArrayList<>();
         String metadataName = getMetadataName(gpxDocument.getDocumentElement());
-        if (StringUtils.isEmpty(metadataName)) {
-            metadataName = "Map";
+        if (StringUtils.hasText(metadataName)) {
+            metadataName = defaultName;
         }
         processElement(gpxDocument.getDocumentElement(), metadataName, paths);
         for (GPXPath gpxPath : paths) {
@@ -91,8 +99,12 @@ public class GPXParser {
             if (nameElement != null) {
                 name = nameElement.getTextContent();
             }
-            if (StringUtils.isEmpty(name)) {
-                name = metadataName + " " + (paths.size() + 1);
+            if (StringUtils.hasText(name) && metadataName != null) {
+                if (paths.size() == 0) {
+                    name = metadataName;
+                } else {
+                    name = metadataName + " " + (paths.size() + 1);
+                }
             }
             log.info("Parsing {}", name);
             GPXPath currentPath = new GPXPath(name);
