@@ -1,1 +1,1 @@
-git pull && mvn clean install && cd gpxtools-api && docker-compose up -d && cd ..
+git pull && mvn clean install -Pdocker && cd gpxtools-api && docker-compose up -d && cd ..
