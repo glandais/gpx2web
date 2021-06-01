@@ -23,10 +23,6 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-      - name: Publish package
-        run: mvn --batch-mode deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: push_release
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
