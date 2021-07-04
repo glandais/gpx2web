@@ -78,9 +78,6 @@ public class ProcessCommand implements Runnable {
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
-    protected File output = new File("output");
-
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 

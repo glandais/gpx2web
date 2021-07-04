@@ -68,9 +68,6 @@ public class VirtualizeCommand implements Runnable {
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
 
-    @Option(names = {"-o", "--output"}, description = "Output folder")
-    protected File output = new File("output");
-
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
@@ -119,7 +116,7 @@ public class VirtualizeCommand implements Runnable {
 
     protected void init() {
         starts = new Instant[1];
-        starts[0] = ZonedDateTime.now().minusYears(1).toInstant();
+        starts[0] = ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
 
 //        System.setProperty("gpx.data.cache", cacheValue);
         windProvider = new WindProviderConstant(new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree)));

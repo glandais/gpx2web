@@ -14,6 +14,9 @@ import java.util.function.BiConsumer;
 @Slf4j
 public class FilesMixin {
 
+    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
+    protected File output = new File("output");
+
     @CommandLine.Parameters(paramLabel = "FILE", description = "Files or folders to process")
     private List<File> input = new ArrayList<>();
 
@@ -33,7 +36,7 @@ public class FilesMixin {
             log.info("Processing GPX {}", gpxFile.toString());
 
             List<GPXPath> paths = gpxParser.parsePaths(gpxFile);
-            File gpxFolder = new File(gpxFile.getParentFile(), gpxFile.getName()
+            File gpxFolder = new File(output, gpxFile.getName()
                     .replace(".gpx", ""));
             gpxFolder.mkdirs();
             for (GPXPath path : paths) {
@@ -46,7 +49,7 @@ public class FilesMixin {
 
                 log.info("Processed path {}", path.getName());
             }
-            log.info("Processed GPX {}", gpxFile.toString());
+            log.info("Processed GPX {}", gpxFile);
         }
 
     }

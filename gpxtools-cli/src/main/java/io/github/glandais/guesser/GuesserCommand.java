@@ -55,9 +55,6 @@ public class GuesserCommand implements Runnable {
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
-    protected File output = new File("output");
-
     @Override
     public void run() {
         cyclistMixin.initCyclist();

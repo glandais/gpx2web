@@ -107,6 +107,7 @@ public class ExportCommand implements Runnable {
 
         if (chart) {
             gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
+            gpxCharter.createChartTime(path, new File(pathFolder, "chart-time.png"));
         }
 
         if (kml) {
