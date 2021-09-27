@@ -3,6 +3,7 @@ services:
   gpxtools:
     image: glandais/gpxtools-api:latest
     restart: always
+    mem_limit: 2G
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
