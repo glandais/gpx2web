@@ -2,6 +2,7 @@ package io.github.glandais.srtm;
 
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.reader.dem.MultiSourceElevationProvider;
+import com.graphhopper.reader.dem.SkadiProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +18,6 @@ public class SRTMHelperConfiguration {
     @Bean
     public ElevationProvider elevationProvider() {
 
-        final ElevationProvider srtm = new MultiSourceElevationProvider(
-                new File(cacheFolder, "srtm").getAbsolutePath()
-        );
-        srtm.setInterpolate(true);
-        return srtm;
+        return new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath());
     }
 }

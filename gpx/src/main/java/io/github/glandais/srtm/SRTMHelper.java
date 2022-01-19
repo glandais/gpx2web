@@ -5,10 +5,7 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SRTMHelper {
@@ -16,26 +13,49 @@ public class SRTMHelper {
     private ElevationProvider elevationProvider;
 
     public static void main(String[] args) throws Exception {
-        getElevations(new MultiSourceElevationProvider("cache"));
-        getElevations(new SRTMProvider("cache"));
-        getElevations(new SkadiProvider("cache"));
-        getElevations(new SRTMGL1Provider("cache"));
+        Map<String, SRTMHelper> srtmHelperMap = Map.of(
+                "multi", new SRTMHelper(new MultiSourceElevationProvider("cache/multi")),
+                "srtm", new SRTMHelper(new SRTMProvider("cache/srtm")),
+                "skadi", new SRTMHelper(new SkadiProvider("cache/skadi"))
+//                "srtmGL1", new SRTMHelper(new SRTMGL1Provider("cache/srtmGL1"))
+        );
+        getElevations(srtmHelperMap);
     }
 
-    private static void getElevations(ElevationProvider elevationProvider) {
-        SRTMHelper srtmHelper = new SRTMHelper(elevationProvider);
-        System.out.println(srtmHelper.getElevationDeg(-5, 45));
-        System.out.println(srtmHelper.getElevationDeg(-4.999999999999, 45.000000000001));
-        System.out.println(srtmHelper.getElevationDeg(-0.000000000001, 49.999999999999));
-        System.out.println(srtmHelper.getElevationDeg(0, 50));
-        System.out.println(srtmHelper.getElevationDeg(-4.999999999999, 49.999999999999));
-        System.out.println(srtmHelper.getElevationDeg(-5, 50));
-        System.out.println(srtmHelper.getElevationDeg(-0.000000000001, 45.000000000001));
-        System.out.println(srtmHelper.getElevationDeg(0, 45));
-        // http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
-        // http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
-        System.out.println(srtmHelper.getElevationDeg(-1.547876, 47.227357));
+    private static void getElevations(Map<String, SRTMHelper> srtmHelperMap) {
+
+        List<Point> points = List.of(
+                getPoint(-1.6308402, 47.2337092),
+                getPoint(-5, 45),
+                getPoint(-4.999999999999, 45.000000000001),
+                getPoint(-0.000000000001, 49.999999999999),
+                getPoint(0, 50),
+                getPoint(-4.999999999999, 49.999999999999),
+                getPoint(-5, 50),
+                getPoint(-0.000000000001, 45.000000000001),
+                getPoint(0, 45),
+                // http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
+                // http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
+                getPoint(-1.547876, 47.227357)
+        );
+
+        for (Point point : points) {
+            System.out.println(point);
+            for (Map.Entry<String, SRTMHelper> entry : srtmHelperMap.entrySet()) {
+                System.out.println(entry.getKey() + " " + entry.getValue().getElevationRad(
+                        point.getLon(),
+                        point.getLat()
+                ));
+            }
+        }
         System.out.println("-------");
+    }
+
+    private static Point getPoint(double lon, double lat) {
+        Point p = new Point();
+        p.setLon(Math.toRadians(lon));
+        p.setLat(Math.toRadians(lat));
+        return p;
     }
 
     public SRTMHelper(ElevationProvider elevationProvider) {
