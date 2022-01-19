@@ -2,7 +2,7 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.GPXFilter;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.io.CSVFileWriter;

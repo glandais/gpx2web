@@ -1,5 +1,7 @@
-package io.github.glandais.gpx;
+package io.github.glandais.gpx.filter;
 
+import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +43,7 @@ public class GPXFilter {
     protected static List<Point> simplifyDouglasPeucker(List<Point> points, double tolerance) {
 
         int last = points.size() - 1;
-        ArrayList<Point> simplified = new ArrayList<>();
+        List<Point> simplified = new ArrayList<>();
         simplified.add(points.get(0));
         simplified.addAll(simplifyDpStep(points, 0, last, tolerance));
         simplified.add(points.get(last));
@@ -53,7 +55,7 @@ public class GPXFilter {
         double maxDist = tolerance;
         int index = 0;
 
-        ArrayList<Point> stepList = new ArrayList<>();
+        List<Point> stepList = new ArrayList<>();
 
         for (int i = first + 1; i < last; i++) {
             double dist = getSegDist(points.get(i), points.get(first), points.get(last));

@@ -4,7 +4,7 @@
  * Copyright (c) 2016 Karambola. All rights reserved.
  */
 
-package io.github.glandais.gpx;
+package io.github.glandais.gpx.filter;
 
 public class R3 {
     public final double x;

@@ -1,7 +1,7 @@
 package io.github.glandais;
 
 import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.GPXFilter;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.io.GPXParser;
 import org.apache.commons.io.IOUtils;

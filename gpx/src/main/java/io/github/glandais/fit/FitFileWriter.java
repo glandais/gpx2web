@@ -7,35 +7,11 @@ import io.github.glandais.gpx.storage.convert.SemiCirclesUnit;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.util.Date;
 import java.util.List;
 
 @Service
 public class FitFileWriter {
-
-    private static Field BOUND_MAX_LAT;
-    private static Field BOUND_MAX_LON;
-    private static Field BOUND_MIN_LAT;
-    private static Field BOUND_MIN_LON;
-
-    static {
-        try {
-            Constructor c = Field.class.getDeclaredConstructor(String.class, int.class, int.class, double.class,
-                    double.class, String.class, boolean.class, Profile.Type.class);
-            c.setAccessible(true);
-            BOUND_MAX_LAT = (Field) c.newInstance("bound_max_position_lat", 27, 133, 1.0D, 0.0D, "semicircles", false,
-                    Profile.Type.SINT32);
-            BOUND_MAX_LON = (Field) c.newInstance("bound_max_position_long", 28, 133, 1.0D, 0.0D, "semicircles", false,
-                    Profile.Type.SINT32);
-            BOUND_MIN_LAT = (Field) c.newInstance("bound_min_position_lat", 29, 133, 1.0D, 0.0D, "semicircles", false,
-                    Profile.Type.SINT32);
-            BOUND_MIN_LON = (Field) c.newInstance("bound_min_position_long", 30, 133, 1.0D, 0.0D, "semicircles", false,
-                    Profile.Type.SINT32);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void writeFitFile(GPXPath path, File target) {
         FileEncoder encode = new FileEncoder(target, Fit.ProtocolVersion.V2_0);
@@ -120,15 +96,15 @@ public class FitFileWriter {
         lapMesg.setMinAltitude((float) path.getMinElevation());
         lapMesg.setMaxAltitude((float) path.getMaxElevation());
 
-        lapMesg.addField(BOUND_MAX_LAT);
-        lapMesg.addField(BOUND_MAX_LON);
-        lapMesg.addField(BOUND_MIN_LAT);
-        lapMesg.addField(BOUND_MIN_LON);
-
+        lapMesg.addField(FitFieldBuilder.BOUND_MAX_LAT);
         lapMesg.setFieldValue(27, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlat()), '\uffff');
+        lapMesg.addField(FitFieldBuilder.BOUND_MAX_LON);
         lapMesg.setFieldValue(28, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlon()), '\uffff');
+        lapMesg.addField(FitFieldBuilder.BOUND_MIN_LAT);
         lapMesg.setFieldValue(29, 0, SemiCirclesUnit.toSemiCircles(path.getMinlat()), '\uffff');
+        lapMesg.addField(FitFieldBuilder.BOUND_MIN_LON);
         lapMesg.setFieldValue(30, 0, SemiCirclesUnit.toSemiCircles(path.getMinlon()), '\uffff');
+
         encode.write(lapMesg);
     }
 

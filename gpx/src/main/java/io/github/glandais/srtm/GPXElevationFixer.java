@@ -1,6 +1,6 @@
 package io.github.glandais.srtm;
 
-import io.github.glandais.gpx.GPXFilter;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
