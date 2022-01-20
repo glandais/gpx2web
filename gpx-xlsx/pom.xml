@@ -5,7 +5,7 @@
     <parent>
         <artifactId>cycling-tools</artifactId>
         <groupId>io.github.glandais.gpx2web</groupId>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
