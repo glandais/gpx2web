@@ -22,7 +22,7 @@ jobs:
           VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
           echo "::set-output name=version::$VERSION"
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package -Pnative --file pom.xml
       - name: push_release
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -35,6 +35,7 @@ jobs:
           prerelease: false
           files: |
             **/gpxtools-*.jar
+            **/gpxtools-*-runner
       - name: Modify versions
         run: mvn -B versions:set -DnextSnapshot versions:commit
       - name: push_snapshot
