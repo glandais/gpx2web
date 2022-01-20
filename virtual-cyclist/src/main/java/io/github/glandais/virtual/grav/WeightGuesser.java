@@ -13,17 +13,18 @@ import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.cx.CxProvider;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
-import org.springframework.stereotype.Service;
 
+import javax.enterprise.inject.Instance;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 
-@Service
+@Singleton
 public class WeightGuesser {
 
-    private final List<PowerProvider> providers;
+    private final Instance<PowerProvider> providers;
 
-    public WeightGuesser(List<PowerProvider> providers) {
+    public WeightGuesser(Instance<PowerProvider> providers) {
         this.providers = providers;
     }
 

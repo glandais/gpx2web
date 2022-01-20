@@ -2,13 +2,12 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
-import io.github.glandais.io.XLSXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -22,45 +21,43 @@ import io.github.glandais.virtual.aero.wind.WindProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 
 @Slf4j
-@Component
 @Command(name = "virtualize", mixinStandardHelpOptions = true)
 public class VirtualizeCommand implements Runnable {
 
-    @Autowired
+    @Inject
     protected GPXParser gpxParser;
 
-    @Autowired
+    @Inject
     protected GPXElevationFixer gpxElevationFixer;
 
-    @Autowired
+    @Inject
     protected MaxSpeedComputer maxSpeedComputer;
 
-    @Autowired
+    @Inject
     protected PowerComputer powerComputer;
 
-    @Autowired
+    @Inject
     protected GPXPerSecond gpxPerSecond;
 
-    @Autowired
+    @Inject
     protected GPXFileWriter gpxFileWriter;
 
-    @Autowired
+    @Inject
     protected CSVFileWriter csvFileWriter;
 
-    @Autowired
-    protected XLSXFileWriter xlsxFileWriter;
+//    @Inject
+//    protected XLSXFileWriter xlsxFileWriter;
 
     @CommandLine.Mixin
     protected FilesMixin filesMixin;
@@ -71,8 +68,8 @@ public class VirtualizeCommand implements Runnable {
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
-    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-    protected boolean xlsx = false;
+//    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+//    protected boolean xlsx = false;
 
     @Option(names = {"--cyclist-power"}, description = "Cyclist power (W)")
     protected double powerW = 240;
@@ -154,10 +151,10 @@ public class VirtualizeCommand implements Runnable {
             csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
         }
 
-        if (xlsx) {
-            log.info("Writing XLSX for path {}", path.getName());
-            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
-        }
+//        if (xlsx) {
+//            log.info("Writing XLSX for path {}", path.getName());
+//            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
+//        }
     }
 
 }

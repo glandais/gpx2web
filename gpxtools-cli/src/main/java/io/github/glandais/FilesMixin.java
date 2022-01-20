@@ -30,7 +30,7 @@ public class FilesMixin {
             System.exit(0);
         }
         gpxFiles = new ArrayList<>();
-        input.stream().forEach(this::checkFile);
+        input.forEach(this::checkFile);
 
         for (File gpxFile : gpxFiles) {
             log.info("Processing GPX {}", gpxFile.toString());
@@ -44,6 +44,7 @@ public class FilesMixin {
 
                 File pathFolder = new File(gpxFolder, path.getName());
                 pathFolder.mkdirs();
+                log.info("Exporting to {}", pathFolder.getCanonicalPath());
 
                 gpxAndFolderConsumer.accept(path, pathFolder);
 

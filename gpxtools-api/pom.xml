@@ -1,70 +1,86 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.glandais.gpx2web</groupId>
         <artifactId>cycling-tools</artifactId>
-        <version>1.0.19-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>gpxtools-api</artifactId>
-
+    <properties>
+        <quarkus.container-image.image>glandais/gpxtools-api:latest</quarkus.container-image.image>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
-            <version>1.0.19-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>virtual-cyclist</artifactId>
-            <version>1.0.19-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-json</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-awt</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-container-image-docker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
     </dependencies>
-
     <build>
         <finalName>gpxtools-api</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
-
     <profiles>
         <profile>
-            <id>docker</id>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${surefire-plugin.version}</version>
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>build-image</goal>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
                                 </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <native.image.path>
+                                            ${project.build.directory}/${project.build.finalName}-runner
+                                        </native.image.path>
+                                        <java.util.logging.manager>org.jboss.logmanager.LogManager
+                                        </java.util.logging.manager>
+                                        <maven.home>${maven.home}</maven.home>
+                                    </systemPropertyVariables>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <image>
-                                <name>glandais/gpxtools-api:latest</name>
-                            </image>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
+            <properties>
+                <quarkus.package.type>native</quarkus.package.type>
+                <quarkus.native.enable-https-url-handler>true</quarkus.native.enable-https-url-handler>
+            </properties>
         </profile>
     </profiles>
 </project>

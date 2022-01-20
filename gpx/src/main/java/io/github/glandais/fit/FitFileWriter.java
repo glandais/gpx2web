@@ -4,13 +4,13 @@ import com.garmin.fit.*;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.convert.SemiCirclesUnit;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
 
-@Service
+@Singleton
 public class FitFileWriter {
 
     public void writeFitFile(GPXPath path, File target) {

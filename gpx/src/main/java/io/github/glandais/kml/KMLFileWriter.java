@@ -2,8 +2,8 @@ package io.github.glandais.kml;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
-@Service
+@Singleton
 public class KMLFileWriter {
 
     private static final String KML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

@@ -12,13 +12,13 @@ import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.function.Predicate;
 
-@Service
+@Singleton
 @Slf4j
 public class ConstantsGuesser {
 

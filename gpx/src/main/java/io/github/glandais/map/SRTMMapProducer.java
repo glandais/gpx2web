@@ -4,14 +4,14 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.srtm.SRTMHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
-@Service
+@Singleton
 @Slf4j
 public class SRTMMapProducer {
 

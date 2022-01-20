@@ -6,9 +6,8 @@
 /gpxtools-api/cache/*
 *.iml
 /.idea
-/cache
-/covid-charts
-/output
+**/cache
+**/output
 /gpxtools
 /gpxtools.jar
 data

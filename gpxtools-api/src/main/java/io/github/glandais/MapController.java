@@ -4,17 +4,19 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
-@RestController
+@Path("/map")
 public class MapController {
 
     private final GPXParser gpxParser;
@@ -27,16 +29,24 @@ public class MapController {
         this.tileMapProducer = tileMapProducer;
     }
 
-    @CrossOrigin(origins = "https://gabriel.landais.org")
-    @PostMapping("/map")
-    public void handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("tileUrl") String tileUrl,
-                                 @RequestParam("width") Integer width, @RequestParam("height") Integer height, HttpServletResponse response)
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    public Response handleFileUpload(InputStream stream,
+                                     @QueryParam("tileUrl") String tileUrl,
+                                     @QueryParam("width") Integer width,
+                                     @QueryParam("height") Integer height)
             throws Exception {
-        List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+        List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             TileMapImage tileMap = tileMapProducer.createTileMap(paths.get(0), tileUrl, 0, width, height);
-            response.setContentType("image/png");
-            ImageIO.write(tileMap.getImage(), "png", response.getOutputStream());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(tileMap.getImage(), "png", bos);
+
+            byte[] bytes = bos.toByteArray();
+            return Response.ok(bytes, "image/png")
+                    .header("Content-Disposition", "attachment;filename=activity.png")
+                    .header("Content-Length", bytes.length)
+                    .build();
         } else {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }

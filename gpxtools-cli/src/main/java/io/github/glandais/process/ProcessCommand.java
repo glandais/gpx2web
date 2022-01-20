@@ -7,7 +7,6 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
-import io.github.glandais.io.XLSXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.SmoothService;
 import io.github.glandais.virtual.Course;
@@ -26,50 +25,48 @@ import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.grav.WeightGuesser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 
 @Slf4j
-@Component
 @Command(name = "process", mixinStandardHelpOptions = true)
 public class ProcessCommand implements Runnable {
 
-    @Autowired
+    @Inject
     protected GPXParser gpxParser;
 
-    @Autowired
+    @Inject
     protected GPXElevationFixer gpxElevationFixer;
 
-    @Autowired
+    @Inject
     protected MaxSpeedComputer maxSpeedComputer;
 
-    @Autowired
+    @Inject
     protected PowerComputer powerComputer;
 
-    @Autowired
+    @Inject
     protected GPXFileWriter gpxFileWriter;
 
-    @Autowired
+    @Inject
     protected SmoothService smoothService;
 
-    @Autowired
+    @Inject
     protected CSVFileWriter csvFileWriter;
 
-    @Autowired
-    protected XLSXFileWriter xlsxFileWriter;
+//    @Inject
+//    protected XLSXFileWriter xlsxFileWriter;
 
-    @Autowired
+    @Inject
     protected CxGuesser cxGuesser;
 
-    @Autowired
+    @Inject
     protected WeightGuesser weightGuesser;
 
     @CommandLine.Mixin
@@ -81,8 +78,8 @@ public class ProcessCommand implements Runnable {
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
-    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-    protected boolean xlsx = false;
+//    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+//    protected boolean xlsx = false;
 
     @Option(names = {"--gpx-elevation"}, negatable = true, description = "Gpx has valid elevation")
     protected boolean gpxElevation = false;
@@ -181,10 +178,10 @@ public class ProcessCommand implements Runnable {
             csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
         }
 
-        if (xlsx) {
-            log.info("Writing XLSX for path {}", path.getName());
-            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
-        }
+//        if (xlsx) {
+//            log.info("Writing XLSX for path {}", path.getName());
+//            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
+//        }
 
     }
 

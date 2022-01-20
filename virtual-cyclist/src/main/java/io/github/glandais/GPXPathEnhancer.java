@@ -10,11 +10,13 @@ import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
+import javax.inject.Singleton;
 import java.time.Instant;
 
-@Service
+@Singleton
+@RequiredArgsConstructor
 public class GPXPathEnhancer {
 
     private final GPXElevationFixer gpxElevationFixer;
@@ -24,17 +26,6 @@ public class GPXPathEnhancer {
     private final PowerComputer powerComputer;
 
     private final GPXPerSecond gpxPerSecond;
-
-    public GPXPathEnhancer(final GPXElevationFixer gpxElevationFixer,
-                           final MaxSpeedComputer maxSpeedComputer,
-                           final PowerComputer powerComputer,
-                           final GPXPerSecond gpxPerSecond) {
-
-        this.gpxElevationFixer = gpxElevationFixer;
-        this.maxSpeedComputer = maxSpeedComputer;
-        this.powerComputer = powerComputer;
-        this.gpxPerSecond = gpxPerSecond;
-    }
 
     public void virtualize(GPXPath gpxPath) {
         gpxElevationFixer.fixElevation(gpxPath);

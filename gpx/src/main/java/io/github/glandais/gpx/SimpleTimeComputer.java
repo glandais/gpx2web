@@ -1,11 +1,11 @@
 package io.github.glandais.gpx;
 
 import io.github.glandais.gpx.storage.ValueKind;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.time.Instant;
 
-@Service
+@Singleton
 public class SimpleTimeComputer {
 
     /**

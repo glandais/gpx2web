@@ -9,14 +9,15 @@ import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
+import javax.enterprise.inject.Instance;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Singleton
 @Slf4j
 public class PowerComputer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PowerComputer.class);
@@ -28,9 +29,9 @@ public class PowerComputer {
     // s
     private static final double DT = 1.0 / FREQ;
 
-    private final List<PowerProvider> providers;
+    private final Instance<PowerProvider> providers;
 
-    public PowerComputer(List<PowerProvider> providers) {
+    public PowerComputer(Instance<PowerProvider> providers) {
         super();
         this.providers = providers;
     }

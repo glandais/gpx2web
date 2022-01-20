@@ -9,9 +9,10 @@ import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import org.springframework.stereotype.Service;
 
-@Service
+import javax.inject.Singleton;
+
+@Singleton
 public class RollingResistancePowerProvider implements PowerProvider {
 
     public static final Formul FORMUL = new Formul("-(crr)*mKg*9.81*(speed)*COS(ATAN(grade))",

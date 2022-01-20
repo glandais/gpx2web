@@ -11,17 +11,19 @@ import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
-import org.springframework.stereotype.Service;
 
+import javax.enterprise.inject.Instance;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 
-@Service
+@Singleton
 public class CxGuesser {
 
-    private final List<PowerProvider> providers;
+    private final Instance<PowerProvider> providers;
 
-    public CxGuesser(List<PowerProvider> providers) {
+    public CxGuesser(Instance<PowerProvider> providers) {
         this.providers = providers;
     }
 

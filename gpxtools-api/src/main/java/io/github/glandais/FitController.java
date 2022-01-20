@@ -1,24 +1,24 @@
 package io.github.glandais;
 
 import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.io.GPXParser;
-import org.apache.commons.io.IOUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
-@RestController
+@Path("/fit")
 public class FitController {
 
     private final GPXParser gpxParser;
@@ -34,14 +34,13 @@ public class FitController {
         this.gpxPathEnhancer = gpxPathEnhancer;
     }
 
-    @CrossOrigin(origins = "https://gabriel.landais.org")
-    @PostMapping("/fit")
-    public void handleFileUpload(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(name = "name", required = false) String name,
-            HttpServletResponse response)
-            throws Exception {
-        List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    public Response handleFileUpload(
+            InputStream stream,
+            @QueryParam("name") String name
+    ) throws Exception {
+        List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             if (!StringUtils.isEmpty(name)) {
@@ -52,13 +51,13 @@ public class FitController {
             GPXFilter.filterPointsDouglasPeucker(gpxPath);
             File tmp = File.createTempFile("fit", "tmp");
             fitFileWriter.writeFitFile(gpxPath, tmp);
-
-            response.setContentType("application/fit");
-            try (FileInputStream fis = new FileInputStream(tmp)) {
-                IOUtils.copy(fis, response.getOutputStream());
-            }
+            byte[] bytes = FileUtils.readFileToByteArray(tmp);
             Files.delete(tmp.toPath());
 
+            return Response.ok(bytes, "application/fit")
+                    .header("Content-Disposition", "attachment;filename=activity.fit")
+                    .header("Content-Length", bytes.length)
+                    .build();
         } else {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }

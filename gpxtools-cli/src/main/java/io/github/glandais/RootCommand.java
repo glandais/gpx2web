@@ -4,10 +4,10 @@ import io.github.glandais.export.ExportCommand;
 import io.github.glandais.guesser.GuesserCommand;
 import io.github.glandais.process.ProcessCommand;
 import io.github.glandais.virtualize.VirtualizeCommand;
-import org.springframework.stereotype.Component;
+import io.quarkus.picocli.runtime.annotations.TopCommand;
 import picocli.CommandLine;
 
-@Component
+@TopCommand
 @CommandLine.Command(name = "gpxtools", mixinStandardHelpOptions = true, subcommands = {
         ProcessCommand.class,
         ExportCommand.class,

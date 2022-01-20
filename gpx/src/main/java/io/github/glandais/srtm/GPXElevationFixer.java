@@ -1,29 +1,25 @@
 package io.github.glandais.srtm;
 
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.SmoothService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Singleton
 @Slf4j
+@RequiredArgsConstructor
 public class GPXElevationFixer {
 
     private final SRTMHelper srtmHelper;
 
     private final SmoothService smoothService;
-
-    public GPXElevationFixer(SRTMHelper srtmHelper, SmoothService smoothService) {
-        super();
-        this.srtmHelper = srtmHelper;
-        this.smoothService = smoothService;
-    }
 
     public void fixElevation(GPXPath path) {
         fixElevation(path, true);

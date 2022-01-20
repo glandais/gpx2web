@@ -6,13 +6,13 @@ import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.gpx.storage.ValueKind;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.inject.Singleton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
-@Service
+@Singleton
 @Slf4j
 public class GPXParser {
     public List<GPXPath> parsePaths(InputStream is) throws Exception {
@@ -59,7 +59,7 @@ public class GPXParser {
         Document gpxDocument = parser.apply(db, file);
         List<GPXPath> paths = new ArrayList<>();
         String metadataName = getMetadataName(gpxDocument.getDocumentElement());
-        if (StringUtils.hasText(metadataName)) {
+        if (StringUtils.isNotEmpty(metadataName)) {
             metadataName = defaultName;
         }
         processElement(gpxDocument.getDocumentElement(), metadataName, paths);
@@ -99,7 +99,7 @@ public class GPXParser {
             if (nameElement != null) {
                 name = nameElement.getTextContent();
             }
-            if (StringUtils.hasText(name) && metadataName != null) {
+            if (StringUtils.isNotEmpty(name) && metadataName != null) {
                 if (paths.size() == 0) {
                     name = metadataName;
                 } else {

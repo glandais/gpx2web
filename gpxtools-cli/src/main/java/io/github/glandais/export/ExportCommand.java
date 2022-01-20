@@ -2,10 +2,9 @@ package io.github.glandais.export;
 
 import io.github.glandais.FilesMixin;
 import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
-import io.github.glandais.io.GPXCharter;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.kml.KMLFileWriter;
@@ -15,15 +14,13 @@ import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
 
 @Slf4j
-@Component
 @CommandLine.Command(name = "export", mixinStandardHelpOptions = true)
 public class ExportCommand implements Runnable {
 
@@ -45,8 +42,8 @@ public class ExportCommand implements Runnable {
     @CommandLine.Option(names = {"--map-height"}, description = "Map height")
     protected int height = 768;
 
-    @CommandLine.Option(names = {"--chart"}, negatable = true, description = "Chart")
-    protected boolean chart = false;
+//    @CommandLine.Option(names = {"--chart"}, negatable = true, description = "Chart")
+//    protected boolean chart = false;
 
     @CommandLine.Option(names = {"--kml"}, negatable = true, description = "Output KML file")
     protected boolean kml = false;
@@ -57,28 +54,28 @@ public class ExportCommand implements Runnable {
     @CommandLine.Option(names = {"--gpx"}, negatable = true, description = "Output GPX file compatible with GPS and softwares")
     protected boolean gpx = false;
 
-    @Autowired
+    @Inject
     protected GPXParser gpxParser;
 
-    @Autowired
+    @Inject
     protected SRTMMapProducer srtmImageProducer;
 
-    @Autowired
+    @Inject
     protected TileMapProducer tileImageProducer;
 
-    @Autowired
-    protected GPXCharter gpxCharter;
+//    @Inject
+//    protected GPXCharter gpxCharter;
 
-    @Autowired
+    @Inject
     protected KMLFileWriter kmlFileWriter;
 
-    @Autowired
+    @Inject
     protected FitFileWriter fitFileWriter;
 
-    @Autowired
+    @Inject
     protected GPXPerSecond gpxPerSecond;
 
-    @Autowired
+    @Inject
     protected GPXFileWriter gpxFileWriter;
 
     @Override
@@ -105,10 +102,10 @@ public class ExportCommand implements Runnable {
             map.saveImage(file);
         }
 
-        if (chart) {
-            gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
-            gpxCharter.createChartTime(path, new File(pathFolder, "chart-time.png"));
-        }
+//        if (chart) {
+//            gpxCharter.createChartWeb(path, new File(pathFolder, "chart.png"), 640, 480);
+//            gpxCharter.createChartTime(path, new File(pathFolder, "chart-time.png"));
+//        }
 
         if (kml) {
             log.info("Writing KML for path {}", path.getName());

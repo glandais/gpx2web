@@ -8,9 +8,10 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import org.springframework.stereotype.Service;
 
-@Service
+import javax.inject.Singleton;
+
+@Singleton
 public class WheelBearingsPowerProvider implements PowerProvider {
 
     public static final Formul FORMUL = new Formul("-(speed)*(91 + 8.7 * (speed))/1000",

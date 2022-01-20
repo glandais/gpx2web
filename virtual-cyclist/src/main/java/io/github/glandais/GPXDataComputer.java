@@ -1,8 +1,8 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.MagicPower2MapSpace;
 import io.github.glandais.util.Vector;
@@ -15,14 +15,16 @@ import io.github.glandais.virtual.aero.wind.Wind;
 import io.github.glandais.virtual.aero.wind.WindProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstantWithTiring;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 
-@Service
+@Singleton
 @Slf4j
+@RequiredArgsConstructor
 public class GPXDataComputer {
 
     private final PowerComputer powerComputer;
@@ -30,15 +32,6 @@ public class GPXDataComputer {
     private final GPXElevationFixer gpxElevationFixer;
 
     private final MaxSpeedComputer maxSpeedComputer;
-
-    public GPXDataComputer(final PowerComputer powerComputer,
-                           final GPXElevationFixer gpxElevationFixer,
-                           final MaxSpeedComputer maxSpeedComputer) {
-
-        this.powerComputer = powerComputer;
-        this.gpxElevationFixer = gpxElevationFixer;
-        this.maxSpeedComputer = maxSpeedComputer;
-    }
 
     public boolean isCrossing(GPXPath path) {
 

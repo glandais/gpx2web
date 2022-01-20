@@ -9,9 +9,10 @@ import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import org.springframework.stereotype.Service;
 
-@Service
+import javax.inject.Singleton;
+
+@Singleton
 public class GravPowerProvider implements PowerProvider {
 
     public static final Formul FORMUL = new Formul("-mKg*9.81*(speed)*SIN(ATAN(grade))",

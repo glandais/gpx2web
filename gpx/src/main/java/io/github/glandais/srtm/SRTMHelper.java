@@ -1,66 +1,28 @@
 package io.github.glandais.srtm;
 
-import com.graphhopper.reader.dem.*;
+import com.graphhopper.reader.dem.ElevationProvider;
+import com.graphhopper.reader.dem.SkadiProvider;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
-import org.springframework.stereotype.Service;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.util.*;
+import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-@Service
+@Singleton
 public class SRTMHelper {
 
     private ElevationProvider elevationProvider;
 
-    public static void main(String[] args) throws Exception {
-        Map<String, SRTMHelper> srtmHelperMap = Map.of(
-                "multi", new SRTMHelper(new MultiSourceElevationProvider("cache/multi")),
-                "srtm", new SRTMHelper(new SRTMProvider("cache/srtm")),
-                "skadi", new SRTMHelper(new SkadiProvider("cache/skadi"))
-//                "srtmGL1", new SRTMHelper(new SRTMGL1Provider("cache/srtmGL1"))
-        );
-        getElevations(srtmHelperMap);
-    }
+    @ConfigProperty(name = "gpx.data.cache", defaultValue = "cache")
+    protected File cacheFolder = new File("cache");
 
-    private static void getElevations(Map<String, SRTMHelper> srtmHelperMap) {
-
-        List<Point> points = List.of(
-                getPoint(-1.6308402, 47.2337092),
-                getPoint(-5, 45),
-                getPoint(-4.999999999999, 45.000000000001),
-                getPoint(-0.000000000001, 49.999999999999),
-                getPoint(0, 50),
-                getPoint(-4.999999999999, 49.999999999999),
-                getPoint(-5, 50),
-                getPoint(-0.000000000001, 45.000000000001),
-                getPoint(0, 45),
-                // http://maps.google.fr/?ie=UTF8&ll=,&spn=0.008277,0.022745&z=16
-                // http://maps.google.fr/?ie=UTF8&ll=47.227357,-1.547876&spn=0.008277,0.022745&z=16
-                getPoint(-1.547876, 47.227357)
-        );
-
-        for (Point point : points) {
-            System.out.println(point);
-            for (Map.Entry<String, SRTMHelper> entry : srtmHelperMap.entrySet()) {
-                System.out.println(entry.getKey() + " " + entry.getValue().getElevationRad(
-                        point.getLon(),
-                        point.getLat()
-                ));
-            }
-        }
-        System.out.println("-------");
-    }
-
-    private static Point getPoint(double lon, double lat) {
-        Point p = new Point();
-        p.setLon(Math.toRadians(lon));
-        p.setLat(Math.toRadians(lat));
-        return p;
-    }
-
-    public SRTMHelper(ElevationProvider elevationProvider) {
-        super();
-        this.elevationProvider = elevationProvider;
+    @PostConstruct
+    public void init() {
+        this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath());
     }
 
     public synchronized double getElevationRad(double lon, double lat) {
@@ -133,12 +95,10 @@ public class SRTMHelper {
             }
         }
 
-        Collections.sort(result, new Comparator<>() {
-            public int compare(Point cp1, Point cp2) {
-                double d1 = p1.distanceTo(cp1);
-                double d2 = p1.distanceTo(cp2);
-                return Double.compare(d1, d2);
-            }
+        result.sort((cp1, cp2) -> {
+            double d1 = p1.distanceTo(cp1);
+            double d2 = p1.distanceTo(cp2);
+            return Double.compare(d1, d2);
         });
 
         return result;

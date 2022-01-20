@@ -5,9 +5,10 @@ import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import org.springframework.stereotype.Service;
 
-@Service
+import javax.inject.Singleton;
+
+@Singleton
 public class CyclistPowerProvider implements PowerProvider {
 
     @Override

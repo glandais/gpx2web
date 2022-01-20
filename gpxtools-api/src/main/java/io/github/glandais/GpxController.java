@@ -1,25 +1,27 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
-import org.apache.commons.io.IOUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
-@RestController
+@Path("/")
 public class GpxController {
 
     private final GPXParser gpxParser;
@@ -45,17 +47,17 @@ public class GpxController {
         this.gpxElevationFixer = gpxElevationFixer;
     }
 
-    @CrossOrigin(origins = "https://gabriel.landais.org")
-    @PostMapping("/simplify")
-    public void simplify(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(name = "name", required = false) String name,
-            HttpServletResponse response) throws Exception {
+    @Path("/simplify")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    public Response simplify(
+            InputStream stream,
+            @QueryParam("name") String name) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+        List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
-            if (StringUtils.hasText(name)) {
+            if (StringUtils.isNotEmpty(name)) {
                 gpxPath.setName(name);
             }
             gpxPathEnhancer.virtualize(gpxPath);
@@ -64,21 +66,25 @@ public class GpxController {
             File tmp = File.createTempFile("gpx", "tmp");
             gpxFileWriter.writeGpxFile(paths, tmp);
 
-            response.setContentType("application/gpx");
-            try (FileInputStream fis = new FileInputStream(tmp)) {
-                IOUtils.copy(fis, response.getOutputStream());
-            }
+            byte[] bytes = FileUtils.readFileToByteArray(tmp);
             Files.delete(tmp.toPath());
+
+            return Response.ok(bytes, "application/gpx")
+                    .header("Content-Disposition", "attachment;filename=activity.gpx")
+                    .header("Content-Length", bytes.length)
+                    .encoding("UTF-8")
+                    .build();
         } else {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }
     }
 
-    @CrossOrigin(origins = "https://gabriel.landais.org")
-    @PostMapping("/gpxinfo")
-    public GPXInfo gpxinfo(@RequestParam("file") MultipartFile file) throws Exception {
+    @Path("/gpxinfo")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    public GPXInfo gpxinfo(InputStream stream) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+        List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxElevationFixer.fixElevation(gpxPath);
@@ -91,45 +97,52 @@ public class GpxController {
         }
     }
 
-    @CrossOrigin(origins = "https://gabriel.landais.org")
-    @PostMapping("/geojson")
-    public void geojson(@RequestParam("file") MultipartFile file, HttpServletResponse response) throws Exception {
+    @Path("/geojson")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    public Response geojson(InputStream stream) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(file.getInputStream());
+        List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxPathEnhancer.virtualize(gpxPath);
             GPXFilter.filterPointsDouglasPeucker(gpxPath);
-            try (Writer w = new OutputStreamWriter(response.getOutputStream()); BufferedWriter bw = new BufferedWriter(w)) {
-                bw.write("{");
-                bw.newLine();
-                bw.write("  \"type\": \"LineString\",");
-                bw.newLine();
-                bw.write("  \"coordinates\": [");
-                bw.newLine();
-                for (int i = 0;
-                     i < gpxPath.getPoints()
-                             .size();
-                     i++) {
-                    Point point = gpxPath.getPoints()
-                            .get(i);
-                    bw.write("    [");
-                    bw.write(Float.toString((float) point.getLonDeg()));
-                    bw.write(", ");
-                    bw.write(Float.toString((float) point.getLatDeg()));
-                    bw.write("]");
-                    if (i != gpxPath.getPoints()
-                            .size() - 1) {
-                        bw.write(",");
-                    }
-                    bw.newLine();
+            StringBuilder bw = new StringBuilder();
+            bw.append("{");
+            bw.append("\n");
+            bw.append("  \"type\": \"LineString\",");
+            bw.append("\n");
+            bw.append("  \"coordinates\": [");
+            bw.append("\n");
+            for (int i = 0;
+                 i < gpxPath.getPoints()
+                         .size();
+                 i++) {
+                Point point = gpxPath.getPoints()
+                        .get(i);
+                bw.append("    [");
+                bw.append((float) point.getLonDeg());
+                bw.append(", ");
+                bw.append((float) point.getLatDeg());
+                bw.append("]");
+                if (i != gpxPath.getPoints()
+                        .size() - 1) {
+                    bw.append(",");
                 }
-                bw.write("	]");
-                bw.newLine();
-                bw.write("}");
-                bw.newLine();
+                bw.append("\n");
             }
+            bw.append("	]");
+            bw.append("\n");
+            bw.append("}");
+            bw.append("\n");
 
+            byte[] bytes = bw.toString().getBytes(StandardCharsets.UTF_8);
+
+            return Response.ok(bytes, "application/geojson")
+                    .header("Content-Disposition", "attachment;filename=activity.json")
+                    .header("Content-Length", bytes.length)
+                    .encoding("UTF-8")
+                    .build();
         } else {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }

@@ -16,37 +16,32 @@ import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
 
 @Slf4j
-@Component
 @CommandLine.Command(name = "guesser", mixinStandardHelpOptions = true)
 public class GuesserCommand implements Runnable {
 
-    @Autowired
+    @Inject
     protected GPXParser gpxParser;
 
-    @Autowired
+    @Inject
     protected ConstantsGuesser constantsGuesser;
 
-    @Autowired
+    @Inject
     protected PowerComputer powerComputer;
 
-    @Autowired
+    @Inject
     protected GPXFileWriter gpxFileWriter;
 
-    @Autowired
-    protected GPXElevationFixer gpxElevationFixer;
-
-    @Autowired
+    @Inject
     protected MaxSpeedComputer maxSpeedComputer;
 
-    @Autowired
+    @Inject
     protected CSVFileWriter csvFileWriter;
 
     @CommandLine.Mixin

@@ -5,30 +5,32 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.imageio.ImageIO;
+import javax.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Service
+@Singleton
 @Slf4j
 public class TileMapProducer {
 
-    protected CloseableHttpClient httpClient;
+    public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36";
+    protected HttpClient httpClient;
 
-    @Value("${gpx.data.cache:cache}")
-    private File cacheFolder = new File("cache");
+    @ConfigProperty(name = "gpx.data.cache", defaultValue = "cache")
+    protected File cacheFolder = new File("cache");
 
     protected static final String SEPARATOR = File.separator;
 
@@ -36,9 +38,7 @@ public class TileMapProducer {
 
     public TileMapProducer() {
         super();
-        httpClient = HttpClientBuilder.create().setUserAgent(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36")
-                .build();
+        httpClient = HttpClient.newBuilder().build();
     }
 
     public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, Integer width, Integer height)
@@ -113,12 +113,11 @@ public class TileMapProducer {
         tile.getParentFile().mkdirs();
         log.info("Downloading {}", url);
         try {
-            try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url));
-                 OutputStream outputStream = new FileOutputStream(tile);) {
-                InputStream inputStream = response.getEntity().getContent();
-                IOUtils.copy(inputStream, outputStream);
-            }
-        } catch (FileNotFoundException e) {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                    .setHeader("User-Agent", USER_AGENT)
+                    .build();
+            httpClient.send(request, HttpResponse.BodyHandlers.ofFile(tile.toPath())).body();
+        } catch (FileNotFoundException | InterruptedException e) {
             FileUtils.touch(tile);
         }
     }

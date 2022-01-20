@@ -9,9 +9,10 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.wind.Wind;
-import org.springframework.stereotype.Service;
 
-@Service
+import javax.inject.Singleton;
+
+@Singleton
 public class AeroPowerProvider implements PowerProvider {
 
     public static final Formul FORMUL_SIMPLE = new Formul("-cx*POWER(speed,3)", Unit.WATTS,
