@@ -2,8 +2,8 @@
 *.project
 *.settings
 *.classpath
-/gpxtools-cli/cache/*
-/gpxtools-api/cache/*
+**/cache
+**/output
 *.iml
 /.idea
 **/cache
