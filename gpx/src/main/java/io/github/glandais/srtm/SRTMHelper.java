@@ -1,7 +1,6 @@
 package io.github.glandais.srtm;
 
-import com.graphhopper.reader.dem.ElevationProvider;
-import com.graphhopper.reader.dem.SkadiProvider;
+import com.graphhopper.reader.dem.*;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,6 +22,10 @@ public class SRTMHelper {
     @PostConstruct
     public void init() {
         this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath());
+//        this.elevationProvider = new MultiSourceElevationProvider(
+//                new CGIARProvider(new File(cacheFolder, "cgiar").getAbsolutePath()),
+//                new GMTEDProvider(new File(cacheFolder, "gtemd").getAbsolutePath())
+//        );
     }
 
     public synchronized double getElevationRad(double lon, double lat) {
