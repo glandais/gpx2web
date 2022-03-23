@@ -46,7 +46,7 @@ public class FitFileWriter {
         }
 
         eventMesg.setEvent(Event.TIMER);
-        eventMesg.setEventType(EventType.STOP_DISABLE_ALL);
+        eventMesg.setEventType(EventType.STOP_ALL);
         eventMesg.setEventGroup((short) 0);
         eventMesg.setTimestamp(new DateTime(endDate));
         encode.write(eventMesg);
