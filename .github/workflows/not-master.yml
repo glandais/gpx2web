@@ -3,7 +3,8 @@ name: not master
 on:
   push:
     branches-ignore:
-      - master
+      - "master"
+      - "spring"
 
 jobs:
   build:
