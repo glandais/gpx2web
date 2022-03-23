@@ -12,7 +12,7 @@
     <artifactId>gpx-xlsx</artifactId>
 
     <properties>
-        <poi-ooxml.version>5.2.0</poi-ooxml.version>
+        <poi-ooxml.version>5.2.2</poi-ooxml.version>
     </properties>
 
     <dependencies>
