@@ -6,7 +6,7 @@
     <parent>
         <artifactId>cycling-tools</artifactId>
         <groupId>io.github.glandais.gpx2web</groupId>
-        <version>1.0.19-SNAPSHOT</version>
+        <version>1.0.19</version>
     </parent>
 
     <artifactId>gpxtools-cli</artifactId>
@@ -15,12 +15,12 @@
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
-            <version>1.0.19-SNAPSHOT</version>
+            <version>1.0.19</version>
         </dependency>
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>virtual-cyclist</artifactId>
-            <version>1.0.19-SNAPSHOT</version>
+            <version>1.0.19</version>
         </dependency>
 
         <dependency>
