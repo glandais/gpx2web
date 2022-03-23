@@ -26,13 +26,17 @@ public class GPXElevationFixer {
     }
 
     public void fixElevation(GPXPath path, boolean interpolate) {
+        fixElevation(path, interpolate, 150);
+    }
+
+    public void fixElevation(GPXPath path, boolean interpolate, double buffer) {
         log.info("Fixing elevation for {}", path.getName());
 
         if (interpolate) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
         setEleOnPath(path, interpolate);
-        smoothService.smoothEle(path, 300);
+        smoothService.smoothEle(path, buffer);
         if (interpolate) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
