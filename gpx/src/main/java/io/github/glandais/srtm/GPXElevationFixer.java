@@ -63,7 +63,7 @@ public class GPXElevationFixer {
     private void setEleOnPathInterpolate(GPXPath path) {
         List<Point> points = path.getPoints();
         List<Point> newPoints = new ArrayList<>();
-        for (int j = 1; j < points.size() - 1; j++) {
+        for (int j = 1; j < points.size(); j++) {
             Point p0 = points.get(j - 1);
             Point p1 = points.get(j);
             List<Point> subPoints = srtmHelper.getPointsBetween(p0, p1);
