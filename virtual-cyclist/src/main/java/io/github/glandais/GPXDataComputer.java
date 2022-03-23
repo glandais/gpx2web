@@ -33,8 +33,12 @@ public class GPXDataComputer {
 
     private final MaxSpeedComputer maxSpeedComputer;
 
-    public boolean isCrossing(GPXPath path) {
+    public boolean isCrossing(GPXPath orig) {
 
+        GPXPath path = new GPXPath();
+        for (Point point : orig.getPoints()) {
+            path.addPoint(point);
+        }
         // 50m
         GPXFilter.filterPointsDouglasPeucker(path, 50);
         if (path.getPoints()
