@@ -135,17 +135,17 @@ public class GPXParser {
                 name = baseName + " " + i;
             }
             i++;
-        } while (isNewName(name, paths));
+        } while (isNameUsed(name, paths));
         return name;
     }
 
-    private boolean isNewName(final String name, final List<GPXPath> paths) {
+    private boolean isNameUsed(final String name, final List<GPXPath> paths) {
         for (GPXPath path : paths) {
             if (name.equals(path.getName())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private void processPoint(Element element, List<GPXPath> paths) {
