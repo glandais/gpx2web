@@ -1,26 +1,25 @@
 package io.github.glandais.srtm;
 
-import com.graphhopper.reader.dem.*;
+import com.graphhopper.reader.dem.ElevationProvider;
+import com.graphhopper.reader.dem.SkadiProvider;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.ValueKind;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import io.github.glandais.util.CacheFolderProvider;
+import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 @Singleton
 public class SRTMHelper {
 
-    private ElevationProvider elevationProvider;
+    private final ElevationProvider elevationProvider;
 
-    @ConfigProperty(name = "gpx.data.cache", defaultValue = "cache")
-    protected File cacheFolder = new File("cache");
-
-    @PostConstruct
-    public void init() {
+    public SRTMHelper(final CacheFolderProvider cacheFolderProvider) {
+        File cacheFolder = cacheFolderProvider.getCacheFolder();
         this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath());
 //        this.elevationProvider = new MultiSourceElevationProvider(
 //                new CGIARProvider(new File(cacheFolder, "cgiar").getAbsolutePath()),

@@ -3,10 +3,12 @@ package io.github.glandais.virtual;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.util.Constants;
 import io.github.glandais.util.Vector;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.util.List;
 
+@Service
 @Singleton
 public class MaxSpeedComputer {
 

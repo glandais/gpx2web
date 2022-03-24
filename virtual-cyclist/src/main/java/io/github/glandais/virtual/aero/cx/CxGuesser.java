@@ -5,27 +5,22 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.gpx.storage.ValueKind;
-import io.github.glandais.virtual.Course;
-import io.github.glandais.virtual.Cyclist;
-import io.github.glandais.virtual.CyclistStatus;
-import io.github.glandais.virtual.PowerProvider;
+import io.github.glandais.virtual.*;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 
+@RequiredArgsConstructor
+@Service
 @Singleton
 public class CxGuesser {
 
-    private final Instance<PowerProvider> providers;
-
-    public CxGuesser(Instance<PowerProvider> providers) {
-        this.providers = providers;
-    }
+    private final PowerProviderList providers;
 
     public void guess(GPXPath path, Cyclist cyclist, WindProvider windProvider) {
         Course course = new Course(path, Instant.now(), cyclist, new PowerProviderFromData(), windProvider, null);
@@ -49,7 +44,7 @@ public class CxGuesser {
                 // no acceleration, no energy left
                 // 0 = aero + (sum other powers) + power
                 double aero = -power;
-                for (PowerProvider powerProvider : providers) {
+                for (PowerProvider powerProvider : providers.getPowerProviders()) {
                     String id = powerProvider.getId();
                     if (!id.equals("aero")) {
                         double powerW = powerProvider.getPowerW(course, p, status);

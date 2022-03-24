@@ -9,9 +9,11 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.wind.Wind;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 
+@Service
 @Singleton
 public class AeroPowerProvider implements PowerProvider {
 

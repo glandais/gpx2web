@@ -7,14 +7,16 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.SmoothService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
+@Service
 @Singleton
 @Slf4j
-@RequiredArgsConstructor
 public class GPXElevationFixer {
 
     private final SRTMHelper srtmHelper;

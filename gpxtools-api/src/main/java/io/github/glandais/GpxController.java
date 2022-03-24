@@ -7,7 +7,6 @@ import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -57,7 +56,7 @@ public class GpxController {
         List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
-            if (StringUtils.isNotEmpty(name)) {
+            if (name != null && !name.isEmpty()) {
                 gpxPath.setName(name);
             }
             gpxPathEnhancer.virtualize(gpxPath);

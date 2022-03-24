@@ -10,6 +10,7 @@ import io.github.glandais.gpx.storage.unit.StorageUnit;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Service
 @Singleton
 public class XLSXFileWriter extends TabularFileWriter {
 

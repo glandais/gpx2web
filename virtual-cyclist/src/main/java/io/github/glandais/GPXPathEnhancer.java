@@ -11,12 +11,14 @@ import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.time.Instant;
 
-@Singleton
 @RequiredArgsConstructor
+@Service
+@Singleton
 public class GPXPathEnhancer {
 
     private final GPXElevationFixer gpxElevationFixer;

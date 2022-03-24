@@ -2,6 +2,7 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.util.Map;
  *
  * @author Nicolas Guillaumin
  */
+@Service
 @Singleton
 public class GPXFileWriter {
 

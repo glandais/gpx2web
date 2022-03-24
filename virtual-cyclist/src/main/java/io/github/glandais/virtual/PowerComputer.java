@@ -6,21 +6,21 @@ import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.gpx.storage.ValueKey;
 import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.util.Constants;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import javax.enterprise.inject.Instance;
 import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
+@Service
 @Singleton
 @Slf4j
 public class PowerComputer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PowerComputer.class);
 
     // m.s-2, minimal speed = 2km/h
     private static final double MINIMAL_SPEED = 2.0 / 3.6;
@@ -29,12 +29,7 @@ public class PowerComputer {
     // s
     private static final double DT = 1.0 / FREQ;
 
-    private final Instance<PowerProvider> providers;
-
-    public PowerComputer(Instance<PowerProvider> providers) {
-        super();
-        this.providers = providers;
-    }
+    private final PowerProviderList providers;
 
     public void computeTrack(Course course) {
 
@@ -75,7 +70,7 @@ public class PowerComputer {
 
         double p_sum = 0;
         List<String> components = new ArrayList<>();
-        for (PowerProvider provider : providers) {
+        for (PowerProvider provider : providers.getPowerProviders()) {
             double w = provider.getPowerW(course, current, status);
             if (Constants.VERIFIED) {
                 current.putDebug("p_" + provider.getId() + "_verified", w, Unit.WATTS);

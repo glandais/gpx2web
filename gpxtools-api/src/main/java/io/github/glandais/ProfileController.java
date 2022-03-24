@@ -1,14 +1,13 @@
 package io.github.glandais;
 
 import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.io.GPXCharter;
 import io.github.glandais.io.GPXParser;
 import io.github.glandais.srtm.GPXElevationFixer;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,6 +16,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
+@RequiredArgsConstructor
 //@Path("/profile")
 public class ProfileController {
 
@@ -24,14 +24,7 @@ public class ProfileController {
 
     private final GPXElevationFixer gpxElevationFixer;
 
-    private final GPXCharter gpxCharter;
-
-    public ProfileController(final GPXParser gpxParser, final GPXElevationFixer gpxElevationFixer, final GPXCharter gpxCharter) {
-
-        this.gpxParser = gpxParser;
-        this.gpxElevationFixer = gpxElevationFixer;
-        this.gpxCharter = gpxCharter;
-    }
+//    private final GPXCharter gpxCharter;
 
     @POST
     @Consumes(MediaType.WILDCARD)
@@ -44,7 +37,7 @@ public class ProfileController {
             gpxElevationFixer.fixElevation(gpxPath);
 
             File tmp = File.createTempFile("chart", "tmp");
-            gpxCharter.createChartWeb(gpxPath, tmp, width, height);
+//            gpxCharter.createChartWeb(gpxPath, tmp, width, height);
             byte[] bytes = FileUtils.readFileToByteArray(tmp);
             Files.delete(tmp.toPath());
 

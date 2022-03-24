@@ -4,6 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.gpx.storage.unit.StorageUnit;
 import lombok.SneakyThrows;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+@Service
 @Singleton
 public class CSVFileWriter extends TabularFileWriter {
 

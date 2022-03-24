@@ -9,7 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gpx-xlsx</artifactId>
+    <artifactId>gpx-chart</artifactId>
+
+    <properties>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -18,8 +21,9 @@
             <version>1.1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
         </dependency>
     </dependencies>
+
 </project>

@@ -8,9 +8,11 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 
+@Service
 @Singleton
 public class WheelBearingsPowerProvider implements PowerProvider {
 

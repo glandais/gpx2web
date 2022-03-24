@@ -2,10 +2,11 @@ package io.github.glandais.map;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import io.github.glandais.util.CacheFolderProvider;
 import io.github.glandais.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import javax.inject.Singleton;
@@ -22,23 +23,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Service
 @Singleton
 @Slf4j
 public class TileMapProducer {
 
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36";
-    protected HttpClient httpClient;
-
-    @ConfigProperty(name = "gpx.data.cache", defaultValue = "cache")
-    protected File cacheFolder = new File("cache");
+    protected final HttpClient httpClient;
 
     protected static final String SEPARATOR = File.separator;
 
     protected static final String ABC = "abc";
 
-    public TileMapProducer() {
+    protected final File cacheFolder;
+
+    public TileMapProducer(final CacheFolderProvider cacheFolderProvider) {
         super();
-        httpClient = HttpClient.newBuilder().build();
+        this.cacheFolder = cacheFolderProvider.getCacheFolder();
+        this.httpClient = HttpClient.newBuilder().build();
     }
 
     public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, Integer width, Integer height)

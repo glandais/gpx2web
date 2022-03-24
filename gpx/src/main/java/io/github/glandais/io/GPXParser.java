@@ -6,7 +6,7 @@ import io.github.glandais.gpx.PointField;
 import io.github.glandais.gpx.storage.Unit;
 import io.github.glandais.gpx.storage.ValueKind;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
+@Service
 @Singleton
 @Slf4j
 public class GPXParser {
@@ -59,7 +60,7 @@ public class GPXParser {
         Document gpxDocument = parser.apply(db, file);
         List<GPXPath> paths = new ArrayList<>();
         String metadataName = getMetadataName(gpxDocument.getDocumentElement());
-        if (StringUtils.isNotEmpty(metadataName)) {
+        if (metadataName == null || metadataName.isEmpty()) {
             metadataName = defaultName;
         }
         processElement(gpxDocument.getDocumentElement(), metadataName, paths);
@@ -90,22 +91,11 @@ public class GPXParser {
         return result;
     }
 
-    private void processElement(Element element, String metadataName, List<GPXPath> paths) throws Exception {
+    private void processElement(Element element, String metadataName, List<GPXPath> paths) {
         String tagName = element.getTagName().toLowerCase();
 
         if (tagName.equals("trk") || tagName.equals("rte")) {
-            Element nameElement = findElement(element, "name");
-            String name = "";
-            if (nameElement != null) {
-                name = nameElement.getTextContent();
-            }
-            if (StringUtils.isNotEmpty(name) && metadataName != null) {
-                if (paths.size() == 0) {
-                    name = metadataName;
-                } else {
-                    name = metadataName + " " + (paths.size() + 1);
-                }
-            }
+            String name = getPathName(element, metadataName, paths);
             log.info("Parsing {}", name);
             GPXPath currentPath = new GPXPath(name);
             paths.add(currentPath);
@@ -124,7 +114,41 @@ public class GPXParser {
         }
     }
 
-    private void processPoint(Element element, List<GPXPath> paths) throws Exception {
+    private String getPathName(final Element element, final String metadataName, final List<GPXPath> paths) {
+        Element nameElement = findElement(element, "name");
+        String baseName = "";
+        if (nameElement != null) {
+            baseName = nameElement.getTextContent();
+        }
+        if (baseName == null || baseName.isEmpty()) {
+            baseName = metadataName;
+        }
+        if (baseName == null || baseName.isEmpty()) {
+            baseName = "track";
+        }
+        int i = 0;
+        String name;
+        do {
+            if (i == 0) {
+                name = baseName;
+            } else {
+                name = baseName + " " + i;
+            }
+            i++;
+        } while (isNewName(name, paths));
+        return name;
+    }
+
+    private boolean isNewName(final String name, final List<GPXPath> paths) {
+        for (GPXPath path : paths) {
+            if (name.equals(path.getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void processPoint(Element element, List<GPXPath> paths) {
         double lon = Math.toRadians(Double.parseDouble(element.getAttribute("lon")));
         double lat = Math.toRadians(Double.parseDouble(element.getAttribute("lat")));
         Element timeElement = findElement(element, "time");
@@ -140,7 +164,7 @@ public class GPXParser {
         }
         double ele = 0;
         if (eleElement != null) {
-            ele = Double.valueOf(eleElement.getTextContent());
+            ele = Double.parseDouble(eleElement.getTextContent());
         }
         Point p = new Point();
         p.setLon(lon);
@@ -165,7 +189,7 @@ public class GPXParser {
                         PointField pointField = PointField.fromGpxTag(tagName);
                         if (pointField != null) {
                             p.put(pointField, value, Unit.DOUBLE_ANY, ValueKind.source);
-                        } else {
+//                        } else {
                             //p.putDebug(tagName, value, Unit.DOUBLE_ANY);
                         }
                     } catch (NumberFormatException e) {

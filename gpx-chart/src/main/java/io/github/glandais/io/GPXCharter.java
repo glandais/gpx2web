@@ -16,6 +16,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Singleton;
 import java.awt.*;
@@ -25,6 +26,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
+@Service
 @Singleton
 @Slf4j
 public class GPXCharter {

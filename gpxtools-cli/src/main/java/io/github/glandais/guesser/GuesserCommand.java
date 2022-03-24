@@ -10,7 +10,6 @@ import io.github.glandais.gpx.storage.ValueKind;
 import io.github.glandais.io.CSVFileWriter;
 import io.github.glandais.io.GPXFileWriter;
 import io.github.glandais.io.GPXParser;
-import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
