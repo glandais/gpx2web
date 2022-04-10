@@ -98,7 +98,7 @@ public class GPXDataComputer {
 
     public Vector getWindNew(GPXPath gpxPath, double power) {
 
-        gpxElevationFixer.fixElevation(gpxPath);
+        gpxElevationFixer.fixElevation(gpxPath, true);
         Cyclist cyclist = new Cyclist();
         Wind noWind = new Wind(0, 0);
         Course course = getCourse(gpxPath, power, cyclist, noWind, 0);

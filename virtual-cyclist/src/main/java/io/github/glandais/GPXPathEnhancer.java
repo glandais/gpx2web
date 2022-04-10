@@ -30,7 +30,7 @@ public class GPXPathEnhancer {
     private final GPXPerSecond gpxPerSecond;
 
     public void virtualize(GPXPath gpxPath) {
-        gpxElevationFixer.fixElevation(gpxPath);
+        gpxElevationFixer.fixElevation(gpxPath, true);
         Cyclist cyclist = new Cyclist();
         Course course = new Course(gpxPath, Instant.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
         maxSpeedComputer.computeMaxSpeeds(course);

@@ -86,7 +86,7 @@ public class GpxController {
         List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
-            gpxElevationFixer.fixElevation(gpxPath);
+            gpxElevationFixer.fixElevation(gpxPath, true);
             float dist = Math.round(gpxPath.getDist() / 100.0) / 10.0f;
 
             return new GPXInfo(dist, (int) Math.round(gpxPath.getTotalElevation()), (int) Math.round(gpxPath.getTotalElevationNegative()),

@@ -23,23 +23,16 @@ public class GPXElevationFixer {
 
     private final SmoothService smoothService;
 
-    public void fixElevation(GPXPath path) {
-        fixElevation(path, true);
+    public void fixElevation(GPXPath path, boolean addIntermediatePoints) {
+        fixElevation(path, addIntermediatePoints, 150);
     }
 
-    public void fixElevation(GPXPath path, boolean interpolate) {
-        fixElevation(path, interpolate, 150);
-    }
-
-    public void fixElevation(GPXPath path, boolean interpolate, double buffer) {
+    public void fixElevation(GPXPath path, boolean addIntermediatePoints, double buffer) {
         log.info("Fixing elevation for {}", path.getName());
 
-        if (interpolate) {
-            GPXFilter.filterPointsDouglasPeucker(path);
-        }
-        setEleOnPath(path, interpolate);
+        setEleOnPath(path, addIntermediatePoints);
         smoothService.smoothEle(path, buffer);
-        if (interpolate) {
+        if (addIntermediatePoints) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
 

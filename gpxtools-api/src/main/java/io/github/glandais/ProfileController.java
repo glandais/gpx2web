@@ -34,7 +34,7 @@ public class ProfileController {
         List<GPXPath> paths = gpxParser.parsePaths(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
-            gpxElevationFixer.fixElevation(gpxPath);
+            gpxElevationFixer.fixElevation(gpxPath, true);
 
             File tmp = File.createTempFile("chart", "tmp");
 //            gpxCharter.createChartWeb(gpxPath, tmp, width, height);

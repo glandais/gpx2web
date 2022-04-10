@@ -16,6 +16,11 @@ import java.util.List;
 @Singleton
 public class SRTMHelper {
 
+    public static final double GRID_ARC = 5.0;
+    public static final double MAX_LAT = 60.0;
+    public static final double MAX_LON = 180.0;
+    public static final double GRID_POINTS = 6000.0;
+
     private final ElevationProvider elevationProvider;
 
     public SRTMHelper(final CacheFolderProvider cacheFolderProvider) {
@@ -40,19 +45,19 @@ public class SRTMHelper {
     }
 
     private double latToRow(double lat) {
-        return (6001 * (60 - lat)) / 5;
+        return (GRID_POINTS * (MAX_LAT - lat)) / GRID_ARC;
     }
 
     private double lonToCol(double lon) {
-        return (6001 * (180 + lon)) / 5;
+        return (GRID_POINTS * (MAX_LON + lon)) / GRID_ARC;
     }
 
     private double rowToLat(double row) {
-        return Math.toRadians(60 - ((row * 5.0) / 6001.0));
+        return Math.toRadians(MAX_LAT - ((row * GRID_ARC) / GRID_POINTS));
     }
 
     private double colToLon(double col) {
-        return Math.toRadians(((col * 5.0) / 6001.0) - 180);
+        return Math.toRadians(((col * GRID_ARC) / GRID_POINTS) - MAX_LON);
     }
 
     public List<Point> getPointsBetween(final Point p1, Point p2) {
