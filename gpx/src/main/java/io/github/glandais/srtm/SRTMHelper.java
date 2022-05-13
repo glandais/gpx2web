@@ -25,7 +25,8 @@ public class SRTMHelper {
 
     public SRTMHelper(final CacheFolderProvider cacheFolderProvider) {
         File cacheFolder = cacheFolderProvider.getCacheFolder();
-        this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath());
+        this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath())
+                .setInterpolate(true);
 //        this.elevationProvider = new MultiSourceElevationProvider(
 //                new CGIARProvider(new File(cacheFolder, "cgiar").getAbsolutePath()),
 //                new GMTEDProvider(new File(cacheFolder, "gtemd").getAbsolutePath())
