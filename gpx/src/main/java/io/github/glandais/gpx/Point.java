@@ -29,6 +29,12 @@ public class Point {
         return point;
     }
 
+    public static Point interpolate(Point p, Point pp1, double coef) {
+        Point point = new Point();
+        point.data = Values.interpolate(p.data, pp1.data, coef);
+        return point;
+    }
+
     public Point() {
         super();
         setTime(Instant.EPOCH, ValueKind.computed);
