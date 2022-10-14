@@ -12,11 +12,6 @@ import java.io.File;
 @Singleton
 public class SRTMHelper {
 
-    public static final double GRID_ARC = 5.0;
-    public static final double MAX_LAT = 60.0;
-    public static final double MAX_LON = 180.0;
-    public static final double GRID_POINTS = 6000.0;
-
     private final ElevationProvider elevationProvider;
 
     public SRTMHelper(final CacheFolderProvider cacheFolderProvider) {
