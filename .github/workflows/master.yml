@@ -16,6 +16,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
+          cache: 'maven'
       - name: Modify versions
         run: ./mvnw -B versions:set -DremoveSnapshot versions:commit
       - name: Get version
