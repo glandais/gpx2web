@@ -5,7 +5,7 @@ import io.github.glandais.util.Constants;
 import io.github.glandais.util.Vector;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.List;
 
 @Service

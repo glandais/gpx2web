@@ -8,7 +8,7 @@ import io.github.glandais.virtual.rolling.WheelBearingsPowerProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.List;
 
 @RequiredArgsConstructor

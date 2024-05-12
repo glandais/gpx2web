@@ -18,7 +18,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;

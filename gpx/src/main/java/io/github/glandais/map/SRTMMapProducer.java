@@ -6,7 +6,7 @@ import io.github.glandais.srtm.SRTMHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

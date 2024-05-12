@@ -4,7 +4,7 @@ import io.github.glandais.gpx.storage.ValueKind;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 

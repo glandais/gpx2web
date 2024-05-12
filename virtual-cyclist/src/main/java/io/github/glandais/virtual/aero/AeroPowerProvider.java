@@ -11,7 +11,7 @@ import io.github.glandais.virtual.PowerProvider;
 import io.github.glandais.virtual.aero.wind.Wind;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Service
 @Singleton

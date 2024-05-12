@@ -5,7 +5,7 @@ import com.graphhopper.reader.dem.SkadiProvider;
 import io.github.glandais.util.CacheFolderProvider;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.File;
 
 @Service

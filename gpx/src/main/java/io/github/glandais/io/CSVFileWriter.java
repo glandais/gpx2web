@@ -6,7 +6,7 @@ import io.github.glandais.gpx.storage.unit.StorageUnit;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

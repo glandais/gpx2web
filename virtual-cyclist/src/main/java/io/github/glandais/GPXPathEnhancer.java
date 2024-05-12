@@ -13,7 +13,7 @@ import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.time.Instant;
 
 @RequiredArgsConstructor

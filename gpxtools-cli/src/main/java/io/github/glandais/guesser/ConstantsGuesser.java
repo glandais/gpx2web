@@ -13,7 +13,7 @@ import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.function.Predicate;

@@ -11,7 +11,7 @@ import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 

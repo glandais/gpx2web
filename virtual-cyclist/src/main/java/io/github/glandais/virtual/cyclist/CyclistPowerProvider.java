@@ -7,7 +7,7 @@ import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Service
 @Singleton

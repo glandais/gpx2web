@@ -4,7 +4,7 @@ import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

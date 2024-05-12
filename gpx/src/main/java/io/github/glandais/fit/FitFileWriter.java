@@ -6,7 +6,7 @@ import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.storage.convert.SemiCirclesUnit;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
