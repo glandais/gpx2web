@@ -25,11 +25,11 @@ public class SRTMMapProducer {
     }
 
     public MapImage createSRTMMap(GPXPath path, int maxsize, double margin) throws IOException {
-        log.info("start createSRTMMap");
+        log.debug("start createSRTMMap");
         MapImage mapImage = new MapImage(path, margin, maxsize);
         fillWithEle(mapImage);
         addPoints(mapImage, path);
-        log.info("end createSRTMMap");
+        log.debug("end createSRTMMap");
         return mapImage;
     }
 

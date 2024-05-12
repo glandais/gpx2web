@@ -14,7 +14,7 @@ import java.util.List;
 public class GPXPerSecond {
 
     public void computeOnePointPerSecond(GPXPath path) {
-        log.info("A point per second for {}", path.getName());
+        log.debug("A point per second for {}", path.getName());
         List<Point> points = path.getPoints();
         List<Point> newPoints = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class GPXPerSecond {
         }
 
         path.setPoints(newPoints, ValueKind.computed);
-        log.info("Done - a point per second for {}", path.getName());
+        log.debug("Done - a point per second for {}", path.getName());
     }
 
 }

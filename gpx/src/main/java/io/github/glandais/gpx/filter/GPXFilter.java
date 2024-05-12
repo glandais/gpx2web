@@ -26,11 +26,11 @@ public class GPXFilter {
             return;
         }
 
-        log.info("Filtering {} ({})", path.getName(), points.size());
+        log.debug("Filtering {} ({})", path.getName(), points.size());
 
         List<Point> newPoints = simplifyDouglasPeucker(points, tolerance);
         path.setPoints(newPoints, ValueKind.computed);
-        log.info("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
+        log.debug("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
     }
 
     /**

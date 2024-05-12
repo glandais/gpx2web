@@ -22,7 +22,7 @@ public class GPXElevationFixer {
     private final GPXPerDistance gpxPerDistance;
 
     public void fixElevation(GPXPath path, boolean addIntermediatePoints) {
-        log.info("Fixing elevation for {}", path.getName());
+        log.debug("Fixing elevation for {}", path.getName());
 
         if (addIntermediatePoints) {
             gpxPerDistance.computeOnePointPerDistance(path, 10);
@@ -32,17 +32,17 @@ public class GPXElevationFixer {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
 
-        log.info("Fixed elevation for {}", path.getName());
+        log.debug("Fixed elevation for {}", path.getName());
     }
 
     private void setEleOnPath(GPXPath path) {
-        log.info("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
+        log.debug("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
 
         for (Point point : path.getPoints()) {
             point.setEle(srtmHelper.getElevationRad(point.getLon(), point.getLat()), ValueKind.srtm);
         }
 
-        log.info("Set elevations for {} ({})", path.getName(), path.getPoints().size());
+        log.debug("Set elevations for {} ({})", path.getName(), path.getPoints().size());
     }
 
 }

@@ -96,7 +96,7 @@ public class GPXParser {
 
         if (tagName.equals("trk") || tagName.equals("rte")) {
             String name = getPathName(element, metadataName, paths);
-            log.info("Parsing {}", name);
+            log.debug("Parsing {}", name);
             GPXPath currentPath = new GPXPath(name);
             paths.add(currentPath);
         }

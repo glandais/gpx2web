@@ -60,7 +60,6 @@ public class GpxController {
                 gpxPath.setName(name);
             }
             gpxPathEnhancer.virtualize(gpxPath);
-            GPXFilter.filterPointsDouglasPeucker(gpxPath);
 
             File tmp = File.createTempFile("gpx", "tmp");
             gpxFileWriter.writeGpxFile(paths, tmp);
@@ -105,7 +104,6 @@ public class GpxController {
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxPathEnhancer.virtualize(gpxPath);
-            GPXFilter.filterPointsDouglasPeucker(gpxPath);
             StringBuilder bw = new StringBuilder();
             bw.append("{");
             bw.append("\n");

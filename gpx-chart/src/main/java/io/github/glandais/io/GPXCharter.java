@@ -34,7 +34,7 @@ public class GPXCharter {
     private static final DecimalFormat speedformat = new DecimalFormat("#0.0");
 
     public void createChartTime(GPXPath gpxPath, File file) {
-        log.info("start createChartTime");
+        log.debug("start createChartTime");
         DateAxis dateAxis = new DateAxis("");
 
         DateTickUnit unit = null;
@@ -64,12 +64,12 @@ public class GPXCharter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("end createChartTime");
+        log.debug("end createChartTime");
 
     }
 
     public void createChartWeb(GPXPath gpxPath, File file, int width, int height) {
-        log.info("start createChartWeb");
+        log.debug("start createChartWeb");
         JFreeChart chart = ChartFactory.createXYAreaChart("", "", "", getDataSet(gpxPath), PlotOrientation.VERTICAL,
                 false, false, false);
         chart.getXYPlot().getDomainAxis().setVisible(true);
@@ -90,11 +90,11 @@ public class GPXCharter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("end createChartWeb");
+        log.debug("end createChartWeb");
     }
 
     public void createChartSmall(GPXPath gpxPath, File file) {
-        log.info("start createChartSmall");
+        log.debug("start createChartSmall");
         JFreeChart chart = ChartFactory.createXYLineChart("", "d", "ele", getDataSet(gpxPath), PlotOrientation.VERTICAL,
                 false, false, false);
 
@@ -110,11 +110,11 @@ public class GPXCharter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("end createChartSmall");
+        log.debug("end createChartSmall");
     }
 
     public void createChartBig(GPXPath gpxPath, File file) {
-        log.info("start createChartBig");
+        log.debug("start createChartBig");
         JFreeChart chart = ChartFactory.createXYLineChart("", "d", "ele", getDataSet(gpxPath), PlotOrientation.VERTICAL,
                 false, false, false);
         XYPlot plot = (XYPlot) chart.getPlot();
@@ -125,7 +125,7 @@ public class GPXCharter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("end createChartBig");
+        log.debug("end createChartBig");
     }
 
     private DefaultXYDataset getDataSet(GPXPath gpxPath) {

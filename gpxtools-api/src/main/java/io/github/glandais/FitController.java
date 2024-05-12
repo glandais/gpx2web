@@ -47,7 +47,6 @@ public class FitController {
             }
             gpxPathEnhancer.virtualize(gpxPath);
 
-            GPXFilter.filterPointsDouglasPeucker(gpxPath);
             File tmp = File.createTempFile("fit", "tmp");
             fitFileWriter.writeFitFile(gpxPath, tmp);
             byte[] bytes = FileUtils.readFileToByteArray(tmp);

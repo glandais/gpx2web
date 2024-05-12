@@ -1,9 +1,6 @@
 package io.github.glandais.gpx;
 
-import io.github.glandais.gpx.storage.Unit;
-import io.github.glandais.gpx.storage.Value;
-import io.github.glandais.gpx.storage.ValueKind;
-import io.github.glandais.gpx.storage.Values;
+import io.github.glandais.gpx.storage.*;
 import io.github.glandais.gpx.storage.unit.StorageUnit;
 import io.github.glandais.util.Constants;
 import io.github.glandais.util.MagicPower2MapSpace;
@@ -24,23 +21,28 @@ public class Point {
 
     public static Point interpolate(Point p, Point pp1, double coef, long epochMillis) {
         Point point = new Point();
-        point.data = Values.interpolate(p.data, pp1.data, coef);
+        point.data = p.data.interpolate(pp1.data, coef);
         point.setTime(Instant.ofEpochMilli(epochMillis), ValueKind.computed);
         return point;
     }
 
     public static Point interpolate(Point p, Point pp1, double coef) {
         Point point = new Point();
-        point.data = Values.interpolate(p.data, pp1.data, coef);
+        point.data = p.data.interpolate(pp1.data, coef);
         return point;
     }
 
+    private Values data;
+
     public Point() {
         super();
+        if (Constants.DEBUG) {
+            this.data = new ValuesWithKind();
+        } else {
+            this.data = new ValuesSimple();
+        }
         setTime(Instant.EPOCH, ValueKind.computed);
     }
-
-    private Values data = new Values();
 
     public Values getCsvData() {
         return data;
@@ -69,7 +71,9 @@ public class Point {
     }
 
     public <J> void putDebug(String key, J value, Unit<J> unit) {
-        data.put(key, value, unit, ValueKind.debug);
+        if (Constants.DEBUG) {
+            data.put(key, value, unit, ValueKind.debug);
+        }
     }
 
     public void setLat(Double value) {

@@ -3,27 +3,25 @@ package io.github.glandais.gpx.storage;
 import io.github.glandais.gpx.storage.convert.ConvertableUnit;
 import io.github.glandais.gpx.storage.unit.StorageUnit;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Values {
+public interface Values {
+    <J> void put(String key, J value, Unit<J> unit, ValueKind kind);
 
-    private Map<String, Map<ValueKind, Value<?, ?>>> map = new LinkedHashMap<>();
+    Value<?, ?> getCurrent(String key);
 
-    @Override
-    public String toString() {
-        return String.valueOf(map);
-    }
+    Value<?, ?> get(String key, ValueKind kind);
 
-    public <J> void put(String key, J value, Unit<J> unit, ValueKind kind) {
-        if (kind == ValueKind.current) {
-            throw new IllegalArgumentException("current kind must not be used");
-        }
-        putInternal(key, value, unit, kind);
-    }
+    Map<ValueKind, Value<?, ?>> getAll(String key);
 
-    private <J> void putInternal(String key, J value, Unit<J> unit, ValueKind kind) {
+    Set<String> getKeySet();
+
+    <J> J get(String key, Unit<J> unit);
+
+    Values interpolate(Values to, double coef);
+
+    default <J> Value getValue(J value, Unit<J> unit, ValueKind kind) {
         Value valueObject;
         if (unit instanceof StorageUnit) {
             valueObject = new Value(value, (StorageUnit) unit, kind);
@@ -35,34 +33,10 @@ public class Values {
             }
             valueObject = new Value(j, convertableUnit.getStorageUnit(), kind);
         }
-        Map<ValueKind, Value<?, ?>> byKind = getByKind(key);
-        byKind.put(kind, valueObject);
-        byKind.put(ValueKind.current, valueObject);
+        return valueObject;
     }
 
-    public Value<?, ?> getCurrent(String key) {
-        return getByKind(key).get(ValueKind.current);
-    }
-
-    public Value<?, ?> get(String key, ValueKind kind) {
-        Map<ValueKind, Value<?, ?>> valueKindValueMap = map.get(key);
-        if (valueKindValueMap == null) {
-            return null;
-        }
-        return valueKindValueMap.get(kind);
-    }
-
-    public Map<ValueKind, Value<?, ?>> getAll(String key) {
-        return map.get(key);
-    }
-
-    public Set<String> getKeySet() {
-        return map.keySet();
-    }
-
-    public <J> J get(String key, Unit<J> unit) {
-
-        Value v = getByKind(key).get(ValueKind.current);
+    default <J> J getConvertedValue(Value v, Unit<J> unit) {
         if (v == null) {
             return null;
         }
@@ -79,39 +53,19 @@ public class Values {
         }
     }
 
-    private Map<ValueKind, Value<?, ?>> getByKind(String key) {
-        return map.computeIfAbsent(key, k -> new LinkedHashMap<>());
-    }
-
-    public static Values interpolate(Values from, Values to, double coef) {
-        Values data = new Values();
-        for (String key : from.map.keySet()) {
-
-            Map<ValueKind, Value<?, ?>> fromByKind = from.getByKind(key);
-            Map<ValueKind, Value<?, ?>> toByKind = to.getByKind(key);
-
-            for (ValueKind valueKind : ValueKind.values()) {
-                Value v = fromByKind.get(valueKind);
-                if (v != null) {
-                    Value vp1 = toByKind.get(valueKind);
-
-                    Object ov = v == null ? null : v.getValue();
-                    Object ovp1 = vp1 == null ? null : vp1.getValue();
-                    Object nv;
-                    if (ov != null && ovp1 != null) {
-                        nv = v.getUnit().interpolate(ov, ovp1, coef);
-                    } else if (ov != null) {
-                        nv = ov;
-                    } else {
-                        nv = ovp1;
-                    }
-                    if (nv != null) {
-                        data.putInternal(key, nv, v.getUnit(), valueKind);
-                    }
-                }
+    default Object interpolateValue(Value v, Value vp1, double coef) {
+        Object nv = null;
+        if (v != null) {
+            Object ov = v == null ? null : v.getValue();
+            Object ovp1 = vp1 == null ? null : vp1.getValue();
+            if (ov != null && ovp1 != null) {
+                nv = v.getUnit().interpolate(ov, ovp1, coef);
+            } else if (ov != null) {
+                nv = ov;
+            } else {
+                nv = ovp1;
             }
         }
-        return data;
+        return nv;
     }
-
 }

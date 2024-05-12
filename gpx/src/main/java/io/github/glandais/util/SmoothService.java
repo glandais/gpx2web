@@ -34,7 +34,7 @@ public class SmoothService {
     }
 
     private void smooth(GPXPath path, PointField attribute, PointField over, double dist, Unit<Double> unit) {
-        log.info("Smoothing {}", attribute);
+        log.debug("Smoothing {}", attribute);
         List<Point> points = path.getPoints();
         double[] data = new double[points.size()];
         double[] time = new double[points.size()];
@@ -52,7 +52,7 @@ public class SmoothService {
             Point p = points.get(j);
             p.put(attribute, newValue, unit, ValueKind.smoothed);
         }
-        log.info("Smoothed {}", attribute);
+        log.debug("Smoothed {}", attribute);
     }
 
 }

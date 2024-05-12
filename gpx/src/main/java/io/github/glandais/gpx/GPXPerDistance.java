@@ -14,7 +14,7 @@ import java.util.List;
 public class GPXPerDistance {
 
     public void computeOnePointPerDistance(GPXPath path, double minDist) {
-        log.info("A point per distant for {} {}", path.getName(), minDist);
+        log.debug("A point per distant for {} {}", path.getName(), minDist);
         List<Point> points = path.getPoints();
         List<Point> newPoints = new ArrayList<>();
 
@@ -35,7 +35,7 @@ public class GPXPerDistance {
         newPoints.add(points.get(points.size() - 1));
 
         path.setPoints(newPoints, ValueKind.computed);
-        log.info("Done - a point per distant for {} {}", path.getName(), minDist);
+        log.debug("Done - a point per distant for {} {}", path.getName(), minDist);
     }
 
 }

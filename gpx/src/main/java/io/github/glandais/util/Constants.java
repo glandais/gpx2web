@@ -16,4 +16,6 @@ public class Constants {
 
     public static final boolean VERIFIED = false;
 
+    public static final boolean DEBUG = false;
+
 }
