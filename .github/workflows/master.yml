@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: deploy
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -17,6 +18,9 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'maven'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
       - name: Modify versions
         run: ./mvnw -B versions:set -DremoveSnapshot versions:commit
       - name: Get version
@@ -24,12 +28,14 @@ jobs:
         run: |
           VERSION=$( ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout )
           echo "::set-output name=version::$VERSION"
+      - name: Build with Maven
+#        run: ./mvnw -B package -Pnative --file pom.xml
+        run: ./mvnw -B package --file pom.xml
       - name: Publish package
         run: ./mvnw --batch-mode deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build with Maven
-        run: ./mvnw -B package -Pnative --file pom.xml
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
       - name: push_release
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
