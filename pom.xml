@@ -10,9 +10,9 @@
 
     <distributionManagement>
         <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/glandais/gpx2web</url>
+            <id>repsy</id>
+            <name>gpx2web on Repsy</name>
+            <url>https://repo.repsy.io/mvn/glandais/gpx2web</url>
         </repository>
     </distributionManagement>
 
