@@ -84,6 +84,9 @@ public class VirtualizeCommand implements Runnable {
     @Option(names = {"--wind-direction"}, description = "Wind direction (°, clockwise, 0=N)")
     protected double windDirectionDegree = 0.0;
 
+    @Option(names = {"--start"}, description = "Start date ISO8601")
+    protected Instant startDate = ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
+
     protected WindProvider windProvider;
     protected CxProvider cxProvider;
     protected PowerProvider powerProvider;
@@ -113,7 +116,7 @@ public class VirtualizeCommand implements Runnable {
 
     protected void init() {
         starts = new Instant[1];
-        starts[0] = ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
+        starts[0] = startDate;
 
 //        System.setProperty("gpx.data.cache", cacheValue);
         windProvider = new WindProviderConstant(new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree)));
