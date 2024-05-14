@@ -2,9 +2,9 @@ package io.github.glandais.io;
 
 import io.github.glandais.gpx.GPXPath;
 import io.github.glandais.gpx.Point;
+import jakarta.inject.Singleton;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class GPXFileWriter {
      */
     public void writeTrackPoints(FileWriter fw, GPXPath gpxPath, boolean extensions) throws IOException {
         fw.write("\t" + "<trk>" + "\n");
-        fw.write("\t\t" + "<name>" + gpxPath.getName() + "</name>" + "\n");
+        fw.write("\t\t" + "<name>" + escape(gpxPath.getName()) + "</name>" + "\n");
 
         fw.write("\t\t" + "<trkseg>" + "\n");
 
@@ -109,7 +109,7 @@ public class GPXFileWriter {
                 gpxData.forEach((k, v) -> {
                     if (v != null) {
                         out.append("<").append(k).append(">");
-                        out.append(v);
+                        out.append(escape(v));
                         out.append("</").append(k).append(">");
                     }
                 });
@@ -123,4 +123,18 @@ public class GPXFileWriter {
         fw.write("\t" + "</trk>" + "\n");
     }
 
+    public static String escape(String s) {
+        StringBuilder out = new StringBuilder(Math.max(16, s.length()));
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c > 127 || c == '"' || c == '\'' || c == '<' || c == '>' || c == '&') {
+                out.append("&#");
+                out.append((int) c);
+                out.append(';');
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
+    }
 }
