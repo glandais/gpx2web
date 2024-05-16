@@ -5,11 +5,11 @@ import io.github.glandais.gpx.GPXPerDistance;
 import io.github.glandais.gpx.Point;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.util.SmoothService;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import jakarta.inject.Singleton;
 
 @RequiredArgsConstructor
 @Service
@@ -21,13 +21,20 @@ public class GPXElevationFixer {
 
     private final GPXPerDistance gpxPerDistance;
 
+    private final SmoothService smoothService;
+
     public void fixElevation(GPXPath path, boolean addIntermediatePoints) {
+        fixElevation(path, addIntermediatePoints, 150);
+    }
+
+    public void fixElevation(GPXPath path, boolean addIntermediatePoints, double buffer) {
         log.debug("Fixing elevation for {}", path.getName());
 
         if (addIntermediatePoints) {
             gpxPerDistance.computeOnePointPerDistance(path, 10);
         }
         setEleOnPath(path);
+        smoothService.smoothEle(path, buffer);
         if (addIntermediatePoints) {
             GPXFilter.filterPointsDouglasPeucker(path);
         }
