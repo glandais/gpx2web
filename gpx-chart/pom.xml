@@ -5,7 +5,7 @@
     <parent>
         <artifactId>cycling-tools</artifactId>
         <groupId>io.github.glandais.gpx2web</groupId>
-        <version>1.1.20</version>
+        <version>1.1.21-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
-            <version>1.1.20</version>
+            <version>1.1.21-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>
