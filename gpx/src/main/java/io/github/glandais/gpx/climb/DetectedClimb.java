@@ -1,8 +1,9 @@
 package io.github.glandais.gpx.climb;
 
-import java.util.List;
-
-public record Climb(
+record DetectedClimb(
+        int i,
+        int j,
+        double score,
         double startDist,
         double startEle,
         double endDist,
@@ -12,7 +13,6 @@ public record Climb(
         double positiveElevation,
         double negativeElevation,
         double grade,
-        double climbingGrade,
-        List<ClimbPart> parts
+        double climbingGrade
 ) {
 }

@@ -26,8 +26,9 @@ class ClimbDetectorTest {
         ClimbDetector climbDetector = new ClimbDetector();
 
 //        getClimbs(gpxParser, "/test.gpx", gpxElevationFixer, climbDetector);
-        getClimbs(gpxParser, "/test2.gpx", gpxElevationFixer, climbDetector);
+//        getClimbs(gpxParser, "/test2.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/test3.gpx", gpxElevationFixer, climbDetector);
+        getClimbs(gpxParser, "/ventoux.gpx", gpxElevationFixer, climbDetector);
     }
 
     void getClimbs(GPXParser gpxParser, String file, GPXElevationFixer gpxElevationFixer, ClimbDetector climbDetector) throws Exception {
