@@ -21,14 +21,23 @@ public class ClimbDetector {
                 .toList();
     }
 
-    protected List<DetectedClimb> detectClimbs(GPXPath gpxPath) {
+    List<DetectedClimb> detectClimbs(GPXPath gpxPath) {
 
         List<DetectedClimb> climbs = new ArrayList<>();
         int count = gpxPath.getPoints().size();
 
+        double minClimbElevation =
+                Math.max(
+                        10,
+                        Math.min(
+                                35,
+                                gpxPath.getTotalElevation() / 100
+                        )
+                );
+
         for (int i = 0; i < count; i++) {
             // get best climb candidate for each point
-            DetectedClimb climb = getBestClimb(gpxPath, count, i);
+            DetectedClimb climb = getBestClimb(gpxPath, count, i, minClimbElevation);
             if (climb != null) {
                 climbs.add(climb);
             }
@@ -68,9 +77,9 @@ public class ClimbDetector {
         return result;
     }
 
-    private DetectedClimb getBestClimb(GPXPath gpxPath, int count, int i) {
-        // at least 34.0 meters of difference of elevation from start to end
-        double bestScore = 34.0;
+    private DetectedClimb getBestClimb(GPXPath gpxPath, int count, int i, double minClimbElevation) {
+        // at least minClimbElevation meters of difference of elevation from start to end
+        double bestScore = minClimbElevation;
         DetectedClimb bestClimb = null;
 
         double startDist = gpxPath.getDists()[i];
@@ -118,7 +127,7 @@ public class ClimbDetector {
                 // more elevation than before
                 // not too much descent (7% in real climbing with a 5% average climb is not ok)
                 //   climb will be split in two parts
-                if (grade >= 3.0 && adele > bestScore && climbingGrade / grade < 1.2) {
+                if (grade >= 3.0 && adele >= bestScore && climbingGrade / grade < 1.2) {
                     // new best
                     bestScore = adele;
                     bestClimb = new DetectedClimb(
