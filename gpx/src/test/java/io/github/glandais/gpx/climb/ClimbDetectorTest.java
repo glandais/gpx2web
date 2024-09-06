@@ -7,6 +7,7 @@ import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.srtm.SRTMHelper;
 import io.github.glandais.util.SmoothService;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,6 +17,38 @@ class ClimbDetectorTest {
 
     @SneakyThrows
     @Test
+    @Disabled
+    void getScores() {
+        List<Double> l = List.of(100.0, 300.0, 100.0);
+        List<Double> e = List.of(1.0, 30.0, 1.0);
+
+        for (int i = 0; i < 1000; i++) {
+            double b = 1.0 + (i / 1000.0);
+            double full = getScore(0, 2, l, e, b);
+            double start = getScore(0, 1, l, e, b);
+            double middle = getScore(1, 1, l, e, b);
+            if (middle > full && middle > start) {
+                System.out.println(b + " " + full + " " + middle + " " + start);
+            }
+        }
+    }
+
+    private static double getScore(int i, int j, List<Double> l, List<Double> e, double b) {
+        double totl = 0;
+        double tote = 0;
+        for (int k = i; k <= j; k++) {
+            totl = totl + l.get(k);
+            tote = tote + e.get(k);
+        }
+        double totg = 100 * tote / totl;
+
+        double score = totl * Math.pow(totg, b);
+        return score;
+    }
+
+    @SneakyThrows
+    @Test
+    @Disabled
     void getClimbs() {
         GPXParser gpxParser = new GPXParser();
         GPXElevationFixer gpxElevationFixer = new GPXElevationFixer(
@@ -39,7 +72,7 @@ class ClimbDetectorTest {
         gpxElevationFixer.fixElevation(gpxPath, true);
 
         for (int i = 0; i < gpxPath.getPoints().size(); i++) {
-            System.out.println(i + " " + gpxPath.getDists()[i] + " " + gpxPath.getEles()[i] + " " + (100*gpxPath.getPoints().get(i).getGrade()));
+            System.out.println(i + " " + gpxPath.getDists()[i] + " " + gpxPath.getEles()[i] + " " + (100 * gpxPath.getPoints().get(i).getGrade()));
         }
 
         List<Climb> climbs = climbDetector.getClimbs(gpxPath);

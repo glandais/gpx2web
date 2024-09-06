@@ -15,7 +15,7 @@ public class ClimbDetector {
     private final ClimbPartDetector climbPartDetector = new ClimbPartDetector();
 
     public List<Climb> getClimbs(GPXPath gpxPath) {
-        return getClimbs(gpxPath, 10.0, 35.0, 100.0, 3.0, 1.3);
+        return getClimbs(gpxPath, 10.0, 35.0, 100.0, 3.0, 1.3, 1.3);
     }
 
     public List<Climb> getClimbs(GPXPath gpxPath,
@@ -23,8 +23,9 @@ public class ClimbDetector {
                                  double maxMinClimbElevation,
                                  double minClimbElevationRatio,
                                  double minGrade,
-                                 double maxDiffRealGrade) {
-        return detectClimbs(gpxPath, minMinClimbElevation, maxMinClimbElevation, minClimbElevationRatio, minGrade, maxDiffRealGrade)
+                                 double maxDiffRealGrade,
+                                 double booster) {
+        return detectClimbs(gpxPath, minMinClimbElevation, maxMinClimbElevation, minClimbElevationRatio, minGrade, maxDiffRealGrade, booster)
                 .stream()
                 .map(detectedClimb -> getClimb(gpxPath, detectedClimb))
                 .toList();
@@ -35,7 +36,8 @@ public class ClimbDetector {
                                      double maxMinClimbElevation,
                                      double minClimbElevationRatio,
                                      double minGrade,
-                                     double maxDiffRealGrade) {
+                                     double maxDiffRealGrade,
+                                     double booster) {
 
         List<DetectedClimb> climbs = new ArrayList<>();
         int count = gpxPath.getPoints().size();
@@ -51,7 +53,7 @@ public class ClimbDetector {
 
         for (int i = 0; i < count; i++) {
             // get best climb candidate for each point
-            DetectedClimb climb = getBestClimb(gpxPath, count, i, minClimbElevation, minGrade, maxDiffRealGrade);
+            DetectedClimb climb = getBestClimb(gpxPath, count, i, minClimbElevation, minGrade, maxDiffRealGrade, booster);
             if (climb != null) {
                 climbs.add(climb);
             }
@@ -91,9 +93,9 @@ public class ClimbDetector {
         return result;
     }
 
-    private DetectedClimb getBestClimb(GPXPath gpxPath, int count, int i, double minClimbElevation, double minGrade, double maxDiffRealGrade) {
+    private DetectedClimb getBestClimb(GPXPath gpxPath, int count, int i, double minClimbElevation, double minGrade, double maxDiffRealGrade, double booster) {
         // at least minClimbElevation meters of difference of elevation from start to end
-        double bestScore = minClimbElevation;
+        double bestScore = 0.0;
         DetectedClimb bestClimb = null;
 
         double startDist = gpxPath.getDists()[i];
@@ -137,17 +139,19 @@ public class ClimbDetector {
                     climbingGrade = 0.0;
                 }
 
+                double score = distance * Math.pow(grade, booster);
+
                 // average grade should be at least 3%
                 // more elevation than before
                 // not too much descent (7% in real climbing with a 5% average climb is not ok)
                 //   climb will be split in two parts
-                if (grade >= minGrade && adele >= bestScore && climbingGrade / grade <= maxDiffRealGrade) {
+                if (grade >= minGrade && adele >= minClimbElevation && score >= bestScore && climbingGrade / grade <= maxDiffRealGrade) {
                     // new best
-                    bestScore = adele;
+                    bestScore = score;
                     bestClimb = new DetectedClimb(
                             i,
                             j,
-                            adele,
+                            score,
                             startDist,
                             startEle,
                             endDist,
