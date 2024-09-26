@@ -71,6 +71,12 @@ public class GPXFileWriter {
         fw.write(XML_HEADER + "\n");
         fw.write(TAG_GPX + "\n");
 
+        if (cTrackPoints.size() == 1) {
+            fw.write("\t" + "<metadata>" + "\n");
+            fw.write("\t\t" + "<name>" + escape(cTrackPoints.get(0).getName()) + "</name>" + "\n");
+            fw.write("\t" + "</metadata>" + "\n");
+        }
+
         for (GPXPath gpxPath : cTrackPoints) {
             writeTrackPoints(fw, gpxPath, extensions);
         }
