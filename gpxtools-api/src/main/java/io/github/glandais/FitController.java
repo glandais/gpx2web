@@ -1,9 +1,8 @@
 package io.github.glandais;
 
-import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.io.write.FitFileWriter;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.io.read.GPXFileReader;
 import org.apache.commons.io.FileUtils;
 
 import jakarta.ws.rs.Consumes;
@@ -20,15 +19,15 @@ import java.util.List;
 @Path("/fit")
 public class FitController {
 
-    private final GPXParser gpxParser;
+    private final GPXFileReader gpxFileReader;
 
     private final FitFileWriter fitFileWriter;
 
     private final GPXPathEnhancer gpxPathEnhancer;
 
-    public FitController(final GPXParser gpxParser, final FitFileWriter fitFileWriter, final GPXPathEnhancer gpxPathEnhancer) {
+    public FitController(final GPXFileReader gpxFileReader, final FitFileWriter fitFileWriter, final GPXPathEnhancer gpxPathEnhancer) {
 
-        this.gpxParser = gpxParser;
+        this.gpxFileReader = gpxFileReader;
         this.fitFileWriter = fitFileWriter;
         this.gpxPathEnhancer = gpxPathEnhancer;
     }
@@ -39,7 +38,7 @@ public class FitController {
             InputStream stream,
             @QueryParam("name") String name
     ) throws Exception {
-        List<GPXPath> paths = gpxParser.parsePaths(stream);
+        List<GPXPath> paths = gpxFileReader.parseGpx(stream).paths();
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             if (name != null && !name.isEmpty()) {

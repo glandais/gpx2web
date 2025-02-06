@@ -1,10 +1,10 @@
 package io.github.glandais.virtual.grav;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.PointField;
-import io.github.glandais.gpx.storage.Unit;
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.PointField;
+import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.*;
 import io.github.glandais.virtual.aero.cx.CxProvider;

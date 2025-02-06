@@ -1,7 +1,7 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.srtm.GPXElevationFixer;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -20,18 +20,18 @@ import java.util.List;
 //@Path("/profile")
 public class ProfileController {
 
-    private final GPXParser gpxParser;
+    private final GPXFileReader gpxFileReader;
 
     private final GPXElevationFixer gpxElevationFixer;
 
 //    private final GPXCharter gpxCharter;
-
+/*
     @POST
     @Consumes(MediaType.WILDCARD)
     public Response handleFileUpload(InputStream stream,
                                      @QueryParam("width") Integer width,
                                      @QueryParam("height") Integer height) throws Exception {
-        List<GPXPath> paths = gpxParser.parsePaths(stream);
+        List<GPXPath> paths = gpxFileReader.parseGpx(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxElevationFixer.fixElevation(gpxPath, true);
@@ -49,5 +49,5 @@ public class ProfileController {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }
     }
-
+*/
 }

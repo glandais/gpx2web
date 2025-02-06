@@ -1,6 +1,6 @@
 package io.github.glandais.virtual;
 
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.util.Constants;
 import io.github.glandais.util.Vector;
 import org.springframework.stereotype.Service;

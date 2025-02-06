@@ -1,6 +1,6 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;

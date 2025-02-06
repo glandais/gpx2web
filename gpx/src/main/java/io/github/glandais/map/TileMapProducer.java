@@ -1,7 +1,7 @@
 package io.github.glandais.map;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.util.CacheFolderProvider;
 import io.github.glandais.util.Vector;
 import lombok.extern.slf4j.Slf4j;

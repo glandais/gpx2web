@@ -1,6 +1,6 @@
 package io.github.glandais.io;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import lombok.extern.slf4j.Slf4j;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;

@@ -1,13 +1,13 @@
 package io.github.glandais.export;
 
 import io.github.glandais.FilesMixin;
-import io.github.glandais.fit.FitFileWriter;
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.io.write.FitFileWriter;
+import io.github.glandais.gpx.data.GPX;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.GPXFileWriter;
-import io.github.glandais.io.GPXParser;
-import io.github.glandais.kml.KMLFileWriter;
+import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.map.MapImage;
 import io.github.glandais.map.SRTMMapProducer;
 import io.github.glandais.map.TileMapImage;
@@ -18,6 +18,7 @@ import picocli.CommandLine;
 
 import jakarta.inject.Inject;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -45,8 +46,8 @@ public class ExportCommand implements Runnable {
 //    @CommandLine.Option(names = {"--chart"}, negatable = true, description = "Chart")
 //    protected boolean chart = false;
 
-    @CommandLine.Option(names = {"--kml"}, negatable = true, description = "Output KML file")
-    protected boolean kml = false;
+//    @CommandLine.Option(names = {"--kml"}, negatable = true, description = "Output KML file")
+//    protected boolean kml = false;
 
     @CommandLine.Option(names = {"--fit"}, negatable = true, description = "Output FIT file")
     protected boolean fit = false;
@@ -55,7 +56,7 @@ public class ExportCommand implements Runnable {
     protected boolean gpx = false;
 
     @Inject
-    protected GPXParser gpxParser;
+    protected GPXFileReader gpxFileReader;
 
     @Inject
     protected SRTMMapProducer srtmImageProducer;
@@ -66,8 +67,8 @@ public class ExportCommand implements Runnable {
 //    @Inject
 //    protected GPXCharter gpxCharter;
 
-    @Inject
-    protected KMLFileWriter kmlFileWriter;
+//    @Inject
+//    protected KMLFileWriter kmlFileWriter;
 
     @Inject
     protected FitFileWriter fitFileWriter;
@@ -80,7 +81,7 @@ public class ExportCommand implements Runnable {
 
     @Override
     public void run() {
-        filesMixin.processFiles(gpxParser, this::process);
+        filesMixin.processFiles(gpxFileReader, this::process);
     }
 
     @SneakyThrows
@@ -107,10 +108,10 @@ public class ExportCommand implements Runnable {
 //            gpxCharter.createChartTime(path, new File(pathFolder, "chart-time.png"));
 //        }
 
-        if (kml) {
-            log.info("Writing KML for path {}", path.getName());
-            kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
-        }
+//        if (kml) {
+//            log.info("Writing KML for path {}", path.getName());
+//            kmlFileWriter.writeKmlFile(path, new File(pathFolder, path.getName() + ".kml"));
+//        }
 
         if (fit) {
             log.info("Writing FIT for path {}", path.getName());
@@ -119,7 +120,8 @@ public class ExportCommand implements Runnable {
 
         if (gpx) {
             log.info("Writing GPX for path {}", path.getName());
-            gpxFileWriter.writeGpxFile(List.of(path), new File(pathFolder, path.getName() + ".gpx"));
+            GPX gpx = new GPX(path.getName(), Collections.singletonList(path), List.of());
+            gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, path.getName() + ".gpx"));
         }
 
     }

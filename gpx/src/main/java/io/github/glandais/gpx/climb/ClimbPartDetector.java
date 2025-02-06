@@ -1,6 +1,6 @@
 package io.github.glandais.gpx.climb;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 
 import java.util.ArrayList;
 import java.util.List;

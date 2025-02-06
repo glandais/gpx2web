@@ -1,8 +1,8 @@
 package io.github.glandais.map;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
-import io.github.glandais.srtm.SRTMHelper;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.srtm.GpxElevationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +17,11 @@ import java.util.List;
 @Slf4j
 public class SRTMMapProducer {
 
-    private SRTMHelper srtmHelper;
+    private GpxElevationProvider gpxElevationProvider;
 
-    public SRTMMapProducer(SRTMHelper srtmHelper) {
+    public SRTMMapProducer(GpxElevationProvider gpxElevationProvider) {
         super();
-        this.srtmHelper = srtmHelper;
+        this.gpxElevationProvider = gpxElevationProvider;
     }
 
     public MapImage createSRTMMap(GPXPath path, int maxsize, double margin) throws IOException {
@@ -45,7 +45,7 @@ public class SRTMMapProducer {
             for (int j = 0; j < height; j++) {
                 double lon = mapImage.getLon(i);
                 double lat = mapImage.getLat(j);
-                double ele = srtmHelper.getElevationDeg(lon, lat);
+                double ele = gpxElevationProvider.getElevationDeg(lon, lat);
                 if (ele < minele) {
                     minele = ele;
                 }

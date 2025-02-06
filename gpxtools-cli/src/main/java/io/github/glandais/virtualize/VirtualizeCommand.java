@@ -2,12 +2,13 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPX;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.CSVFileWriter;
-import io.github.glandais.io.GPXFileWriter;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.io.write.tabular.CSVFileWriter;
+import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -30,13 +31,14 @@ import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Command(name = "virtualize", mixinStandardHelpOptions = true)
 public class VirtualizeCommand implements Runnable {
 
     @Inject
-    protected GPXParser gpxParser;
+    protected GPXFileReader gpxFileReader;
 
     @Inject
     protected GPXElevationFixer gpxElevationFixer;
@@ -111,7 +113,7 @@ public class VirtualizeCommand implements Runnable {
         cyclistMixin.initCyclist();
         init();
 
-        filesMixin.processFiles(gpxParser, this::process);
+        filesMixin.processFiles(gpxFileReader, this::process);
     }
 
     protected void init() {
@@ -147,7 +149,8 @@ public class VirtualizeCommand implements Runnable {
         GPXFilter.filterPointsDouglasPeucker(path);
 
         log.info("Writing GPX for {}", path.getName());
-        gpxFileWriter.writeGpxFile(Collections.singletonList(path), new File(pathFolder, path.getName() + ".gpx"), true);
+        GPX gpx = new GPX(path.getName(), Collections.singletonList(path), List.of());
+        gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, path.getName() + ".gpx"), true);
 
         if (csv) {
             log.info("Writing CSV for path {}", path.getName());

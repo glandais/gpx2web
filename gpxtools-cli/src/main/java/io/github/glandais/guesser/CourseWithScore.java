@@ -1,6 +1,6 @@
 package io.github.glandais.guesser;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;
 import io.github.glandais.virtual.PowerProvider;

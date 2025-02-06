@@ -1,7 +1,7 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.MagicPower2MapSpace;

@@ -1,6 +1,6 @@
 package io.github.glandais.virtual.aero.cx;
 
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.Point;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

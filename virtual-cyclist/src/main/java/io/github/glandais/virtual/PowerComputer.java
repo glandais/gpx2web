@@ -1,10 +1,10 @@
 package io.github.glandais.virtual;
 
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.storage.Formul;
-import io.github.glandais.gpx.storage.Unit;
-import io.github.glandais.gpx.storage.ValueKey;
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.Formul;
+import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

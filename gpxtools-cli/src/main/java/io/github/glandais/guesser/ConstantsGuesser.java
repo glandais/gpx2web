@@ -1,8 +1,8 @@
 package io.github.glandais.guesser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.util.SmoothService;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.Cyclist;

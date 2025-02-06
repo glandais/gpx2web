@@ -18,7 +18,7 @@
 
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.version>3.18.2</quarkus.platform.version>
@@ -71,7 +71,7 @@
         <module>virtual-cyclist</module>
         <module>gpxtools-api</module>
         <module>gpxtools-cli</module>
-        <module>gpx-xlsx</module>
+        <module>gpx-tabular</module>
         <module>gpx-chart</module>
     </modules>
     <dependencies>
@@ -141,6 +141,13 @@
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

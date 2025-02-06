@@ -1,29 +1,25 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.GPXFileWriter;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.gpx.data.GPX;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
-import org.apache.commons.io.FileUtils;
-
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
 
 @Path("/")
 public class GpxController {
 
-    private final GPXParser gpxParser;
+    private final GPXFileReader gpxFileReader;
 
     private final GPXPathEnhancer gpxPathEnhancer;
 
@@ -33,13 +29,13 @@ public class GpxController {
 
     private final GPXElevationFixer gpxElevationFixer;
 
-    public GpxController(final GPXParser gpxParser,
+    public GpxController(final GPXFileReader gpxFileReader,
                          final GPXPathEnhancer gpxPathEnhancer,
                          final GPXFileWriter gpxFileWriter,
                          final GPXDataComputer gpxDataComputer,
                          final GPXElevationFixer gpxElevationFixer) {
 
-        this.gpxParser = gpxParser;
+        this.gpxFileReader = gpxFileReader;
         this.gpxPathEnhancer = gpxPathEnhancer;
         this.gpxFileWriter = gpxFileWriter;
         this.gpxDataComputer = gpxDataComputer;
@@ -49,40 +45,35 @@ public class GpxController {
     @Path("/simplify")
     @POST
     @Consumes(MediaType.WILDCARD)
-    public Response simplify(
-            InputStream stream,
-            @QueryParam("name") String name) throws Exception {
+    public Response simplify(InputStream stream) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(stream);
-        if (paths.size() == 1) {
-            GPXPath gpxPath = paths.get(0);
-            if (name != null && !name.isEmpty()) {
-                gpxPath.setName(name);
-            }
-            gpxPathEnhancer.virtualize(gpxPath);
-
-            File tmp = File.createTempFile("gpx", "tmp");
-            gpxFileWriter.writeGpxFile(paths, tmp);
-
-            byte[] bytes = FileUtils.readFileToByteArray(tmp);
-            Files.delete(tmp.toPath());
-
-            return Response.ok(bytes, "application/gpx")
-                    .header("Content-Disposition", "attachment;filename=activity.gpx")
-                    .header("Content-Length", bytes.length)
-                    .encoding("UTF-8")
-                    .build();
-        } else {
-            throw new IllegalArgumentException("0 or more than 1 path found");
+        GPX gpx = gpxFileReader.parseGpx(stream);
+        for (GPXPath path : gpx.paths()) {
+            gpxPathEnhancer.virtualize(path);
         }
-    }
 
+        File tmp = File.createTempFile("gpx", "tmp");
+        gpxFileWriter.writeGpxFile(gpx, tmp);
+
+        byte[] bytes = FileUtils.readFileToByteArray(tmp);
+        Files.delete(tmp.toPath());
+
+        return Response.ok(bytes, "application/gpx")
+                .header("Content-Disposition", "attachment;filename=activity.gpx")
+                .header("Content-Length", bytes.length)
+                .encoding("UTF-8")
+                .build();
+    }
+/*
     @Path("/gpxinfo")
     @POST
     @Consumes(MediaType.WILDCARD)
     public GPXInfo gpxinfo(InputStream stream) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(stream);
+        GPX gpx = gpxFileReader.parseGpx(stream);
+        for (GPXPath path : gpx.paths()) {
+            gpxPathEnhancer.virtualize(path);
+        }
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxElevationFixer.fixElevation(gpxPath, true);
@@ -100,7 +91,7 @@ public class GpxController {
     @Consumes(MediaType.WILDCARD)
     public Response geojson(InputStream stream) throws Exception {
 
-        List<GPXPath> paths = gpxParser.parsePaths(stream);
+        List<GPXPath> paths = gpxFileReader.parseGpx(stream);
         if (paths.size() == 1) {
             GPXPath gpxPath = paths.get(0);
             gpxPathEnhancer.virtualize(gpxPath);
@@ -144,4 +135,6 @@ public class GpxController {
             throw new IllegalArgumentException("0 or more than 1 path found");
         }
     }
+
+ */
 }

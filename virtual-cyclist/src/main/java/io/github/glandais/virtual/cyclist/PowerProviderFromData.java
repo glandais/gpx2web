@@ -1,6 +1,6 @@
 package io.github.glandais.virtual.cyclist;
 
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;

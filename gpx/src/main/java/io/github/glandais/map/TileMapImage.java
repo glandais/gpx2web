@@ -1,6 +1,6 @@
 package io.github.glandais.map;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import lombok.Getter;
 import lombok.Setter;
 

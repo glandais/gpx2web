@@ -1,8 +1,8 @@
 package io.github.glandais.gpx.filter;
 
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 

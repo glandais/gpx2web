@@ -1,10 +1,10 @@
 package io.github.glandais.virtual.aero;
 
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.storage.Formul;
-import io.github.glandais.gpx.storage.Unit;
-import io.github.glandais.gpx.storage.ValueKey;
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.Formul;
+import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;

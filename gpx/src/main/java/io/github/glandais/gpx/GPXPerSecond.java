@@ -1,6 +1,8 @@
 package io.github.glandais.gpx;
 
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.ValueKind;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

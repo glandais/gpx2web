@@ -1,10 +1,10 @@
 package io.github.glandais.srtm;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerDistance;
-import io.github.glandais.gpx.Point;
+import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.gpx.storage.ValueKind;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.SmoothService;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class GPXElevationFixer {
 
-    private final SRTMHelper srtmHelper;
+    private final GpxElevationProvider gpxElevationProvider;
 
     private final GPXPerDistance gpxPerDistance;
 
@@ -46,7 +46,7 @@ public class GPXElevationFixer {
         log.debug("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
 
         for (Point point : path.getPoints()) {
-            point.setEle(srtmHelper.getElevationRad(point.getLon(), point.getLat()), ValueKind.srtm);
+            point.setEle(gpxElevationProvider.getElevationRad(point.getLon(), point.getLat()), ValueKind.srtm);
         }
 
         log.debug("Set elevations for {} ({})", path.getName(), path.getPoints().size());

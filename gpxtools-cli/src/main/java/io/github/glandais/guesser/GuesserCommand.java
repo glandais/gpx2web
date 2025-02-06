@@ -2,14 +2,15 @@ package io.github.glandais.guesser;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.GPXPath;
-import io.github.glandais.gpx.Point;
-import io.github.glandais.gpx.PointField;
-import io.github.glandais.gpx.storage.Unit;
-import io.github.glandais.gpx.storage.ValueKind;
-import io.github.glandais.io.CSVFileWriter;
-import io.github.glandais.io.GPXFileWriter;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.gpx.data.GPX;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.PointField;
+import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.io.write.tabular.CSVFileWriter;
+import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
@@ -19,6 +20,7 @@ import picocli.CommandLine;
 
 import jakarta.inject.Inject;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -26,7 +28,7 @@ import java.util.List;
 public class GuesserCommand implements Runnable {
 
     @Inject
-    protected GPXParser gpxParser;
+    protected GPXFileReader gpxFileReader;
 
     @Inject
     protected ConstantsGuesser constantsGuesser;
@@ -53,7 +55,7 @@ public class GuesserCommand implements Runnable {
     public void run() {
         cyclistMixin.initCyclist();
 
-        filesMixin.processFiles(gpxParser, this::guess);
+        filesMixin.processFiles(gpxFileReader, this::guess);
     }
 
 
@@ -71,8 +73,9 @@ public class GuesserCommand implements Runnable {
             double dv = p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M);
             p.put(PointField.speedDifference, dv, Unit.SPEED_S_M, ValueKind.computed);
         }
-        gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "sim.gpx"));
-        gpxFileWriter.writeGpxFile(List.of(original), new File(pathFolder, "simAll.gpx"), true);
+        GPX gpx = new GPX(original.getName(), Collections.singletonList(original), List.of());
+        gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, "sim.gpx"));
+        gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, "simAll.gpx"), true);
         csvFileWriter.writeCsvFile(original, new File(pathFolder, "sim.csv"));
     }
 

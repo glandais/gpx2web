@@ -1,10 +1,10 @@
 package io.github.glandais.gpx.climb;
 
-import io.github.glandais.gpx.GPXPath;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerDistance;
-import io.github.glandais.io.GPXParser;
+import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.srtm.SRTMHelper;
+import io.github.glandais.srtm.GpxElevationProvider;
 import io.github.glandais.util.SmoothService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
@@ -50,9 +50,9 @@ class ClimbDetectorTest {
     @Test
     @Disabled
     void getClimbs() {
-        GPXParser gpxParser = new GPXParser();
+        GPXFileReader gpxFileReader = new GPXFileReader();
         GPXElevationFixer gpxElevationFixer = new GPXElevationFixer(
-                new SRTMHelper(() -> new File("/tmp")),
+                new GpxElevationProvider(() -> new File("/tmp")),
                 new GPXPerDistance(),
                 new SmoothService()
         );
@@ -61,12 +61,12 @@ class ClimbDetectorTest {
 //        getClimbs(gpxParser, "/test.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/test2.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/test3.gpx", gpxElevationFixer, climbDetector);
-        getClimbs(gpxParser, "/ventoux.gpx", gpxElevationFixer, climbDetector);
+        getClimbs(gpxFileReader, "/ventoux.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/Etape_36.gpx", gpxElevationFixer, climbDetector);
     }
 
-    void getClimbs(GPXParser gpxParser, String file, GPXElevationFixer gpxElevationFixer, ClimbDetector climbDetector) throws Exception {
-        List<GPXPath> gpxPaths = gpxParser.parsePaths(ClimbDetectorTest.class.getResourceAsStream(file));
+    void getClimbs(GPXFileReader gpxFileReader, String file, GPXElevationFixer gpxElevationFixer, ClimbDetector climbDetector) throws Exception {
+        List<GPXPath> gpxPaths = gpxFileReader.parseGpx(ClimbDetectorTest.class.getResourceAsStream(file)).paths();
         GPXPath gpxPath = gpxPaths.get(0);
 
         gpxElevationFixer.fixElevation(gpxPath, true);
