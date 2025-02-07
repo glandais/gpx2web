@@ -5,6 +5,8 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.util.GPXDataComputer;
+import io.github.glandais.virtual.GPXPathEnhancer;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;

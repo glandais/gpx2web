@@ -1,26 +1,13 @@
-package io.github.glandais;
+package io.github.glandais.util;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.MagicPower2MapSpace;
-import io.github.glandais.util.Vector;
-import io.github.glandais.virtual.Course;
-import io.github.glandais.virtual.Cyclist;
-import io.github.glandais.virtual.MaxSpeedComputer;
-import io.github.glandais.virtual.PowerComputer;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
-import io.github.glandais.virtual.aero.wind.Wind;
-import io.github.glandais.virtual.aero.wind.WindProviderConstant;
-import io.github.glandais.virtual.cyclist.PowerProviderConstant;
-import io.github.glandais.virtual.cyclist.PowerProviderConstantWithTiring;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
-import java.time.Instant;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -28,12 +15,6 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class GPXDataComputer {
-
-    private final PowerComputer powerComputer;
-
-    private final GPXElevationFixer gpxElevationFixer;
-
-    private final MaxSpeedComputer maxSpeedComputer;
 
     public boolean isCrossing(GPXPath orig) {
 
@@ -43,11 +24,8 @@ public class GPXDataComputer {
         }
         // 50m
         GPXFilter.filterPointsDouglasPeucker(path, 50);
-        if (path.getPoints()
-                .size() > 2) {
-
-            for (int i = 0;
-                 i < path.getPoints().size() - 1; i++) {
+        if (path.getPoints().size() > 2) {
+            for (int i = 0; i < path.getPoints().size() - 1; i++) {
                 for (int j = i + 2;
                      j < path.getPoints().size() - 1; j++) {
 
@@ -96,6 +74,7 @@ public class GPXDataComputer {
         return intersects;
     }
 
+    /*
     public Vector getWindNew(GPXPath gpxPath, double power) {
 
         gpxElevationFixer.fixElevation(gpxPath, true);
@@ -141,6 +120,7 @@ public class GPXDataComputer {
         }
         return new Course(gpxPath, Instant.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant());
     }
+     */
 
     public Vector getWind(GPXPath path) {
 

@@ -1,13 +1,9 @@
-package io.github.glandais;
+package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.virtual.Course;
-import io.github.glandais.virtual.Cyclist;
-import io.github.glandais.virtual.MaxSpeedComputer;
-import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;

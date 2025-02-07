@@ -3,6 +3,7 @@ package io.github.glandais;
 import io.github.glandais.io.write.FitFileWriter;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.virtual.GPXPathEnhancer;
 import org.apache.commons.io.FileUtils;
 
 import jakarta.ws.rs.Consumes;
