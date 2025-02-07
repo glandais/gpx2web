@@ -31,6 +31,7 @@
         <lombok.version>1.18.36</lombok.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <poi-ooxml.version>5.4.0</poi-ooxml.version>
+        <fit.version>21.158.0</fit.version>
     </properties>
 
     <dependencyManagement>
@@ -41,6 +42,11 @@
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.garmin</groupId>
+                <artifactId>fit</artifactId>
+                <version>${fit.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.graphhopper</groupId>
@@ -66,7 +72,6 @@
     </dependencyManagement>
 
     <modules>
-        <module>fit</module>
         <module>gpx</module>
         <module>virtual-cyclist</module>
         <module>gpxtools-api</module>

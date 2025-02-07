@@ -3,10 +3,10 @@ package io.github.glandais.map;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.srtm.GpxElevationProvider;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

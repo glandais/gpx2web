@@ -3,9 +3,9 @@ package io.github.glandais.srtm;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.reader.dem.SkadiProvider;
 import io.github.glandais.util.CacheFolderProvider;
+import jakarta.inject.Singleton;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 
 @Service

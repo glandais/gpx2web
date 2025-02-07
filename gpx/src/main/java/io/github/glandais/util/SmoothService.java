@@ -5,10 +5,10 @@ import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.PointField;
 import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.gpx.data.values.ValueKind;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.util.List;
 
 @Service

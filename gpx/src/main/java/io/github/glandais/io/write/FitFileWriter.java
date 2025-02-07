@@ -3,10 +3,9 @@ package io.github.glandais.io.write;
 import com.garmin.fit.*;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.convert.SemiCirclesUnit;
+import jakarta.inject.Singleton;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -97,15 +96,6 @@ public class FitFileWriter {
 
         lapMesg.setMinAltitude((float) path.getMinElevation());
         lapMesg.setMaxAltitude((float) path.getMaxElevation());
-
-        lapMesg.addField(FitFieldBuilder.BOUND_MAX_LAT);
-        lapMesg.setFieldValue(27, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlat()), '\uffff');
-        lapMesg.addField(FitFieldBuilder.BOUND_MAX_LON);
-        lapMesg.setFieldValue(28, 0, SemiCirclesUnit.toSemiCircles(path.getMaxlon()), '\uffff');
-        lapMesg.addField(FitFieldBuilder.BOUND_MIN_LAT);
-        lapMesg.setFieldValue(29, 0, SemiCirclesUnit.toSemiCircles(path.getMinlat()), '\uffff');
-        lapMesg.addField(FitFieldBuilder.BOUND_MIN_LON);
-        lapMesg.setFieldValue(30, 0, SemiCirclesUnit.toSemiCircles(path.getMinlon()), '\uffff');
 
         encode.write(lapMesg);
     }

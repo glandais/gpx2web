@@ -4,12 +4,12 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.util.CacheFolderProvider;
 import io.github.glandais.util.Vector;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
-import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;

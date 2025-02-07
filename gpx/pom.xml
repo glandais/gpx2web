@@ -12,9 +12,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.glandais.gpx2web</groupId>
+            <groupId>com.garmin</groupId>
             <artifactId>fit</artifactId>
-            <version>1.1.27-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.graphhopper</groupId>

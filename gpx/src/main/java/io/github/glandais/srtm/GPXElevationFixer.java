@@ -1,10 +1,10 @@
 package io.github.glandais.srtm;
 
-import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerDistance;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.util.SmoothService;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
