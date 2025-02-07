@@ -11,11 +11,11 @@ jobs:
     environment: deploy
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 21
+          java-version: 17
           cache: 'maven'
           server-id: repsy
           server-username: MAVEN_USERNAME
