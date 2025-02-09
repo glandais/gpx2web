@@ -3,9 +3,9 @@ package io.github.glandais.virtual;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.util.Constants;
 import io.github.glandais.util.Vector;
+import jakarta.inject.Singleton;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.util.List;
 
 @Service

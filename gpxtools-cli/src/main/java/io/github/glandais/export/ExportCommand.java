@@ -1,22 +1,22 @@
 package io.github.glandais.export;
 
 import io.github.glandais.FilesMixin;
-import io.github.glandais.io.write.FitFileWriter;
+import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.io.write.FitFileWriter;
+import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.map.MapImage;
 import io.github.glandais.map.SRTMMapProducer;
 import io.github.glandais.map.TileMapImage;
 import io.github.glandais.map.TileMapProducer;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import jakarta.inject.Inject;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;

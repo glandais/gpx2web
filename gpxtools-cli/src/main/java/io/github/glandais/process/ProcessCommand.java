@@ -5,9 +5,10 @@ import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.io.write.tabular.CSVFileWriter;
-import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.write.tabular.CSVFileWriter;
+import io.github.glandais.io.write.tabular.XLSXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.util.SmoothService;
 import io.github.glandais.virtual.Course;
@@ -24,13 +25,13 @@ import io.github.glandais.virtual.aero.wind.WindProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import io.github.glandais.virtual.grav.WeightGuesser;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import jakarta.inject.Inject;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -62,8 +63,8 @@ public class ProcessCommand implements Runnable {
     @Inject
     protected CSVFileWriter csvFileWriter;
 
-//    @Inject
-//    protected XLSXFileWriter xlsxFileWriter;
+    @Inject
+    protected XLSXFileWriter xlsxFileWriter;
 
     @Inject
     protected CxGuesser cxGuesser;
@@ -80,8 +81,8 @@ public class ProcessCommand implements Runnable {
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
-//    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-//    protected boolean xlsx = false;
+    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+    protected boolean xlsx = false;
 
     @Option(names = {"--gpx-elevation"}, negatable = true, description = "Gpx has valid elevation")
     protected boolean gpxElevation = false;
@@ -181,10 +182,10 @@ public class ProcessCommand implements Runnable {
             csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
         }
 
-//        if (xlsx) {
-//            log.info("Writing XLSX for path {}", path.getName());
-//            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
-//        }
+        if (xlsx) {
+            log.info("Writing XLSX for path {}", path.getName());
+            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
+        }
 
     }
 

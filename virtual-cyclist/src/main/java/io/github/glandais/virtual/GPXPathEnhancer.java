@@ -1,16 +1,16 @@
 package io.github.glandais.virtual;
 
-import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerSecond;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.aero.cx.CxProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.time.Instant;
 
 @RequiredArgsConstructor

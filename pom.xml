@@ -75,9 +75,8 @@
         <module>gpx</module>
         <module>virtual-cyclist</module>
         <module>gpxtools-api</module>
-        <module>gpxtools-cli</module>
         <module>gpx-tabular</module>
-        <module>gpx-chart</module>
+        <module>gpxtools-cli</module>
     </modules>
     <dependencies>
         <dependency>

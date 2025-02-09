@@ -8,10 +8,10 @@ import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.virtual.*;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.cyclist.PowerProviderFromData;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 

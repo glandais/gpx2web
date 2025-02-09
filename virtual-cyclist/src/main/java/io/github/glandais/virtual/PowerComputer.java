@@ -6,11 +6,11 @@ import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.Constants;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +24,8 @@ public class PowerComputer {
 
     // m.s-2, minimal speed = 2km/h
     private static final double MINIMAL_SPEED = 2.0 / 3.6;
-    // Hz
-    private static final int FREQ = 1;
     // s
-    private static final double DT = 1.0 / FREQ;
+    private static final double DT = 1.0;
 
     private final PowerProviderList providers;
 
@@ -38,17 +36,8 @@ public class PowerComputer {
         final CyclistStatus status = new CyclistStatus();
         status.speed = MINIMAL_SPEED;
 
-        int i = 0;
-        Point nextPoint = null;
         while (status.odo < course.getGpxPath().getDist()) {
-            nextPoint = getNextPoint(course, status);
-            if (i % FREQ == 0) {
-                newPoints.add(nextPoint);
-            }
-            i++;
-        }
-        if ((i - 1) % FREQ == 0) {
-            newPoints.add(nextPoint);
+            newPoints.add(getNextPoint(course, status));
         }
 
         course.getGpxPath().setPoints(newPoints, ValueKind.computed);
@@ -86,7 +75,7 @@ public class PowerComputer {
         // p_sum = 0.5 * (mKg + (0.14 / (0.7*0.7))) * (new_speed * new_speed - speed * speed) / DT
         // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7*0.7))))
         double new_speed_squared = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + status.speed * status.speed;
-        if (new_speed_squared < 0) {
+        if (new_speed_squared < MINIMAL_SPEED * MINIMAL_SPEED) {
             status.speed = MINIMAL_SPEED;
         } else {
             status.speed = Math.sqrt(new_speed_squared);

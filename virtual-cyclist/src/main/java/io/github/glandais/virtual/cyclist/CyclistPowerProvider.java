@@ -5,9 +5,8 @@ import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.CyclistStatus;
 import io.github.glandais.virtual.PowerProvider;
-import org.springframework.stereotype.Service;
-
 import jakarta.inject.Singleton;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton

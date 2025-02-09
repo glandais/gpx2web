@@ -1,7 +1,7 @@
 package io.github.glandais.gpx.climb;
 
-import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.GPXPerDistance;
+import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.srtm.GpxElevationProvider;

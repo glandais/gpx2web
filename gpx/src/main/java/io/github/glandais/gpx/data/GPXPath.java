@@ -3,19 +3,23 @@ package io.github.glandais.gpx.data;
 import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.util.Vector;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 @Slf4j
 @NoArgsConstructor
 public class GPXPath {
 
     private GPXPathType type;
+
+    @Setter
+    private String name;
 
     // m
     private double minElevation;
@@ -33,7 +37,6 @@ public class GPXPath {
     private double maxlat;
 
     private List<Point> points = new ArrayList<>();
-    private String name;
 
     // m
     private double[] dists;

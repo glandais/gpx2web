@@ -2,13 +2,14 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
+import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.write.tabular.CSVFileWriter;
-import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.write.tabular.CSVFileWriter;
+import io.github.glandais.io.write.tabular.XLSXFileWriter;
 import io.github.glandais.srtm.GPXElevationFixer;
 import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
@@ -20,13 +21,13 @@ import io.github.glandais.virtual.aero.wind.Wind;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.aero.wind.WindProviderConstant;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import jakarta.inject.Inject;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -58,8 +59,8 @@ public class VirtualizeCommand implements Runnable {
     @Inject
     protected CSVFileWriter csvFileWriter;
 
-//    @Inject
-//    protected XLSXFileWriter xlsxFileWriter;
+    @Inject
+    protected XLSXFileWriter xlsxFileWriter;
 
     @CommandLine.Mixin
     protected FilesMixin filesMixin;
@@ -70,8 +71,8 @@ public class VirtualizeCommand implements Runnable {
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
-//    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-//    protected boolean xlsx = false;
+    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+    protected boolean xlsx = false;
 
     @Option(names = {"--cyclist-power"}, description = "Cyclist power (W)")
     protected double powerW = 240;
@@ -157,10 +158,10 @@ public class VirtualizeCommand implements Runnable {
             csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
         }
 
-//        if (xlsx) {
-//            log.info("Writing XLSX for path {}", path.getName());
-//            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
-//        }
+        if (xlsx) {
+            log.info("Writing XLSX for path {}", path.getName());
+            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
+        }
     }
 
 }

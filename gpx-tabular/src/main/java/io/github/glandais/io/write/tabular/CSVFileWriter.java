@@ -4,10 +4,10 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.values.Value;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
+import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

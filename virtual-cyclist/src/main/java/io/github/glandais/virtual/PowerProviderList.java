@@ -5,10 +5,10 @@ import io.github.glandais.virtual.cyclist.CyclistPowerProvider;
 import io.github.glandais.virtual.grav.GravPowerProvider;
 import io.github.glandais.virtual.rolling.RollingResistancePowerProvider;
 import io.github.glandais.virtual.rolling.WheelBearingsPowerProvider;
+import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.util.List;
 
 @RequiredArgsConstructor

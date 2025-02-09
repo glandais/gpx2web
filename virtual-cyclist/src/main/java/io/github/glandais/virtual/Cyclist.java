@@ -11,10 +11,6 @@ public class Cyclist {
 
     private final double mKg;
 
-    private final double maxAngleDeg;
-
-    private final double maxSpeedKmH;
-
     private final double maxBrakeG;
 
     private final double crr;
@@ -31,8 +27,6 @@ public class Cyclist {
     public Cyclist(double mKg, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG, double crr) {
 
         this.mKg = mKg;
-        this.maxAngleDeg = maxAngleDeg;
-        this.maxSpeedKmH = maxSpeedKmH;
         this.maxBrakeG = maxBrakeG;
         this.crr = crr;
         this.tanMaxAngle = Math.tan(maxAngleDeg * (Math.PI / 180.0));

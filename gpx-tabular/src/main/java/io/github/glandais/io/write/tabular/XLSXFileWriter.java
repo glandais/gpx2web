@@ -7,12 +7,12 @@ import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.unit.HumanUnit;
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
+import jakarta.inject.Singleton;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
