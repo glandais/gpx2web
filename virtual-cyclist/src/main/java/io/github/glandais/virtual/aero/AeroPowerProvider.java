@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class AeroPowerProvider implements PowerProvider {
 
-    public static final Formul FORMUL_SIMPLE = new Formul("-cx*POWER(speed,3)", Unit.WATTS,
-            new ValueKey("cx", ValueKind.debug),
+    public static final Formul FORMUL_SIMPLE = new Formul("-aeroCoef*POWER(speed,3)", Unit.WATTS,
+            new ValueKey("aeroCoef", ValueKind.debug),
             new ValueKey("speed", ValueKind.staging)
     );
 
@@ -28,24 +28,23 @@ public class AeroPowerProvider implements PowerProvider {
 
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
-        double grade = location.getGrade();
-        double speed = status.getSpeed();
-        final double cx = course.getCxProvider().getCx(location, status.getEllapsed(), speed, grade);
-        location.putDebug("cx", cx, Unit.CX);
-        final Wind wind = course.getWindProvider().getWind(location, status.getEllapsed());
+        final double aeroCoef = course.getAeroProvider().getAeroCoef(course, location, status);
+        location.putDebug("aeroCoef", aeroCoef, Unit.AERO_COEF);
+        final Wind wind = course.getWindProvider().getWind(course, location, status);
         double p_air;
         if (wind.getWindSpeed() == 0) {
+            double speed = status.getSpeed();
             location.putDebug("p_" + getId(), FORMUL_SIMPLE, Unit.FORMULA_WATTS);
-            p_air = -cx * speed * speed * speed;
+            p_air = -aeroCoef * speed * speed * speed;
         } else {
-            p_air = computePAirWithWind(status, location, cx, wind);
+            p_air = computePAirWithWind(status, location, aeroCoef, wind);
             // FIXME formulas
             location.putDebug("p_" + getId(), p_air, Unit.WATTS);
         }
         return p_air;
     }
 
-    private double computePAirWithWind(CyclistStatus status, Point current, double cx, Wind wind) {
+    private double computePAirWithWind(CyclistStatus status, Point current, double aeroCoef, Wind wind) {
         double speed = status.getSpeed();
         double bearing = current.getBearing();
         current.putDebug("wind_speed", wind.getWindSpeed(), Unit.SPEED_S_M);
@@ -69,7 +68,7 @@ public class AeroPowerProvider implements PowerProvider {
         double mu = 1.2;
         double lambda = l4 + mu * (1 - l4);
 
-        return -cx * lambda * Math.sqrt(l3) * l1 * speed;
+        return -aeroCoef * lambda * Math.sqrt(l3) * l1 * speed;
     }
 
 }

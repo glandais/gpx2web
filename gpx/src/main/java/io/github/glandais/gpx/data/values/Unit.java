@@ -38,8 +38,8 @@ public interface Unit<J> {
     // power
     StorageUnit<Double> WATTS = new WattsUnit();
 
-    // cx
-    StorageUnit<Double> CX = new CxUnit();
+    // aeroCoef
+    StorageUnit<Double> AERO_COEF = new CxUnit();
 
     // formula
     StorageUnit<Formul> FORMULA_WATTS = new FormulaUnit(WATTS);

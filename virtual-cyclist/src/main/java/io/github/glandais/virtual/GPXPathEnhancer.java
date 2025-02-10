@@ -5,7 +5,7 @@ import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
+import io.github.glandais.virtual.aero.aero.AeroProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import jakarta.inject.Singleton;
@@ -31,8 +31,9 @@ public class GPXPathEnhancer {
 
 
     public void virtualize(GPXPath gpxPath, boolean filter) {
-        Cyclist cyclist = new Cyclist();
-        Course course = new Course(gpxPath, Instant.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
+        Cyclist cyclist = Cyclist.getDefault();
+        Bike bike = Bike.getDefault();
+        Course course = new Course(gpxPath, Instant.now(), cyclist, bike, new PowerProviderConstant(), new WindProviderNone(), new AeroProviderConstant());
         virtualize(course, filter);
     }
 
@@ -40,6 +41,7 @@ public class GPXPathEnhancer {
         GPXPath gpxPath = course.getGpxPath();
         gpxPerDistance.computeOnePointPerDistance(gpxPath, 10.0);
         gpxElevationFixer.fixElevation(gpxPath);
+        GPXFilter.filterPointsDouglasPeucker(gpxPath);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
         gpxPerSecond.computeOnePointPerSecond(gpxPath);

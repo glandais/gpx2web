@@ -32,8 +32,8 @@ public class RollingResistancePowerProvider implements PowerProvider {
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
 
-        final double mKg = course.getCyclist().getMKg();
-        final double crr = course.getCyclist().getCrr();
+        final double mKg = course.getCyclist().mKg();
+        final double crr = course.getBike().crr();
         final double grade = location.getGrade();
 
         double coef = Math.cos(Math.atan(grade));

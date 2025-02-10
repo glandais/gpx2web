@@ -1,5 +1,6 @@
 package io.github.glandais.virtualize;
 
+import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.GPXPerDistance;
@@ -16,8 +17,8 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.PowerProvider;
-import io.github.glandais.virtual.aero.cx.CxProvider;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
+import io.github.glandais.virtual.aero.aero.AeroProvider;
+import io.github.glandais.virtual.aero.aero.AeroProviderConstant;
 import io.github.glandais.virtual.aero.wind.Wind;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.aero.wind.WindProviderConstant;
@@ -72,17 +73,14 @@ public class VirtualizeCommand implements Runnable {
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
 
+    @CommandLine.Mixin
+    protected BikeMixin bikeMixin;
+
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
     @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
     protected boolean xlsx = false;
-
-    @Option(names = {"--cyclist-power"}, description = "Cyclist power (W)")
-    protected double powerW = 240;
-
-    @Option(names = {"--cyclist-cx"}, description = "Cyclist Cx")
-    protected double cx = 0.3;
 
     // m.s-2
     @Option(names = {"--wind-speed"}, description = "Wind speed (km/s)")
@@ -95,7 +93,7 @@ public class VirtualizeCommand implements Runnable {
     protected Instant startDate = ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
 
     protected WindProvider windProvider;
-    protected CxProvider cxProvider;
+    protected AeroProvider aeroProvider;
     protected PowerProvider powerProvider;
 
     protected Instant[] starts;
@@ -125,10 +123,9 @@ public class VirtualizeCommand implements Runnable {
         starts = new Instant[1];
         starts[0] = startDate;
 
-//        System.setProperty("gpx.data.cache", cacheValue);
         windProvider = new WindProviderConstant(new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree)));
-        cxProvider = new CxProviderConstant(cx);
-        powerProvider = new PowerProviderConstant(powerW);
+        aeroProvider = new AeroProviderConstant();
+        powerProvider = new PowerProviderConstant();
     }
 
     @SneakyThrows
@@ -145,9 +142,10 @@ public class VirtualizeCommand implements Runnable {
 
         Course course = new Course(path, start,
                 cyclistMixin.getCyclist(),
+                bikeMixin.getBike(),
                 powerProvider,
                 windProvider,
-                cxProvider);
+                aeroProvider);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
 

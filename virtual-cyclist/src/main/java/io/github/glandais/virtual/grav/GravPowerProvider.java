@@ -30,7 +30,7 @@ public class GravPowerProvider implements PowerProvider {
 
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
-        final double mKg = course.getCyclist().getMKg();
+        final double mKg = course.getCyclist().mKg();
         double grade = location.getGrade();
         double coef = Math.sin(Math.atan(grade));
         location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);

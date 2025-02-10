@@ -1,25 +1,14 @@
-package io.github.glandais.virtual.aero.cx;
+package io.github.glandais.virtual.aero.aero;
 
-import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.PointField;
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.virtual.*;
-import io.github.glandais.virtual.aero.wind.WindProvider;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.List;
-
 @RequiredArgsConstructor
 @Service
 @Singleton
-public class CxGuesser {
-
+public class AeroGuesser {
+/*
     private final PowerProviderList providers;
 
     public void guess(GPXPath path, Cyclist cyclist, WindProvider windProvider) {
@@ -63,8 +52,8 @@ public class CxGuesser {
                 }
             }
 
-            p.put(PointField.cx, cx, Unit.CX, ValueKind.guessed);
+            p.put(PointField.aeroCoef, cx, Unit.AERO_COEF, ValueKind.guessed);
         }
     }
-
+*/
 }

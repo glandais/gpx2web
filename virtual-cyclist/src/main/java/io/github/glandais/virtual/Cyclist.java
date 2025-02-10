@@ -1,37 +1,31 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.util.Constants;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
-@ToString
-@EqualsAndHashCode
-public class Cyclist {
+public record Cyclist(
+        double mKg,
+        double power,
+        double maxBrakeG,
+        double cd,
+        double a,
+        double maxAngleDeg,
+        double maxSpeedKmH
+) {
 
-    private final double mKg;
-
-    private final double maxBrakeMS2;
-
-    private final double crr;
-
-    private final double tanMaxAngle;
-
-    private final double maxSpeedMs;
-
-    public Cyclist() {
-
-        this(72, 45, 90, 0.6, 0.005);
+    public static Cyclist getDefault() {
+        return new Cyclist(80, 280, 0.6, 0.7, 0.5, 45, 90);
     }
 
-    public Cyclist(double mKg, double maxAngleDeg, double maxSpeedKmH, double maxBrakeG, double crr) {
+    public double getTanMaxAngle() {
+        return Math.tan(maxAngleDeg * (Math.PI / 180.0));
+    }
 
-        this.mKg = mKg;
-        this.maxBrakeMS2 = maxBrakeG * Constants.G;
-        this.crr = crr;
-        this.tanMaxAngle = Math.tan(maxAngleDeg * (Math.PI / 180.0));
-        this.maxSpeedMs = maxSpeedKmH / 3.6;
+    public double getMaxBrakeMS2() {
+        return maxBrakeG * Constants.G;
+    }
+
+    public double getMaxSpeedMs() {
+        return maxSpeedKmH / 3.6;
     }
 
 }

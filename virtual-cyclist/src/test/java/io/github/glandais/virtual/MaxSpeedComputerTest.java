@@ -7,7 +7,7 @@ import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.util.Constants;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
+import io.github.glandais.virtual.aero.aero.AeroProviderConstant;
 import io.github.glandais.virtual.aero.wind.WindProviderNone;
 import io.github.glandais.virtual.cyclist.PowerProviderConstant;
 import lombok.SneakyThrows;
@@ -26,8 +26,9 @@ public class MaxSpeedComputerTest {
 
         GPXPath gpxPath = new GPXFileReader().parseGpx(MaxSpeedComputerTest.class.getResourceAsStream("/stelvio.gpx")).paths().get(0);
 
-        Cyclist cyclist = new Cyclist();
-        Course course = new Course(gpxPath, Instant.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
+        Cyclist cyclist = Cyclist.getDefault();
+        Bike bike = Bike.getDefault();
+        Course course = new Course(gpxPath, Instant.now(), cyclist, bike, new PowerProviderConstant(), new WindProviderNone(), new AeroProviderConstant());
 
         MaxSpeedComputer maxSpeedComputer = new MaxSpeedComputer();
 

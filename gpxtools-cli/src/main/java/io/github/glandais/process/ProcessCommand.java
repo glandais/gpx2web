@@ -1,10 +1,10 @@
 package io.github.glandais.process;
 
+import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.io.write.GPXFileWriter;
 import io.github.glandais.io.write.tabular.CSVFileWriter;
@@ -15,10 +15,9 @@ import io.github.glandais.virtual.Course;
 import io.github.glandais.virtual.MaxSpeedComputer;
 import io.github.glandais.virtual.PowerComputer;
 import io.github.glandais.virtual.PowerProvider;
-import io.github.glandais.virtual.aero.cx.CxGuesser;
-import io.github.glandais.virtual.aero.cx.CxProvider;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
-import io.github.glandais.virtual.aero.cx.CxProviderFromData;
+import io.github.glandais.virtual.aero.aero.AeroGuesser;
+import io.github.glandais.virtual.aero.aero.AeroProvider;
+import io.github.glandais.virtual.aero.aero.AeroProviderConstant;
 import io.github.glandais.virtual.aero.wind.Wind;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import io.github.glandais.virtual.aero.wind.WindProviderConstant;
@@ -67,7 +66,7 @@ public class ProcessCommand implements Runnable {
     protected XLSXFileWriter xlsxFileWriter;
 
     @Inject
-    protected CxGuesser cxGuesser;
+    protected AeroGuesser aeroGuesser;
 
     @Inject
     protected WeightGuesser weightGuesser;
@@ -77,6 +76,9 @@ public class ProcessCommand implements Runnable {
 
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
+
+    @CommandLine.Mixin
+    protected BikeMixin bikeMixin;
 
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
@@ -93,14 +95,11 @@ public class ProcessCommand implements Runnable {
     @CommandLine.Option(names = {"--cyclist-power"}, description = "Cyclist power (W)")
     protected double powerW = 240;
 
-    @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
-    protected boolean guessCx = false;
-
-    @Option(names = {"--guess-weight"}, negatable = true, description = "Guess Cx")
-    protected boolean guessWeight = false;
-
-    @CommandLine.Option(names = {"--cyclist-cx"}, description = "Cyclist Cx")
-    protected double cx = 0.3;
+//    @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
+//    protected boolean guessCx = false;
+//
+//    @Option(names = {"--guess-weight"}, negatable = true, description = "Guess Cx")
+//    protected boolean guessWeight = false;
 
     // m.s-2
     @Option(names = {"--wind-speed"}, description = "Wind speed (km/s)")
@@ -110,7 +109,7 @@ public class ProcessCommand implements Runnable {
     protected double windDirectionDegree = 0.0;
 
     protected WindProvider windProvider;
-    protected CxProvider cxProvider;
+    protected AeroProvider aeroProvider;
     protected PowerProvider powerProvider;
 
     protected Instant[] starts;
@@ -142,12 +141,12 @@ public class ProcessCommand implements Runnable {
 
 //        System.setProperty("gpx.data.cache", cacheValue);
         windProvider = new WindProviderConstant(new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree)));
-        cxProvider = new CxProviderConstant(cx);
+        aeroProvider = new AeroProviderConstant();
 
         if (gpxPower) {
             powerProvider = new PowerProviderFromData();
         } else {
-            powerProvider = new PowerProviderConstant(powerW);
+            powerProvider = new PowerProviderConstant();
         }
     }
 
@@ -167,9 +166,10 @@ public class ProcessCommand implements Runnable {
         Instant start = getNextStart();
         Course course = new Course(path, start,
                 cyclistMixin.getCyclist(),
+                bikeMixin.getBike(),
                 powerProvider,
                 windProvider,
-                cxProvider);
+                aeroProvider);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
 
@@ -190,25 +190,25 @@ public class ProcessCommand implements Runnable {
     }
 
 
-    protected CxProvider guess(GPXPath path) {
-        if (guessWeight || guessCx) {
-            smoothService.smoothSpeed(path);
-        }
-
-        if (guessWeight) {
-            weightGuesser.guess(path, cyclistMixin.getCyclist(), windProvider, cxProvider);
-        }
-        if (guessCx) {
-            cxGuesser.guess(path, cyclistMixin.getCyclist(),
-                    windProvider);
-            smoothService.smoothCx(path);
-            cxProvider = new CxProviderFromData();
-        }
-
-        if (guessWeight || guessCx) {
-            path.computeArrays(ValueKind.computed);
-        }
-        return cxProvider;
+    protected AeroProvider guess(GPXPath path) {
+//        if (guessWeight || guessCx) {
+//            smoothService.smoothSpeed(path);
+//        }
+//
+//        if (guessWeight) {
+//            weightGuesser.guess(path, cyclistMixin.getCyclist(), windProvider, aeroProvider);
+//        }
+//        if (guessCx) {
+//            cxGuesser.guess(path, cyclistMixin.getCyclist(),
+//                    windProvider);
+//            smoothService.smoothAeroCoef(path);
+//            aeroProvider = new AeroProviderFromData();
+//        }
+//
+//        if (guessWeight || guessCx) {
+//            path.computeArrays(ValueKind.computed);
+//        }
+        return aeroProvider;
     }
 
 }

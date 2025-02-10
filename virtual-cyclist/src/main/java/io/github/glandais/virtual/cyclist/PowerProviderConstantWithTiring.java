@@ -13,8 +13,7 @@ public class PowerProviderConstantWithTiring extends PowerProviderConstant {
         return "tiring";
     }
 
-    public PowerProviderConstantWithTiring(double power, double duration) {
-        super(power);
+    public PowerProviderConstantWithTiring(double duration) {
         this.duration = duration;
     }
 

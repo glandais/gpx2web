@@ -29,7 +29,7 @@ public enum PointField {
 
     ele(),
 
-    cx(),
+    aeroCoef(),
 
     ellapsed(),
 

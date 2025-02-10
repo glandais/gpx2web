@@ -20,8 +20,8 @@ public class SmoothService {
         smooth(path, PointField.power, PointField.time, 5, Unit.WATTS);
     }
 
-    public void smoothCx(GPXPath path) {
-        smooth(path, PointField.cx, PointField.dist, 100, Unit.CX);
+    public void smoothAeroCoef(GPXPath path) {
+        smooth(path, PointField.aeroCoef, PointField.dist, 100, Unit.AERO_COEF);
     }
 
     public void smoothSpeed(GPXPath path) {

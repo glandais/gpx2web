@@ -20,6 +20,7 @@ public class CyclistPowerProvider implements PowerProvider {
     @Override
     public double getPowerW(Course course, Point location, CyclistStatus status) {
         double w = course.getCyclistPowerProvider().getPowerW(course, location, status);
+        w = w * course.getBike().efficiency();
         location.putDebug("p_" + getId(), w, Unit.WATTS);
         return w;
     }

@@ -30,9 +30,9 @@ public class PowerProviderList {
         return List.of(
                 wheelBearingsPowerProvider,
                 rollingResistancePowerProvider,
-                cyclistPowerProvider,
+                gravPowerProvider,
                 aeroPowerProvider,
-                gravPowerProvider
+                cyclistPowerProvider
         );
     }
 

@@ -51,11 +51,15 @@ public class PowerComputer {
         current.setSpeed(status.speed, ValueKind.staging);
         current.setGrade(current.getGrade(), ValueKind.staging);
 
-        final double mKg = course.getCyclist().getMKg();
+        final double mKg = course.getCyclist().mKg();
         current.putDebug("mKg", mKg, Unit.DOUBLE_ANY);
 
-        final double crr = course.getCyclist().getCrr();
+        final double crr = course.getBike().crr();
         current.putDebug("crr", crr, Unit.PERCENTAGE);
+
+        double inertiaFront = course.getBike().inertiaFront();
+        double inertiaRear = course.getBike().inertiaRear();
+        double wheelRadius = course.getBike().wheelRadius();
 
         double p_sum = 0;
         List<String> components = new ArrayList<>();
@@ -72,16 +76,17 @@ public class PowerComputer {
                 components.stream().map(c -> new ValueKey(c, ValueKind.debug)).collect(Collectors.toList())
         ), Unit.FORMULA_WATTS);
 
-        // p_sum = 0.5 * (mKg + (0.14 / (0.7*0.7))) * (new_speed * new_speed - speed * speed) / DT
-        // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7*0.7))))
-        double new_speed_squared = DT * p_sum / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + status.speed * status.speed;
+        // p_sum = 0.5 * (mKg + ((I1 + I2) / (r^2))) * (new_speed * new_speed - speed * speed) / DT
+        // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + ((I1 + I2) / (r^2))))
+        double inertia = inertiaFront + inertiaRear;
+        double new_speed_squared = DT * p_sum / (0.5 * (mKg + (inertia / (wheelRadius * wheelRadius)))) + status.speed * status.speed;
         if (new_speed_squared < MINIMAL_SPEED * MINIMAL_SPEED) {
             status.speed = MINIMAL_SPEED;
         } else {
             status.speed = Math.sqrt(new_speed_squared);
         }
 
-        String formula = "SQRT(" + DT + " * p_sum / (0.5 * (mKg + (0.14 / (0.7 * 0.7)))) + (speed) * (speed))";
+        String formula = "SQRT(" + DT + " * p_sum / (0.5 * (mKg + (" + inertia + " / (" + wheelRadius + " * " + wheelRadius + ")))) + (speed) * (speed))";
 
         current.putDebug("new_speed", new Formul(formula,
                 Unit.SPEED_S_M,
@@ -89,6 +94,7 @@ public class PowerComputer {
                 new ValueKey("mKg", ValueKind.debug),
                 new ValueKey("speed", ValueKind.staging)
         ), Unit.FORMULA_SPEED_S_M);
+
         if (Constants.VERIFIED) {
             current.putDebug("new_speed_verified", status.speed, Unit.SPEED_S_M);
         }

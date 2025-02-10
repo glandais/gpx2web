@@ -1,7 +1,7 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.virtual.aero.cx.CxProvider;
+import io.github.glandais.virtual.aero.aero.AeroProvider;
 import io.github.glandais.virtual.aero.wind.WindProvider;
 import lombok.Data;
 
@@ -16,10 +16,14 @@ public class Course {
 
     protected final Cyclist cyclist;
 
+    protected final Bike bike;
+
     protected final PowerProvider cyclistPowerProvider;
 
     protected final WindProvider windProvider;
 
-    protected final CxProvider cxProvider;
+    protected final AeroProvider aeroProvider;
+
+    protected double rho = 1.225;
 
 }

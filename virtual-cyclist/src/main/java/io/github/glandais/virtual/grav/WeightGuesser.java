@@ -1,31 +1,18 @@
 package io.github.glandais.virtual.grav;
 
-import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.PointField;
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.util.Constants;
-import io.github.glandais.virtual.*;
-import io.github.glandais.virtual.aero.cx.CxProvider;
-import io.github.glandais.virtual.aero.wind.WindProvider;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 @Singleton
 public class WeightGuesser {
-
+/*
     private final PowerProviderList providers;
 
-    public void guess(GPXPath path, Cyclist cyclist, WindProvider windProvider, CxProvider cxProvider) {
-        Course course = new Course(path, Instant.now(), cyclist, new PowerProviderFromData(), windProvider, cxProvider);
+    public void guess(GPXPath path, Cyclist cyclist, WindProvider windProvider, AeroProvider aeroProvider) {
+        Course course = new Course(path, Instant.now(), cyclist, new PowerProviderFromData(), windProvider, aeroProvider);
         List<Point> points = path.getPoints();
         CyclistStatus status = new CyclistStatus();
         for (int i = 0; i < points.size() - 1; i++) {
@@ -68,5 +55,5 @@ public class WeightGuesser {
             }
         }
     }
-
+*/
 }
