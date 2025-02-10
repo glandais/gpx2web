@@ -4,7 +4,6 @@ import io.github.glandais.gpx.GPXPerDistance;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.util.SmoothService;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -23,21 +22,11 @@ public class GPXElevationFixer {
 
     private final SmoothService smoothService;
 
-    public void fixElevation(GPXPath path, boolean addIntermediatePoints) {
-        fixElevation(path, addIntermediatePoints, 150);
-    }
-
-    public void fixElevation(GPXPath path, boolean addIntermediatePoints, double buffer) {
+    public void fixElevation(GPXPath path) {
         log.debug("Fixing elevation for {}", path.getName());
 
-        if (addIntermediatePoints) {
-            gpxPerDistance.computeOnePointPerDistance(path, 10);
-        }
         setEleOnPath(path);
-        smoothService.smoothEle(path, buffer);
-        if (addIntermediatePoints) {
-            GPXFilter.filterPointsDouglasPeucker(path);
-        }
+        smoothService.smoothEle(path, 150);
 
         log.debug("Fixed elevation for {}", path.getName());
     }

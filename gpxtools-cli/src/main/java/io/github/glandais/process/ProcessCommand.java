@@ -155,7 +155,7 @@ public class ProcessCommand implements Runnable {
     private void process(GPXPath path, File pathFolder) {
 
         if (!gpxElevation) {
-            gpxElevationFixer.fixElevation(path, false);
+            gpxElevationFixer.fixElevation(path);
             log.info("D+ : {} m", path.getTotalElevation());
         }
 

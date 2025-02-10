@@ -4,16 +4,25 @@ import io.github.glandais.gpx.GPXPerDistance;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.srtm.GpxElevationProvider;
-import io.github.glandais.util.SmoothService;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.util.List;
 
+@QuarkusTest
 class ClimbDetectorTest {
+
+    @Inject
+    GPXFileReader gpxFileReader;
+    @Inject
+    GPXPerDistance gpxPerDistance;
+    @Inject
+    GPXElevationFixer gpxElevationFixer;
+    @Inject
+    ClimbDetector climbDetector;
 
     @SneakyThrows
     @Test
@@ -50,26 +59,19 @@ class ClimbDetectorTest {
     @Test
     @Disabled
     void getClimbs() {
-        GPXFileReader gpxFileReader = new GPXFileReader();
-        GPXElevationFixer gpxElevationFixer = new GPXElevationFixer(
-                new GpxElevationProvider(() -> new File("/tmp")),
-                new GPXPerDistance(),
-                new SmoothService()
-        );
-        ClimbDetector climbDetector = new ClimbDetector();
-
 //        getClimbs(gpxParser, "/test.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/test2.gpx", gpxElevationFixer, climbDetector);
 //        getClimbs(gpxParser, "/test3.gpx", gpxElevationFixer, climbDetector);
-        getClimbs(gpxFileReader, "/ventoux.gpx", gpxElevationFixer, climbDetector);
+        getClimbs("/ventoux.gpx");
 //        getClimbs(gpxParser, "/Etape_36.gpx", gpxElevationFixer, climbDetector);
     }
 
-    void getClimbs(GPXFileReader gpxFileReader, String file, GPXElevationFixer gpxElevationFixer, ClimbDetector climbDetector) throws Exception {
+    void getClimbs(String file) throws Exception {
         List<GPXPath> gpxPaths = gpxFileReader.parseGpx(ClimbDetectorTest.class.getResourceAsStream(file)).paths();
         GPXPath gpxPath = gpxPaths.get(0);
 
-        gpxElevationFixer.fixElevation(gpxPath, true);
+        gpxPerDistance.computeOnePointPerDistance(gpxPath, 10);
+        gpxElevationFixer.fixElevation(gpxPath);
 
         for (int i = 0; i < gpxPath.getPoints().size(); i++) {
             System.out.println(i + " " + gpxPath.getDists()[i] + " " + gpxPath.getEles()[i] + " " + (100 * gpxPath.getPoints().get(i).getGrade()));

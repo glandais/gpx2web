@@ -1,5 +1,6 @@
 package io.github.glandais.virtual;
 
+import io.github.glandais.gpx.GPXPerDistance;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.filter.GPXFilter;
@@ -26,13 +27,24 @@ public class GPXPathEnhancer {
 
     private final GPXPerSecond gpxPerSecond;
 
-    public void virtualize(GPXPath gpxPath) {
-        gpxElevationFixer.fixElevation(gpxPath, true);
+    private final GPXPerDistance gpxPerDistance;
+
+
+    public void virtualize(GPXPath gpxPath, boolean filter) {
         Cyclist cyclist = new Cyclist();
         Course course = new Course(gpxPath, Instant.now(), cyclist, new PowerProviderConstant(), new WindProviderNone(), new CxProviderConstant());
+        virtualize(course, filter);
+    }
+
+    public void virtualize(Course course, boolean filter) {
+        GPXPath gpxPath = course.getGpxPath();
+        gpxPerDistance.computeOnePointPerDistance(gpxPath, 10.0);
+        gpxElevationFixer.fixElevation(gpxPath);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
         gpxPerSecond.computeOnePointPerSecond(gpxPath);
-        GPXFilter.filterPointsDouglasPeucker(gpxPath);
+        if (filter) {
+            GPXFilter.filterPointsDouglasPeucker(gpxPath);
+        }
     }
 }

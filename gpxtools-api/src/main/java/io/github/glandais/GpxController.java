@@ -51,7 +51,7 @@ public class GpxController {
 
         GPX gpx = gpxFileReader.parseGpx(stream);
         for (GPXPath path : gpx.paths()) {
-            gpxPathEnhancer.virtualize(path);
+            gpxPathEnhancer.virtualize(path, true);
         }
 
         File tmp = File.createTempFile("gpx", "tmp");

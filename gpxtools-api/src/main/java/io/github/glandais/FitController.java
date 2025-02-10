@@ -45,7 +45,7 @@ public class FitController {
             if (name != null && !name.isEmpty()) {
                 gpxPath.setName(name);
             }
-            gpxPathEnhancer.virtualize(gpxPath);
+            gpxPathEnhancer.virtualize(gpxPath, true);
 
             File tmp = File.createTempFile("fit", "tmp");
             fitFileWriter.writeFitFile(gpxPath, tmp);

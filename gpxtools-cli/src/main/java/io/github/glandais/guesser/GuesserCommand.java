@@ -70,7 +70,7 @@ public class GuesserCommand implements Runnable {
         powerComputer.computeTrack(course);
 //            speedService.computeSpeed(original, PointField.simulatedSpeed, ValueKind.computed);
         for (Point p : original.getPoints()) {
-            double dv = p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.getCurrent(PointField.simulatedSpeed, Unit.SPEED_S_M);
+            double dv = p.get(PointField.simulatedSpeed, Unit.SPEED_S_M) - p.get(PointField.simulatedSpeed, Unit.SPEED_S_M);
             p.put(PointField.speedDifference, dv, Unit.SPEED_S_M, ValueKind.computed);
         }
         GPX gpx = new GPX(original.getName(), Collections.singletonList(original), List.of());

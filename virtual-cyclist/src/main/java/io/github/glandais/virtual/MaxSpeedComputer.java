@@ -1,6 +1,7 @@
 package io.github.glandais.virtual;
 
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.util.Constants;
 import io.github.glandais.util.Vector;
 import jakarta.inject.Singleton;
@@ -14,32 +15,43 @@ public class MaxSpeedComputer {
 
     public void computeMaxSpeeds(Course course) {
 
+        // first pass, forward : max speed by incline
+        firstPass(course);
+
+        // second pass, reverse : max speed with braking
+        secondPass(course);
+    }
+
+    protected void firstPass(Course course) {
         List<Point> points = course.getGpxPath().getPoints();
         Cyclist cyclist = course.getCyclist();
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
             if (i == 0 || i == points.size() - 1) {
+                // no info for first/last point
                 p.setMaxSpeed(cyclist.getMaxSpeedMs());
             } else {
+                // point before/point after
                 Point pm1 = points.get(i - 1);
                 Point pp1 = points.get(i + 1);
-                p.setMaxSpeed(getMaxSpeedByIncline(pm1, p, pp1, cyclist));
+                // compute max speed
+                computeMaxSpeedByIncline(pm1, p, pp1, cyclist);
             }
-        }
-
-        for (int i = points.size() - 1; i > 0; i--) {
-            double maxSpeedCurrent = points.get(i).getMaxSpeed();
-            double maxSpeedPrevious = points.get(i - 1).getMaxSpeed();
-            // we have to brake!
-            if (maxSpeedCurrent < maxSpeedPrevious) {
-                double dist = points.get(i).getDist() - points.get(i - 1).getDist();
-                double newMaxSpeedPrevious = getMaxSpeedByBraking(maxSpeedCurrent, dist, cyclist);
-                points.get(i - 1).setMaxSpeed(newMaxSpeedPrevious);
-            }
+            p.putDebug("vmax_incline", p.getMaxSpeed(), Unit.SPEED_S_M);
         }
     }
 
-    private double getMaxSpeedByIncline(Point pm1, Point p, Point pp1, Cyclist cyclist) {
+    protected void secondPass(Course course) {
+        List<Point> points = course.getGpxPath().getPoints();
+        Cyclist cyclist = course.getCyclist();
+        for (int i = points.size() - 1; i > 0; i--) {
+            Point p = points.get(i);
+            Point pm1 = points.get(i - 1);
+            computeMaxSpeedByBraking(pm1, p, cyclist);
+        }
+    }
+
+    private void computeMaxSpeedByIncline(Point pm1, Point p, Point pp1, Cyclist cyclist) {
 
         // relative position of meters, in meters
         Vector tpm1 = transform(pm1, p);
@@ -50,45 +62,41 @@ public class MaxSpeedComputer {
         Vector circleCenter = getCircleCenter(tpm1, tp, tpp1);
         if (circleCenter == null) {
             // not found, either 3 points are equal or colinear
-            return cyclist.getMaxSpeedMs();
+            p.setMaxSpeed(cyclist.getMaxSpeedMs());
+            return;
         }
         Vector rad = circleCenter.sub(tp);
         // circle radius (m)
-        double radius = Math.sqrt(rad.getX() * rad.getX() + rad.getY() * rad.getY());
+        double radius = Math.hypot(rad.getX(), rad.getY());
+        // add 2m for trajectory, a trajectory computer would be better
+        radius = radius + 2;
+        p.putDebug("radius", radius, Unit.METERS);
 
-        if (radius > 1000) {
-            return cyclist.getMaxSpeedMs();
-        }
         // https://en.wikipedia.org/wiki/Bicycle_and_motorcycle_dynamics#Leaning
         double vmax = Math.sqrt(Constants.G * radius * cyclist.getTanMaxAngle());
-        return Math.min(cyclist.getMaxSpeedMs(), vmax);
+        p.setMaxSpeed(Math.min(cyclist.getMaxSpeedMs(), vmax));
     }
 
-    private double getMaxSpeedByBraking(double maxSpeedCurrent, double dist, Cyclist cyclist) {
-        // discrete resolution, i'm so lazy...
-        double dmax = dist;
-        // m
-        double d = 0.0;
-        // s
-        double t = 0.0;
-        // s
-        double dt = 0.01;
-        double v = maxSpeedCurrent;
-        while (true) {
-            double dv = cyclist.getMaxBrakeG() * dt;
-            v = v + dv;
+    private void computeMaxSpeedByBraking(Point pm1, Point p, Cyclist cyclist) {
+        double v0 = pm1.getMaxSpeed();
+        double vf = p.getMaxSpeed();
+        double a = -cyclist.getMaxBrakeMS2();
 
-            double dx = dt * v;
-            d = d + dx;
-            t = t + dt;
-            if (v > cyclist.getMaxSpeedMs()) {
-                return cyclist.getMaxSpeedMs();
-            }
-            if (d > dmax) {
-                double ratio = (dmax - (d - dx)) / dx;
-                return Math.min(cyclist.getMaxSpeedMs(), v - dv + dv * ratio);
-            }
+        double t = (vf - v0) / a;
+        if (t <= 0) {
+            // no need to brake
+            return;
         }
+        double dist = p.getDist() - pm1.getDist();
+
+        double dBrake = v0 * t + (a * t * t) / 2;
+        if (dBrake <= dist) {
+            // no need to reduce v0
+            // enough braking available on dist to go from v0 to vf
+            return;
+        }
+        double newMaxSpeedPrevious = Math.sqrt(vf * vf - 2 * a * dist);
+        pm1.setMaxSpeed(newMaxSpeedPrevious);
     }
 
     private static Vector getCircleCenter(Vector a, Vector b, Vector c) {

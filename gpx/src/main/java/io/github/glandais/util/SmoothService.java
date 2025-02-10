@@ -39,12 +39,12 @@ public class SmoothService {
         double[] data = new double[points.size()];
         double[] time = new double[points.size()];
         for (int i = 0; i < points.size(); i++) {
-            Double value = points.get(i).getCurrent(attribute, unit);
+            Double value = points.get(i).get(attribute, unit);
             data[i] = value == null ? 0 : value;
             if (over == PointField.time) {
                 time[i] = points.get(i).getEpochSeconds();
             } else {
-                time[i] = points.get(i).getCurrent(over, unit);
+                time[i] = points.get(i).get(over, unit);
             }
         }
         for (int j = 0; j < data.length; j++) {

@@ -62,8 +62,12 @@ public class Point {
         return values;
     }
 
-    public <J> J getCurrent(PointField field, Unit<J> unit) {
-        return data.get(field.name(), unit);
+    public <J> J get(PointField field, Unit<J> unit) {
+        return get(field.name(), unit);
+    }
+
+    public <J> J get(String key, Unit<J> unit) {
+        return data.get(key, unit);
     }
 
     public <J> void put(PointField field, J value, Unit<J> unit, ValueKind kind) {
@@ -81,7 +85,7 @@ public class Point {
     }
 
     public double getLat() {
-        return getCurrent(PointField.lat, Unit.RADIANS);
+        return get(PointField.lat, Unit.RADIANS);
     }
 
     public void setLon(Double value) {
@@ -89,23 +93,23 @@ public class Point {
     }
 
     public double getLon() {
-        return getCurrent(PointField.lon, Unit.RADIANS);
+        return get(PointField.lon, Unit.RADIANS);
     }
 
     public int getLatSemi() {
-        return getCurrent(PointField.lat, Unit.SEMI_CIRCLE);
+        return get(PointField.lat, Unit.SEMI_CIRCLE);
     }
 
     public int getLonSemi() {
-        return getCurrent(PointField.lon, Unit.SEMI_CIRCLE);
+        return get(PointField.lon, Unit.SEMI_CIRCLE);
     }
 
     public double getLatDeg() {
-        return getCurrent(PointField.lat, Unit.DEGREES);
+        return get(PointField.lat, Unit.DEGREES);
     }
 
     public double getLonDeg() {
-        return getCurrent(PointField.lon, Unit.DEGREES);
+        return get(PointField.lon, Unit.DEGREES);
     }
 
     public void setEle(Double value, ValueKind kind) {
@@ -113,7 +117,7 @@ public class Point {
     }
 
     public double getEle() {
-        return getCurrent(PointField.ele, Unit.METERS);
+        return get(PointField.ele, Unit.METERS);
     }
 
     public void setGrade(Double value, ValueKind kind) {
@@ -121,7 +125,7 @@ public class Point {
     }
 
     public double getGrade() {
-        return getCurrent(PointField.grade, Unit.PERCENTAGE);
+        return get(PointField.grade, Unit.PERCENTAGE);
     }
 
     public void setPower(Double value, ValueKind kind) {
@@ -129,7 +133,7 @@ public class Point {
     }
 
     public double getPower() {
-        return getCurrent(PointField.power, Unit.WATTS);
+        return get(PointField.power, Unit.WATTS);
     }
 
     public void setTime(Instant value, ValueKind kind) {
@@ -137,23 +141,23 @@ public class Point {
     }
 
     public Instant getTime() {
-        return getCurrent(PointField.time, Unit.INSTANT);
+        return get(PointField.time, Unit.INSTANT);
     }
 
     public Date getDate() {
-        return getCurrent(PointField.time, Unit.DATE);
+        return get(PointField.time, Unit.DATE);
     }
 
     public long getEpochMilli() {
-        return getCurrent(PointField.time, Unit.EPOCH_MILLIS);
+        return get(PointField.time, Unit.EPOCH_MILLIS);
     }
 
     public double getEpochSeconds() {
-        return getCurrent(PointField.time, Unit.EPOCH_SECONDS);
+        return get(PointField.time, Unit.EPOCH_SECONDS);
     }
 
     public double getMaxSpeed() {
-        return getCurrent(PointField.max_speed, Unit.SPEED_S_M);
+        return get(PointField.max_speed, Unit.SPEED_S_M);
     }
 
     public void setMaxSpeed(double maxSpeed) {
@@ -161,7 +165,7 @@ public class Point {
     }
 
     public double getDist() {
-        return getCurrent(PointField.dist, Unit.METERS);
+        return get(PointField.dist, Unit.METERS);
     }
 
     public void setDist(double dist, ValueKind kind) {
@@ -169,7 +173,7 @@ public class Point {
     }
 
     public double getSpeed() {
-        return getCurrent(PointField.speed, Unit.SPEED_S_M);
+        return get(PointField.speed, Unit.SPEED_S_M);
     }
 
     public void setSpeed(double speed, ValueKind kind) {
@@ -177,7 +181,7 @@ public class Point {
     }
 
     public double getBearing() {
-        return getCurrent(PointField.bearing, Unit.RADIANS);
+        return get(PointField.bearing, Unit.RADIANS);
     }
 
     public void setBearing(double bearing, ValueKind kind) {

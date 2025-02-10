@@ -2,6 +2,7 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
+import io.github.glandais.gpx.GPXPerDistance;
 import io.github.glandais.gpx.GPXPerSecond;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
@@ -40,6 +41,9 @@ public class VirtualizeCommand implements Runnable {
 
     @Inject
     protected GPXFileReader gpxFileReader;
+
+    @Inject
+    protected GPXPerDistance gpxPerDistance;
 
     @Inject
     protected GPXElevationFixer gpxElevationFixer;
@@ -131,7 +135,8 @@ public class VirtualizeCommand implements Runnable {
     private void process(GPXPath path, File pathFolder) {
 
         GPXFilter.filterPointsDouglasPeucker(path);
-        gpxElevationFixer.fixElevation(path, true);
+        gpxPerDistance.computeOnePointPerDistance(path, 10);
+        gpxElevationFixer.fixElevation(path);
         GPXFilter.filterPointsDouglasPeucker(path);
 
         log.info("D+ : {} m", path.getTotalElevation());
