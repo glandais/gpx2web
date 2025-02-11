@@ -156,12 +156,12 @@ public class Point {
         return get(PointField.time, Unit.EPOCH_SECONDS);
     }
 
-    public double getMaxSpeed() {
-        return get(PointField.max_speed, Unit.SPEED_S_M);
+    public double getSpeedMax() {
+        return get(PointField.speed_max, Unit.SPEED_S_M);
     }
 
-    public void setMaxSpeed(double maxSpeed) {
-        put(PointField.max_speed, maxSpeed, Unit.SPEED_S_M, ValueKind.computed);
+    public void setSpeedMax(double maxSpeed) {
+        put(PointField.speed_max, maxSpeed, Unit.SPEED_S_M, ValueKind.computed);
     }
 
     public double getDist() {

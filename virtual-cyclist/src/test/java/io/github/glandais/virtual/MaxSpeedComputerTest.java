@@ -37,15 +37,15 @@ public class MaxSpeedComputerTest {
 
         for (Point point : course.getGpxPath().getPoints()) {
 
-            String maxSpeed = get(point, "max_speed", Unit.SPEED_S_M);
-            String vmaxIncline = get(point, "vmax_incline", Unit.SPEED_S_M);
+            String maxSpeed = get(point, "speed_max", Unit.SPEED_S_M);
+            String vmaxIncline = get(point, "speed_max_incline", Unit.SPEED_S_M);
             if (maxSpeed.equalsIgnoreCase(vmaxIncline)) {
                 System.out.print("*** ");
             }
             System.out.println("dist : " + get(point, "dist", Unit.METERS) + " - " +
-                    "max_speed : " + maxSpeed + " - " +
+                    "speed_max : " + maxSpeed + " - " +
                     "radius : " + get(point, "radius", Unit.METERS) + " - " +
-                    "vmax_incline : " + vmaxIncline);
+                    "speed_max_incline : " + vmaxIncline);
         }
 
         Constants.DEBUG = false;

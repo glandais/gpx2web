@@ -31,10 +31,10 @@ public class PowerComputer {
 
     public void computeTrack(Course course) {
 
+        course.getGpxPath().computeArrays(ValueKind.computed);
         final List<Point> newPoints = new ArrayList<>();
 
         final CyclistStatus status = new CyclistStatus();
-        status.speed = MINIMAL_SPEED;
 
         while (status.odo < course.getGpxPath().getDist()) {
             newPoints.add(getNextPoint(course, status));
@@ -46,9 +46,12 @@ public class PowerComputer {
     private Point getNextPoint(Course course, CyclistStatus status) {
         final long startMillis = course.getStart().toEpochMilli();
         long now = startMillis + ((long) (1000 * status.ellapsed));
+
         Point current = getPoint(course, status.odo, now, ValueKind.computed);
         current.setTime(Instant.ofEpochMilli(now), ValueKind.computed);
         current.setSpeed(status.speed, ValueKind.staging);
+        double speedOld = status.speed;
+        current.putDebug("speed_old", status.speed, Unit.SPEED_S_M);
         current.setGrade(current.getGrade(), ValueKind.staging);
 
         final double mKg = course.getCyclist().mKg();
@@ -75,41 +78,48 @@ public class PowerComputer {
                 Unit.WATTS,
                 components.stream().map(c -> new ValueKey(c, ValueKind.debug)).collect(Collectors.toList())
         ), Unit.FORMULA_WATTS);
+        current.putDebug("p_sum_verified", p_sum, Unit.WATTS);
+
 
         // p_sum = 0.5 * (mKg + ((I1 + I2) / (r^2))) * (new_speed * new_speed - speed * speed) / DT
         // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + ((I1 + I2) / (r^2))))
         double inertia = inertiaFront + inertiaRear;
         double new_speed_squared = DT * p_sum / (0.5 * (mKg + (inertia / (wheelRadius * wheelRadius)))) + status.speed * status.speed;
+
+        double speedNew;
         if (new_speed_squared < MINIMAL_SPEED * MINIMAL_SPEED) {
-            status.speed = MINIMAL_SPEED;
+            speedNew = MINIMAL_SPEED;
         } else {
-            status.speed = Math.sqrt(new_speed_squared);
+            speedNew = Math.sqrt(new_speed_squared);
         }
 
         String formula = "SQRT(" + DT + " * p_sum / (0.5 * (mKg + (" + inertia + " / (" + wheelRadius + " * " + wheelRadius + ")))) + (speed) * (speed))";
-
-        current.putDebug("new_speed", new Formul(formula,
+        current.putDebug("speed_new", new Formul(formula,
                 Unit.SPEED_S_M,
                 new ValueKey("p_sum", ValueKind.debug),
                 new ValueKey("mKg", ValueKind.debug),
                 new ValueKey("speed", ValueKind.staging)
         ), Unit.FORMULA_SPEED_S_M);
 
-        if (Constants.VERIFIED) {
-            current.putDebug("new_speed_verified", status.speed, Unit.SPEED_S_M);
+        double dx;
+        double idspeed = 0;
+        Point next;
+        do {
+            status.speed = speedNew - idspeed * (0.5 / 3.6);
+            dx = DT * (speedOld + status.speed) / 2;
+            next = getPoint(course, status.odo + dx, now, ValueKind.computed);
+            idspeed++;
+        } while (status.speed > next.getSpeedMax() && status.speed > MINIMAL_SPEED);
+        if (status.speed < MINIMAL_SPEED) {
+            status.speed = MINIMAL_SPEED;
         }
 
-        status.speed = Math.max(MINIMAL_SPEED, Math.min(current.getMaxSpeed(), status.speed));
-        current.putDebug("fixed_speed", status.speed, Unit.SPEED_S_M);
-
-        current.setSpeed(status.speed, ValueKind.computed);
-
-        double dx = DT * status.speed;
-
-        current.putDebug("dx", new Formul(DT + " * new_speed", Unit.METERS, new ValueKey("new_speed", ValueKind.debug)), Unit.FORMULA_METERS);
+        current.putDebug("speed_new", status.speed, Unit.SPEED_S_M);
+        current.putDebug("dx", new Formul(DT + " * (speed_new + speed_old) / 2", Unit.METERS, new ValueKey("speed_new", ValueKind.debug), new ValueKey("speed_old", ValueKind.debug)), Unit.FORMULA_METERS);
         if (Constants.VERIFIED) {
             current.putDebug("dx_verified", dx, Unit.METERS);
         }
+        current.putDebug("speed_real", dx / DT, Unit.SPEED_S_M);
 
         status.odo = status.odo + dx;
         status.ellapsed = status.ellapsed + DT;
@@ -131,14 +141,15 @@ public class PowerComputer {
                         continue;
                     }
 
-                    double ratio = (d - dists[i - 1]) / (dists[i] - dists[i - 1]);
+                    double dx = d - dists[i - 1];
+                    double ratio = dx / (dists[i] - dists[i - 1]);
                     Point result = Point.interpolate(p, pp1, ratio, now);
                     result.setBearing(p.getBearing(), kind);
                     return result;
                 }
             }
         }
-        throw new IllegalStateException();
+        return points.get(points.size() - 1);
     }
 
 }

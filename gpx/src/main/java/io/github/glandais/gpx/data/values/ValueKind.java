@@ -8,5 +8,6 @@ public enum ValueKind {
     smoothed,
     computed,
     guessed,
-    debug, staging;
+    debug,
+    staging;
 }

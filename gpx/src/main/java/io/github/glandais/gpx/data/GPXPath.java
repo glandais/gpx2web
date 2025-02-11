@@ -112,28 +112,23 @@ public class GPXPath {
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
 
-            int mini = i - 1;
-            while (mini >= 0 && dists[i] - dists[mini] == 0) {
-                mini--;
-            }
-            mini = Math.max(0, mini);
-
             int maxi = i + 1;
             while (maxi < dists.length && (dists[maxi] - dists[i] == 0)) {
                 maxi++;
             }
             maxi = Math.min(dists.length - 1, maxi);
 
-            double dist = dists[maxi] - dists[mini];
+            double dist = dists[maxi] - dists[i];
             if (dist > 0) {
-                double dele = eles[maxi] - eles[mini];
+                double dele = eles[maxi] - eles[i];
                 double grade = dele / dist;
                 p.setGrade(grade, kind);
 
-                double dt = time[maxi] - time[mini];
+                double dt = time[maxi] - time[i];
+                p.putDebug("dist_computed", dist, Unit.METERS);
                 p.setSpeed(1000.0 * dist / dt, kind);
 
-                Point pmin = points.get(mini);
+                Point pmin = points.get(i);
                 Point pmax = points.get(maxi);
                 Vector v_from = pmin.project();
                 Vector v_to = pmax.project();

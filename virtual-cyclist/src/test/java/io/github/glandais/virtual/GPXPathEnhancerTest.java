@@ -4,6 +4,7 @@ import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.io.read.GPXFileReader;
 import io.github.glandais.io.write.GPXFileWriter;
+import io.github.glandais.io.write.JsonFileWriter;
 import io.github.glandais.io.write.tabular.XLSXFileWriter;
 import io.github.glandais.util.Constants;
 import io.github.glandais.virtual.aero.aero.AeroProviderConstant;
@@ -30,6 +31,9 @@ public class GPXPathEnhancerTest {
     @Inject
     XLSXFileWriter xlsxFileWriter;
 
+    @Inject
+    JsonFileWriter jsonFileWriter;
+
     @SneakyThrows
     @Test
     @Disabled
@@ -49,6 +53,7 @@ public class GPXPathEnhancerTest {
         gpxPathEnhancer.virtualize(course, false);
         gpxFileWriter.writeGpxFile(gpx, new File("output/" + output + ".gpx"));
         xlsxFileWriter.writeXlsxFile(gpxPath, new File("output/" + output + ".xlsx"));
+        jsonFileWriter.writeJsonFile(gpxPath, new File("output/" + output + ".json"));
 
         Constants.DEBUG = false;
     }

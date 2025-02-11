@@ -19,7 +19,7 @@ public enum PointField {
 
     dist(),
 
-    max_speed(),
+    speed_max(),
 
     time(),
 

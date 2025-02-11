@@ -41,7 +41,7 @@ public class GPXPathEnhancer {
         GPXPath gpxPath = course.getGpxPath();
         gpxPerDistance.computeOnePointPerDistance(gpxPath, 10.0);
         gpxElevationFixer.fixElevation(gpxPath);
-        GPXFilter.filterPointsDouglasPeucker(gpxPath);
+//        GPXFilter.filterPointsDouglasPeucker(gpxPath);
         maxSpeedComputer.computeMaxSpeeds(course);
         powerComputer.computeTrack(course);
         gpxPerSecond.computeOnePointPerSecond(gpxPath);

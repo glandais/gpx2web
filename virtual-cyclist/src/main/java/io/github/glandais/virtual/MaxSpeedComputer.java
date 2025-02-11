@@ -29,7 +29,7 @@ public class MaxSpeedComputer {
             Point p = points.get(i);
             if (i == 0 || i == points.size() - 1) {
                 // no info for first/last point
-                p.setMaxSpeed(cyclist.getMaxSpeedMs());
+                p.setSpeedMax(cyclist.getMaxSpeedMs());
             } else {
                 // point before/point after
                 Point pm1 = points.get(i - 1);
@@ -37,7 +37,7 @@ public class MaxSpeedComputer {
                 // compute max speed
                 computeMaxSpeedByIncline(pm1, p, pp1, cyclist);
             }
-            p.putDebug("vmax_incline", p.getMaxSpeed(), Unit.SPEED_S_M);
+            p.putDebug("speed_max_incline", p.getSpeedMax(), Unit.SPEED_S_M);
         }
     }
 
@@ -62,7 +62,7 @@ public class MaxSpeedComputer {
         Vector circleCenter = getCircleCenter(tpm1, tp, tpp1);
         if (circleCenter == null) {
             // not found, either 3 points are equal or colinear
-            p.setMaxSpeed(cyclist.getMaxSpeedMs());
+            p.setSpeedMax(cyclist.getMaxSpeedMs());
             return;
         }
         Vector rad = circleCenter.sub(tp);
@@ -74,12 +74,12 @@ public class MaxSpeedComputer {
 
         // https://en.wikipedia.org/wiki/Bicycle_and_motorcycle_dynamics#Leaning
         double vmax = Math.sqrt(Constants.G * radius * cyclist.getTanMaxAngle());
-        p.setMaxSpeed(Math.min(cyclist.getMaxSpeedMs(), vmax));
+        p.setSpeedMax(Math.min(cyclist.getMaxSpeedMs(), vmax));
     }
 
     private void computeMaxSpeedByBraking(Point pm1, Point p, Cyclist cyclist) {
-        double v0 = pm1.getMaxSpeed();
-        double vf = p.getMaxSpeed();
+        double v0 = pm1.getSpeedMax();
+        double vf = p.getSpeedMax();
         double a = -cyclist.getMaxBrakeMS2();
 
         double t = (vf - v0) / a;
@@ -96,7 +96,7 @@ public class MaxSpeedComputer {
             return;
         }
         double newMaxSpeedPrevious = Math.sqrt(vf * vf - 2 * a * dist);
-        pm1.setMaxSpeed(newMaxSpeedPrevious);
+        pm1.setSpeedMax(newMaxSpeedPrevious);
     }
 
     private static Vector getCircleCenter(Vector a, Vector b, Vector c) {
