@@ -1,15 +1,16 @@
 package io.github.glandais.virtual;
 
-import lombok.Data;
+import io.github.glandais.gpx.data.Point;
 
-@Data
-public class CyclistStatus {
-
-    // m
-    double odo = 0.0;
-    // s
-    double ellapsed = 0.0;
-    // m.s-2
-    double speed = 0.0;
+public record CyclistStatus(
+        Point location,
+        // m
+        double odo,
+        // s
+        double ellapsed,
+        // m.s-2
+        double speed,
+        boolean end
+) {
 
 }

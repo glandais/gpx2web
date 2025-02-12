@@ -37,7 +37,7 @@ public class RollingResistancePowerProvider implements PowerProvider {
         final double grade = location.getGrade();
 
         double coef = Math.cos(Math.atan(grade));
-        double p_rr = -coef * mKg * Constants.G * status.getSpeed() * crr;
+        double p_rr = -coef * mKg * Constants.G * status.speed() * crr;
 
         location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
         return p_rr;

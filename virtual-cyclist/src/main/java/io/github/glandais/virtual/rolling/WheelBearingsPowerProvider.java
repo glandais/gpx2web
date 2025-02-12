@@ -29,7 +29,7 @@ public class WheelBearingsPowerProvider implements PowerProvider {
     public double getPowerW(Course course, Point location, CyclistStatus status) {
 
         location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
-        return -status.getSpeed() * (91 + 8.7 * status.getSpeed()) / 1000.0;
+        return -status.speed() * (91 + 8.7 * status.speed()) / 1000.0;
     }
 
 }

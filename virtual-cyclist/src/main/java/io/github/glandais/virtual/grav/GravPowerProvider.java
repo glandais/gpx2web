@@ -34,6 +34,6 @@ public class GravPowerProvider implements PowerProvider {
         double grade = location.getGrade();
         double coef = Math.sin(Math.atan(grade));
         location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
-        return -mKg * Constants.G * status.getSpeed() * coef;
+        return -mKg * Constants.G * status.speed() * coef;
     }
 }

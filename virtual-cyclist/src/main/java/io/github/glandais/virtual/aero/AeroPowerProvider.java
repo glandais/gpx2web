@@ -33,7 +33,7 @@ public class AeroPowerProvider implements PowerProvider {
         final Wind wind = course.getWindProvider().getWind(course, location, status);
         double p_air;
         if (wind.getWindSpeed() == 0) {
-            double speed = status.getSpeed();
+            double speed = status.speed();
             location.putDebug("p_" + getId(), FORMUL_SIMPLE, Unit.FORMULA_WATTS);
             p_air = -aeroCoef * speed * speed * speed;
         } else {
@@ -45,7 +45,7 @@ public class AeroPowerProvider implements PowerProvider {
     }
 
     private double computePAirWithWind(CyclistStatus status, Point current, double aeroCoef, Wind wind) {
-        double speed = status.getSpeed();
+        double speed = status.speed();
         double bearing = current.getBearing();
         current.putDebug("wind_speed", wind.getWindSpeed(), Unit.SPEED_S_M);
         current.putDebug("wind_direction", wind.getWindDirection(), Unit.RADIANS);
