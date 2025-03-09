@@ -1,9 +1,9 @@
 package io.github.glandais;
 
-import io.github.glandais.util.CacheFolderProvider;
+import io.github.glandais.gpx.util.CacheFolderProvider;
+import jakarta.inject.Singleton;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import jakarta.inject.Singleton;
 import java.io.File;
 
 @Singleton

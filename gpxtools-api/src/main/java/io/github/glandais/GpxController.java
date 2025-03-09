@@ -2,11 +2,12 @@ package io.github.glandais;
 
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.io.read.GPXFileReader;
-import io.github.glandais.io.write.GPXFileWriter;
-import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.GPXDataComputer;
-import io.github.glandais.virtual.GPXPathEnhancer;
+import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.io.write.GPXFileWriter;
+import io.github.glandais.gpx.filter.GPXFilter;
+import io.github.glandais.gpx.srtm.GPXElevationFixer;
+import io.github.glandais.gpx.util.GPXDataComputer;
+import io.github.glandais.gpx.virtual.GPXPathEnhancer;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -51,11 +52,11 @@ public class GpxController {
 
         GPX gpx = gpxFileReader.parseGpx(stream);
         for (GPXPath path : gpx.paths()) {
-            gpxPathEnhancer.virtualize(path);
+            GPXFilter.filterPointsDouglasPeucker(path);
         }
 
         File tmp = File.createTempFile("gpx", "tmp");
-        gpxFileWriter.writeGpxFile(gpx, tmp);
+        gpxFileWriter.writeGPX(gpx, tmp);
 
         byte[] bytes = FileUtils.readFileToByteArray(tmp);
         Files.delete(tmp.toPath());

@@ -1,25 +1,22 @@
 package io.github.glandais.export;
 
 import io.github.glandais.FilesMixin;
-import io.github.glandais.io.write.FitFileWriter;
-import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.GPXPerSecond;
+import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.io.write.FitFileWriter;
+import io.github.glandais.gpx.io.write.GPXFileWriter;
+import io.github.glandais.gpx.map.MapImage;
+import io.github.glandais.gpx.map.SRTMMapProducer;
+import io.github.glandais.gpx.map.TileMapImage;
+import io.github.glandais.gpx.map.TileMapProducer;
+import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.filter.GPXFilter;
-import io.github.glandais.io.write.GPXFileWriter;
-import io.github.glandais.io.read.GPXFileReader;
-import io.github.glandais.map.MapImage;
-import io.github.glandais.map.SRTMMapProducer;
-import io.github.glandais.map.TileMapImage;
-import io.github.glandais.map.TileMapProducer;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import jakarta.inject.Inject;
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 @CommandLine.Command(name = "export", mixinStandardHelpOptions = true)
@@ -115,13 +112,12 @@ public class ExportCommand implements Runnable {
 
         if (fit) {
             log.info("Writing FIT for path {}", path.getName());
-            fitFileWriter.writeFitFile(path, new File(pathFolder, path.getName() + ".fit"));
+            fitFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".fit"));
         }
 
         if (gpx) {
             log.info("Writing GPX for path {}", path.getName());
-            GPX gpx = new GPX(path.getName(), Collections.singletonList(path), List.of());
-            gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, path.getName() + ".gpx"));
+            gpxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".gpx"), true);
         }
 
     }

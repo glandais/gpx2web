@@ -1,41 +1,38 @@
 package io.github.glandais.process;
 
+import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.io.write.tabular.CSVFileWriter;
-import io.github.glandais.io.write.GPXFileWriter;
-import io.github.glandais.io.read.GPXFileReader;
-import io.github.glandais.srtm.GPXElevationFixer;
-import io.github.glandais.util.SmoothService;
-import io.github.glandais.virtual.Course;
-import io.github.glandais.virtual.MaxSpeedComputer;
-import io.github.glandais.virtual.PowerComputer;
-import io.github.glandais.virtual.PowerProvider;
-import io.github.glandais.virtual.aero.cx.CxGuesser;
-import io.github.glandais.virtual.aero.cx.CxProvider;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
-import io.github.glandais.virtual.aero.cx.CxProviderFromData;
-import io.github.glandais.virtual.aero.wind.Wind;
-import io.github.glandais.virtual.aero.wind.WindProvider;
-import io.github.glandais.virtual.aero.wind.WindProviderConstant;
-import io.github.glandais.virtual.cyclist.PowerProviderConstant;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
-import io.github.glandais.virtual.grav.WeightGuesser;
+import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.io.write.GPXFileWriter;
+import io.github.glandais.gpx.io.write.tabular.CSVFileWriter;
+import io.github.glandais.gpx.io.write.tabular.XLSXFileWriter;
+import io.github.glandais.gpx.srtm.GPXElevationFixer;
+import io.github.glandais.gpx.util.SmoothService;
+import io.github.glandais.gpx.virtual.Course;
+import io.github.glandais.gpx.virtual.VirtualizeService;
+import io.github.glandais.gpx.virtual.maxspeed.MaxSpeedComputer;
+import io.github.glandais.gpx.virtual.power.aero.aero.AeroGuesser;
+import io.github.glandais.gpx.virtual.power.aero.aero.AeroProvider;
+import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
+import io.github.glandais.gpx.virtual.power.aero.wind.Wind;
+import io.github.glandais.gpx.virtual.power.aero.wind.WindProvider;
+import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderConstant;
+import io.github.glandais.gpx.virtual.power.cyclist.CyclistPowerProvider;
+import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
+import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderFromData;
+import io.github.glandais.gpx.virtual.power.grav.WeightGuesser;
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import jakarta.inject.Inject;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 @Command(name = "process", mixinStandardHelpOptions = true)
@@ -51,7 +48,7 @@ public class ProcessCommand implements Runnable {
     protected MaxSpeedComputer maxSpeedComputer;
 
     @Inject
-    protected PowerComputer powerComputer;
+    protected VirtualizeService virtualizeService;
 
     @Inject
     protected GPXFileWriter gpxFileWriter;
@@ -62,11 +59,11 @@ public class ProcessCommand implements Runnable {
     @Inject
     protected CSVFileWriter csvFileWriter;
 
-//    @Inject
-//    protected XLSXFileWriter xlsxFileWriter;
+    @Inject
+    protected XLSXFileWriter xlsxFileWriter;
 
     @Inject
-    protected CxGuesser cxGuesser;
+    protected AeroGuesser aeroGuesser;
 
     @Inject
     protected WeightGuesser weightGuesser;
@@ -77,11 +74,14 @@ public class ProcessCommand implements Runnable {
     @CommandLine.Mixin
     protected CyclistMixin cyclistMixin;
 
+    @CommandLine.Mixin
+    protected BikeMixin bikeMixin;
+
     @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
     protected boolean csv = false;
 
-//    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-//    protected boolean xlsx = false;
+    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
+    protected boolean xlsx = false;
 
     @Option(names = {"--gpx-elevation"}, negatable = true, description = "Gpx has valid elevation")
     protected boolean gpxElevation = false;
@@ -92,14 +92,11 @@ public class ProcessCommand implements Runnable {
     @CommandLine.Option(names = {"--cyclist-power"}, description = "Cyclist power (W)")
     protected double powerW = 240;
 
-    @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
-    protected boolean guessCx = false;
-
-    @Option(names = {"--guess-weight"}, negatable = true, description = "Guess Cx")
-    protected boolean guessWeight = false;
-
-    @CommandLine.Option(names = {"--cyclist-cx"}, description = "Cyclist Cx")
-    protected double cx = 0.3;
+//    @Option(names = {"--guess-cx"}, negatable = true, description = "Guess Cx")
+//    protected boolean guessCx = false;
+//
+//    @Option(names = {"--guess-weight"}, negatable = true, description = "Guess Cx")
+//    protected boolean guessWeight = false;
 
     // m.s-2
     @Option(names = {"--wind-speed"}, description = "Wind speed (km/s)")
@@ -109,8 +106,8 @@ public class ProcessCommand implements Runnable {
     protected double windDirectionDegree = 0.0;
 
     protected WindProvider windProvider;
-    protected CxProvider cxProvider;
-    protected PowerProvider powerProvider;
+    protected AeroProvider aeroProvider;
+    protected CyclistPowerProvider powerProvider;
 
     protected Instant[] starts;
     protected int counter = 0;
@@ -141,12 +138,12 @@ public class ProcessCommand implements Runnable {
 
 //        System.setProperty("gpx.data.cache", cacheValue);
         windProvider = new WindProviderConstant(new Wind(windSpeedKmH / 3.6, Math.toRadians(windDirectionDegree)));
-        cxProvider = new CxProviderConstant(cx);
+        aeroProvider = new AeroProviderConstant();
 
         if (gpxPower) {
             powerProvider = new PowerProviderFromData();
         } else {
-            powerProvider = new PowerProviderConstant(powerW);
+            powerProvider = new PowerProviderConstant();
         }
     }
 
@@ -154,7 +151,7 @@ public class ProcessCommand implements Runnable {
     private void process(GPXPath path, File pathFolder) {
 
         if (!gpxElevation) {
-            gpxElevationFixer.fixElevation(path, false);
+            gpxElevationFixer.fixElevation(path);
             log.info("D+ : {} m", path.getTotalElevation());
         }
 
@@ -166,48 +163,48 @@ public class ProcessCommand implements Runnable {
         Instant start = getNextStart();
         Course course = new Course(path, start,
                 cyclistMixin.getCyclist(),
+                bikeMixin.getBike(),
                 powerProvider,
                 windProvider,
-                cxProvider);
+                aeroProvider);
         maxSpeedComputer.computeMaxSpeeds(course);
-        powerComputer.computeTrack(course);
+        virtualizeService.virtualizeTrack(course);
 
         log.info("Writing GPX for {}", path.getName());
-        GPX gpx = new GPX(path.getName(), Collections.singletonList(path), List.of());
-        gpxFileWriter.writeGpxFile(gpx, new File(pathFolder, path.getName() + ".gpx"), true);
+        gpxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".gpx"), true);
 
         if (csv) {
             log.info("Writing CSV for path {}", path.getName());
-            csvFileWriter.writeCsvFile(path, new File(pathFolder, path.getName() + ".csv"));
+            csvFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".csv"));
         }
 
-//        if (xlsx) {
-//            log.info("Writing XLSX for path {}", path.getName());
-//            xlsxFileWriter.writeXlsxFile(path, new File(pathFolder, path.getName() + ".xlsx"));
-//        }
+        if (xlsx) {
+            log.info("Writing XLSX for path {}", path.getName());
+            xlsxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".xlsx"));
+        }
 
     }
 
 
-    protected CxProvider guess(GPXPath path) {
-        if (guessWeight || guessCx) {
-            smoothService.smoothSpeed(path);
-        }
-
-        if (guessWeight) {
-            weightGuesser.guess(path, cyclistMixin.getCyclist(), windProvider, cxProvider);
-        }
-        if (guessCx) {
-            cxGuesser.guess(path, cyclistMixin.getCyclist(),
-                    windProvider);
-            smoothService.smoothCx(path);
-            cxProvider = new CxProviderFromData();
-        }
-
-        if (guessWeight || guessCx) {
-            path.computeArrays(ValueKind.computed);
-        }
-        return cxProvider;
+    protected AeroProvider guess(GPXPath path) {
+//        if (guessWeight || guessCx) {
+//            smoothService.smoothSpeed(path);
+//        }
+//
+//        if (guessWeight) {
+//            weightGuesser.guess(path, cyclistMixin.getCyclist(), windProvider, aeroProvider);
+//        }
+//        if (guessCx) {
+//            cxGuesser.guess(path, cyclistMixin.getCyclist(),
+//                    windProvider);
+//            smoothService.smoothAeroCoef(path);
+//            aeroProvider = new AeroProviderFromData();
+//        }
+//
+//        if (guessWeight || guessCx) {
+//            path.computeArrays(ValueKind.computed);
+//        }
+        return aeroProvider;
     }
 
 }

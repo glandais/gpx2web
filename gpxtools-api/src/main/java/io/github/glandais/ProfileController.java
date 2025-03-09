@@ -1,20 +1,8 @@
 package io.github.glandais;
 
-import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.io.read.GPXFileReader;
-import io.github.glandais.srtm.GPXElevationFixer;
+import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.srtm.GPXElevationFixer;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.FileUtils;
-
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.List;
 
 @RequiredArgsConstructor
 //@Path("/profile")

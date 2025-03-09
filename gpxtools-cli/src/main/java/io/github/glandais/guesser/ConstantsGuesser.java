@@ -3,19 +3,15 @@ package io.github.glandais.guesser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.util.SmoothService;
-import io.github.glandais.virtual.Course;
-import io.github.glandais.virtual.Cyclist;
-import io.github.glandais.virtual.MaxSpeedComputer;
-import io.github.glandais.virtual.PowerComputer;
-import io.github.glandais.virtual.aero.cx.CxProviderConstant;
-import io.github.glandais.virtual.aero.wind.WindProviderNone;
-import io.github.glandais.virtual.cyclist.PowerProviderFromData;
+import io.github.glandais.gpx.util.SmoothService;
+import io.github.glandais.gpx.virtual.Course;
+import io.github.glandais.gpx.virtual.Cyclist;
+import io.github.glandais.gpx.virtual.VirtualizeService;
+import io.github.glandais.gpx.virtual.maxspeed.MaxSpeedComputer;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
-import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.function.Predicate;
 
 @Singleton
@@ -24,29 +20,30 @@ public class ConstantsGuesser {
 
     protected final ObjectMapper objectMapper;
 
-    protected final PowerComputer powerComputer;
+    protected final VirtualizeService virtualizeService;
 
     protected final MaxSpeedComputer maxSpeedComputer;
 
     protected final SmoothService smoothService;
 
     public ConstantsGuesser(final ObjectMapper objectMapper,
-                            final PowerComputer powerComputer,
+                            final VirtualizeService virtualizeService,
                             final MaxSpeedComputer maxSpeedComputer,
                             final SmoothService smoothService) {
 
         this.objectMapper = objectMapper;
-        this.powerComputer = powerComputer;
+        this.virtualizeService = virtualizeService;
         this.maxSpeedComputer = maxSpeedComputer;
         this.smoothService = smoothService;
     }
 
     public Course guessWithPathWithPower(GPXPath original, Cyclist cyclist) throws IOException {
+        /*
         smoothService.smoothEle(original, 100);
 //        gradeService.computeGrade(original, ValueKind.computed);
 //        speedService.computeSpeed(original, PointField.originalSpeed, ValueKind.computed);
 
-        CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new CxProviderConstant());
+        CourseWithScore course = new CourseWithScore(original, Instant.now(), cyclist, new PowerProviderFromData(), new WindProviderNone(), new AeroProviderConstant());
 
         String originalJson = objectMapper.writeValueAsString(original);
         GPXPath simulated = objectMapper.readValue(originalJson, GPXPath.class);
@@ -77,7 +74,7 @@ public class ConstantsGuesser {
                         CourseWithScore current = new CourseWithScore(original, Instant.now(), curCyclist,
                                 new PowerProviderFromData(),
                                 new WindProviderNone(),
-                                new CxProviderConstant(cx));
+                                new AeroProviderConstant(cx));
                         simulated = objectMapper.readValue(originalJson, GPXPath.class);
 
                         setScore(original, simulated, current);
@@ -89,7 +86,7 @@ public class ConstantsGuesser {
                     }
                 }
             }
-            double cx = ((CxProviderConstant) minCourse.getCxProvider()).getCx();
+            double cx = ((AeroProviderConstant) minCourse.getAeroProvider()).getAeroCoef();
             double crr = minCourse.getCyclist().getCrr();
             double mKg = minCourse.getCyclist().getMKg();
             cxRange = new ConstantRange(cx - cxRange.getStep(nSteps),
@@ -102,6 +99,9 @@ public class ConstantsGuesser {
         }
 
         return minCourse;
+
+         */
+        return null;
     }
 
     protected void printRanges(ConstantRange cxRange, ConstantRange crrRange, ConstantRange mRange) {
@@ -112,7 +112,7 @@ public class ConstantsGuesser {
 
     protected void setScore(GPXPath original, GPXPath simulated, CourseWithScore course) {
         maxSpeedComputer.computeMaxSpeeds(course);
-        powerComputer.computeTrack(course);
+        virtualizeService.virtualizeTrack(course);
 //        speedService.computeSpeed(simulated, ValueKind.computed);
         double scoreCx = getScore(original, simulated, g -> Math.abs(g) < 0.5);
         double scoreM = getScore(original, simulated, g -> Math.abs(g) > 2.5);

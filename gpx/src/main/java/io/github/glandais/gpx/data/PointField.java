@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.util.Arrays;
 import java.util.List;
 
+@Getter
 public enum PointField {
 
     lat(),
@@ -19,7 +20,7 @@ public enum PointField {
 
     dist(),
 
-    max_speed(),
+    speed_max(),
 
     time(),
 
@@ -29,9 +30,9 @@ public enum PointField {
 
     ele(),
 
-    cx(),
+    aeroCoef(),
 
-    ellapsed(),
+    elapsed(),
 
     originalSpeed(),
 
@@ -43,7 +44,6 @@ public enum PointField {
 
     temperature("gpxx:Temperature");
 
-    @Getter
     private final List<String> gpxTags;
 
     PointField(String... gpxTag) {
@@ -62,10 +62,10 @@ public enum PointField {
     }
 
     public boolean isExportGpx() {
-        return gpxTags.size() > 0;
+        return !gpxTags.isEmpty();
     }
 
     public String getGpxTag() {
-        return gpxTags.size() > 0 ? gpxTags.get(0) : "unknown";
+        return !gpxTags.isEmpty() ? gpxTags.get(0) : "unknown";
     }
 }

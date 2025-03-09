@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class ValuesSimple implements Values {
 
-    private Map<String, Value<?, ?>> map = new LinkedHashMap<>();
+    private final Map<String, Value<?, ?>> map = new LinkedHashMap<>();
 
     @Override
     public <J> void put(String key, J value, Unit<J> unit, ValueKind kind) {
@@ -52,7 +52,7 @@ public class ValuesSimple implements Values {
                 Object nv = interpolateValue(v, vp1, coef);
 
                 if (nv != null) {
-                    data.put(key, nv, v.getUnit(), ValueKind.current);
+                    data.put(key, nv, v.unit(), ValueKind.current);
                 }
             }
             return data;
@@ -61,4 +61,12 @@ public class ValuesSimple implements Values {
         }
     }
 
+    @Override
+    public Values copy() {
+        ValuesSimple data = new ValuesSimple();
+        for (Map.Entry<String, Value<?, ?>> entry : this.map.entrySet()) {
+            data.map.put(entry.getKey(), entry.getValue().copy());
+        }
+        return data;
+    }
 }

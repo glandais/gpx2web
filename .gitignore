@@ -6,8 +6,3 @@
 **/output
 *.iml
 /.idea
-**/cache
-**/output
-/gpxtools
-/gpxtools.jar
-/data

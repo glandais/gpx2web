@@ -1,9 +1,9 @@
 package io.github.glandais;
 
 import io.github.glandais.gpx.data.GPX;
-import io.github.glandais.io.read.GPXFileReader;
-import io.github.glandais.map.TileMapImage;
-import io.github.glandais.map.TileMapProducer;
+import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.map.TileMapImage;
+import io.github.glandais.gpx.map.TileMapProducer;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;

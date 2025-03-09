@@ -21,16 +21,6 @@
             <version>1.1.28-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.glandais.gpx2web</groupId>
-            <artifactId>gpx-tabular</artifactId>
-            <version>1.1.28-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.glandais.gpx2web</groupId>
-            <artifactId>virtual-cyclist</artifactId>
-            <version>1.1.28-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>

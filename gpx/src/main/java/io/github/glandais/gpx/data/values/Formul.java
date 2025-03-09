@@ -23,6 +23,6 @@ public class Formul {
     public Formul(String formula, StorageUnit<?> unit, List<ValueKey> inputs) {
         this.formula = formula;
         this.unit = unit;
-        this.inputs = inputs.toArray(new ValueKey[inputs.size()]);
+        this.inputs = inputs.toArray(new ValueKey[0]);
     }
 }

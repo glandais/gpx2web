@@ -1,19 +1,8 @@
 package io.github.glandais.gpx.data.values;
 
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
-import lombok.Getter;
 
-@Getter
-public class Value<T, U extends StorageUnit<T>> {
-    protected final T value;
-    protected final U unit;
-    protected final ValueKind kind;
-
-    public Value(T value, U unit, ValueKind kind) {
-        this.value = value;
-        this.unit = unit;
-        this.kind = kind;
-    }
+public record Value<T, U extends StorageUnit<T>>(T value, U unit, ValueKind kind) {
 
     @Override
     public String toString() {
@@ -21,5 +10,13 @@ public class Value<T, U extends StorageUnit<T>> {
             return "";
         }
         return unit.formatHuman(value);
+    }
+
+    public Value<?, ?> copy() {
+        return new Value<>(
+                value,
+                unit,
+                kind
+        );
     }
 }

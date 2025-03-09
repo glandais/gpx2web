@@ -19,9 +19,17 @@
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-core</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

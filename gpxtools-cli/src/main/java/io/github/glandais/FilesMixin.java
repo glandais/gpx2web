@@ -2,7 +2,7 @@ package io.github.glandais;
 
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.io.read.GPXFileReader;
+import io.github.glandais.gpx.io.read.GPXFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;

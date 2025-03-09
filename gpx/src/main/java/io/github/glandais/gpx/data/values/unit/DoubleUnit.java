@@ -1,6 +1,6 @@
 package io.github.glandais.gpx.data.values.unit;
 
-public abstract class DoubleUnit extends StorageUnit<Double> {
+public abstract class DoubleUnit extends NumberUnit<Double> {
 
     @Override
     public Double interpolate(Double v, Double vp1, double coef) {

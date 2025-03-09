@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class ValuesWithKind implements Values {
 
-    private Map<String, Map<ValueKind, Value<?, ?>>> map = new LinkedHashMap<>();
+    private final Map<String, Map<ValueKind, Value<?, ?>>> map = new LinkedHashMap<>();
 
     @Override
     public String toString() {
@@ -64,7 +64,7 @@ public class ValuesWithKind implements Values {
     }
 
     @Override
-    public ValuesWithKind interpolate(Values to, double coef) {
+    public Values interpolate(Values to, double coef) {
         if (to instanceof ValuesWithKind toOk) {
             ValuesWithKind data = new ValuesWithKind();
             for (String key : this.map.keySet()) {
@@ -78,7 +78,7 @@ public class ValuesWithKind implements Values {
 
                     Object nv = interpolateValue(v, vp1, coef);
                     if (nv != null) {
-                        data.putInternal(key, nv, v.getUnit(), valueKind);
+                        data.putInternal(key, nv, v.unit(), valueKind);
                     }
                 }
             }
@@ -86,6 +86,21 @@ public class ValuesWithKind implements Values {
         } else {
             throw new IllegalStateException("Not ValuesWithKind");
         }
+    }
+
+    public Values copy() {
+        ValuesWithKind data = new ValuesWithKind();
+        for (Map.Entry<String, Map<ValueKind, Value<?, ?>>> entry : this.map.entrySet()) {
+            Map<ValueKind, Value<?, ?>> valuesCopy = new LinkedHashMap<>();
+            for (Map.Entry<ValueKind, Value<?, ?>> valueKindValueEntry : entry.getValue().entrySet()) {
+                valuesCopy.put(
+                        valueKindValueEntry.getKey(),
+                        valueKindValueEntry.getValue().copy()
+                );
+            }
+            data.map.put(entry.getKey(), valuesCopy);
+        }
+        return data;
     }
 
 }

@@ -40,7 +40,7 @@ public interface Values {
         if (v == null) {
             return null;
         }
-        Object value = v.getValue();
+        Object value = v.value();
         if (unit instanceof StorageUnit) {
             return (J) value;
         } else {
@@ -56,10 +56,10 @@ public interface Values {
     default Object interpolateValue(Value v, Value vp1, double coef) {
         Object nv = null;
         if (v != null) {
-            Object ov = v.getValue();
-            Object ovp1 = vp1 == null ? null : vp1.getValue();
+            Object ov = v.value();
+            Object ovp1 = vp1 == null ? null : vp1.value();
             if (ov != null && ovp1 != null) {
-                nv = v.getUnit().interpolate(ov, ovp1, coef);
+                nv = v.unit().interpolate(ov, ovp1, coef);
             } else if (ov != null) {
                 nv = ov;
             } else {
@@ -68,4 +68,6 @@ public interface Values {
         }
         return nv;
     }
+
+    Values copy();
 }

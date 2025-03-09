@@ -1,6 +1,6 @@
 package io.github.glandais.gpx.data.values.unit;
 
-public class IntegerUnit extends StorageUnit<Integer> {
+public class IntegerUnit extends NumberUnit<Integer> {
 
     @Override
     public Integer interpolate(Integer v, Integer vp1, double coef) {

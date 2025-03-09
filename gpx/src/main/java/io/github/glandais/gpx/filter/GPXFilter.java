@@ -3,7 +3,7 @@ package io.github.glandais.gpx.filter;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.util.Constants;
+import io.github.glandais.gpx.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
