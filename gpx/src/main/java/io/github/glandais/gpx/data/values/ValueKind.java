@@ -6,7 +6,6 @@ public enum ValueKind {
     srtm,
     smoothed,
     computed,
-    guessed,
     debug,
     staging
 }

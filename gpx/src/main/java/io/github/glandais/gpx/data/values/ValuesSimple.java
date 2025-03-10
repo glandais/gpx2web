@@ -1,42 +1,43 @@
 package io.github.glandais.gpx.data.values;
 
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class ValuesSimple implements Values {
 
-    private final Map<String, Value<?, ?>> map = new LinkedHashMap<>();
+    private final Map<ValueKey, Value<?, ?>> map = new EnumMap<>(ValueKey.class);
 
     @Override
-    public <J> void put(String key, J value, Unit<J> unit, ValueKind kind) {
-        map.put(key, getValue(value, unit, ValueKind.current));
+    public <J> void put(ValueKey key, J value, Unit<J> unit, ValueKind kind) {
+        map.put(key, getStorageValue(value, unit, ValueKind.current));
     }
 
     @Override
-    public Value<?, ?> getCurrent(String key) {
+    public Value<?, ?> getCurrent(ValueKey key) {
         return map.get(key);
     }
 
     @Override
-    public Value<?, ?> get(String key, ValueKind kind) {
+    public Value<?, ?> get(ValueKey key, ValueKind kind) {
         return map.get(key);
     }
 
     @Override
-    public Map<ValueKind, Value<?, ?>> getAll(String key) {
+    public Map<ValueKind, Value<?, ?>> getAll(ValueKey key) {
         LinkedHashMap<ValueKind, Value<?, ?>> result = new LinkedHashMap<>();
         result.put(ValueKind.current, getCurrent(key));
         return result;
     }
 
     @Override
-    public Set<String> getKeySet() {
+    public Set<ValueKey> getKeySet() {
         return map.keySet();
     }
 
     @Override
-    public <J> J get(String key, Unit<J> unit) {
+    public <J> J get(ValueKey key, Unit<J> unit) {
         return getConvertedValue(getCurrent(key), unit);
     }
 
@@ -44,8 +45,8 @@ public class ValuesSimple implements Values {
     public Values interpolate(Values to, double coef) {
         if (to instanceof ValuesSimple toOk) {
             ValuesSimple data = new ValuesSimple();
-            for (Map.Entry<String, Value<?, ?>> entry : this.map.entrySet()) {
-                String key = entry.getKey();
+            for (Map.Entry<ValueKey, Value<?, ?>> entry : this.map.entrySet()) {
+                ValueKey key = entry.getKey();
                 Value v = entry.getValue();
                 Value vp1 = toOk.getCurrent(key);
 
@@ -64,7 +65,7 @@ public class ValuesSimple implements Values {
     @Override
     public Values copy() {
         ValuesSimple data = new ValuesSimple();
-        for (Map.Entry<String, Value<?, ?>> entry : this.map.entrySet()) {
+        for (Map.Entry<ValueKey, Value<?, ?>> entry : this.map.entrySet()) {
             data.map.put(entry.getKey(), entry.getValue().copy());
         }
         return data;

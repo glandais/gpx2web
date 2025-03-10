@@ -2,6 +2,7 @@ package io.github.glandais.gpx.virtual.power;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.virtual.Constants;
 import io.github.glandais.gpx.virtual.Course;
 import jakarta.inject.Singleton;
@@ -45,11 +46,11 @@ public class PowerComputer {
         for (PowerProvider provider : providers.getPowerProviders()) {
             if (withCyclist || provider.getId() != PowerProviderId.cyclist) {
                 double w = provider.getPowerW(course, current);
-                current.putDebug("p_" + suffix + provider.getId(), w, Unit.WATTS);
+//                current.putDebug("p_" + suffix + provider.getId(), w, Unit.WATTS);
                 pSum = pSum + w;
             }
         }
-        current.putDebug("p_" + suffix + "sum", pSum, Unit.WATTS);
+//        current.putDebug("p_" + suffix + "sum", pSum, Unit.WATTS);
 
         return pSum;
     }
@@ -66,9 +67,9 @@ public class PowerComputer {
         double dt = getDt(p1, p2);
         // p_sum = 0.5 * (mKg + ((I1 + I2) / (r^2))) * (new_speed * new_speed - speed * speed) / DT
         double tot_power = 0.5 * (mKg + (inertia / (wheelRadius * wheelRadius))) * (s2 * s2 - s1 * s1) / dt;
-        p1.putDebug("p_power_from_acc", tot_power, Unit.WATTS);
+        p1.putDebug(ValueKey.p_power_from_acc, tot_power, Unit.WATTS);
         double cyclistPower = tot_power - power;
-        p1.putDebug("p_power_wheel_from_acc", cyclistPower, Unit.WATTS);
+        p1.putDebug(ValueKey.p_power_wheel_from_acc, cyclistPower, Unit.WATTS);
         cyclistPower = Math.min(1000, Math.max(0.0, cyclistPower));
         cyclistPower = cyclistPower / course.getBike().getEfficiency();
         return cyclistPower;

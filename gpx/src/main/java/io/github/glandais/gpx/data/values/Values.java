@@ -7,21 +7,21 @@ import java.util.Map;
 import java.util.Set;
 
 public interface Values {
-    <J> void put(String key, J value, Unit<J> unit, ValueKind kind);
+    <J> void put(ValueKey key, J value, Unit<J> unit, ValueKind kind);
 
-    Value<?, ?> getCurrent(String key);
+    Value<?, ?> getCurrent(ValueKey key);
 
-    Value<?, ?> get(String key, ValueKind kind);
+    Value<?, ?> get(ValueKey key, ValueKind kind);
 
-    Map<ValueKind, Value<?, ?>> getAll(String key);
+    Map<ValueKind, Value<?, ?>> getAll(ValueKey key);
 
-    Set<String> getKeySet();
+    Set<ValueKey> getKeySet();
 
-    <J> J get(String key, Unit<J> unit);
+    <J> J get(ValueKey key, Unit<J> unit);
 
     Values interpolate(Values to, double coef);
 
-    default <J> Value getValue(J value, Unit<J> unit, ValueKind kind) {
+    default <J> Value getStorageValue(J value, Unit<J> unit, ValueKind kind) {
         Value valueObject;
         if (unit instanceof StorageUnit) {
             valueObject = new Value(value, (StorageUnit) unit, kind);

@@ -3,6 +3,7 @@ package io.github.glandais.gpx.io.write;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.Value;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.Values;
 import io.github.glandais.gpx.data.values.unit.NumberUnit;
@@ -23,12 +24,12 @@ public class JsonFileWriter implements FileExporter {
     public void writeGPXPath(GPXPath path, File file) throws IOException {
         Map<String, Object> map = new LinkedHashMap<>();
 
-        Set<String> keys = new TreeSet<>();
-        List<Map<String, Object>> pointsValues = new ArrayList<>();
+        Set<ValueKey> keys = new TreeSet<>();
+        List<Map<ValueKey, Object>> pointsValues = new ArrayList<>();
         for (Point point : path.getPoints()) {
             Values values = point.getCsvData();
-            Map<String, Object> pointValues = new LinkedHashMap<>();
-            for (String key : values.getKeySet()) {
+            Map<ValueKey, Object> pointValues = new LinkedHashMap<>();
+            for (ValueKey key : values.getKeySet()) {
                 keys.add(key);
                 pointValues.put(key, getValue(values.get(key, ValueKind.current)));
             }

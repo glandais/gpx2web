@@ -1,4 +1,39 @@
 package io.github.glandais.gpx.data.values;
 
-public record ValueKey(String key, ValueKind kind) {
+public enum ValueKey {
+    aeroCoef,
+    bearing,
+    cadence,
+    cyclist_bearing,
+    dist,
+    dist_computed,
+    elapsed,
+    ele,
+    grade,
+    lat,
+    lon,
+    mKg,
+    originalSpeed,
+    p_aero_formula,
+    p_cyclist_current_speed,
+    p_cyclist_optimal_power,
+    p_cyclist_optimal_speed,
+    p_cyclist_raw,
+    p_cyclist_recomputed,
+    p_power_from_acc,
+    p_power_wheel_from_acc,
+    power,
+    radius,
+    simulatedSpeed,
+    speed,
+    speedDifference,
+    speed_max,
+    speed_max_incline,
+    temperature,
+    time,
+    wind_alpha,
+    wind_bearing,
+    wind_direction,
+    wind_speed
+
 }

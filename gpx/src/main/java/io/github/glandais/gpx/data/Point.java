@@ -37,11 +37,11 @@ public class Point {
 
     public Point() {
         super();
-        if (Constants.DEBUG) {
-            this.data = new ValuesWithKind();
-        } else {
-            this.data = new ValuesSimple();
-        }
+//        if (Constants.DEBUG) {
+//            this.data = new ValuesWithKind();
+//        } else {
+        this.data = new ValuesSimple();
+//        }
         setInstant(Instant.EPOCH, ValueKind.computed);
     }
 
@@ -53,7 +53,7 @@ public class Point {
         Map<String, String> values = new HashMap<>();
         for (PointField field : PointField.values()) {
             if (field.isExportGpx()) {
-                Value<?, ?> value = data.getCurrent(field.name());
+                Value<?, ?> value = data.getCurrent(field.getValueKey());
                 if (value != null) {
                     StorageUnit unit = value.unit();
                     values.put(field.getGpxTag(), unit.formatData(value.value()));
@@ -64,18 +64,18 @@ public class Point {
     }
 
     public <J> J get(PointField field, Unit<J> unit) {
-        return get(field.name(), unit);
+        return get(field.getValueKey(), unit);
     }
 
-    public <J> J get(String key, Unit<J> unit) {
+    public <J> J get(ValueKey key, Unit<J> unit) {
         return data.get(key, unit);
     }
 
     public <J> void put(PointField field, J value, Unit<J> unit, ValueKind kind) {
-        data.put(field.name(), value, unit, kind);
+        data.put(field.getValueKey(), value, unit, kind);
     }
 
-    public <J> void putDebug(String key, J value, Unit<J> unit) {
+    public <J> void putDebug(ValueKey key, J value, Unit<J> unit) {
         if (Constants.DEBUG) {
             data.put(key, value, unit, ValueKind.debug);
         }

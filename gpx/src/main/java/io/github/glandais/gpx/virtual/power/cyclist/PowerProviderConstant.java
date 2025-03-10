@@ -2,6 +2,7 @@ package io.github.glandais.gpx.virtual.power.cyclist;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.virtual.Course;
 
 import java.security.SecureRandom;
@@ -37,7 +38,7 @@ public class PowerProviderConstant implements CyclistPowerProvider {
             optimalPower = optimalPower + harmonic.amp() * optimalPower * Math.cos(harmonic.freq() * x - harmonic.d());
         }
 
-        location.putDebug("p_cyclist_optimal_power", optimalPower, Unit.WATTS);
+        location.putDebug(ValueKey.p_cyclist_optimal_power, optimalPower, Unit.WATTS);
 
         double grade = location.getGrade();
         if (grade < -0.20) {
@@ -47,11 +48,11 @@ public class PowerProviderConstant implements CyclistPowerProvider {
         }
 
         double optimalSpeed = course.getGradeSpeeds().getOptimalSpeed(100.0 * location.getGrade());
-        location.putDebug("p_cyclist_optimal_speed", optimalSpeed, Unit.SPEED_S_M);
+        location.putDebug(ValueKey.p_cyclist_optimal_speed, optimalSpeed, Unit.SPEED_S_M);
         double minOptimalSpeed = optimalSpeed * (1 - TOLERANCE);
         double maxOptimalSpeed = optimalSpeed * (1 + TOLERANCE);
         double currentSpeed = location.getSpeed();
-        location.putDebug("p_cyclist_current_speed", currentSpeed, Unit.SPEED_S_M);
+        location.putDebug(ValueKey.p_cyclist_current_speed, currentSpeed, Unit.SPEED_S_M);
         if (minOptimalSpeed <= currentSpeed && currentSpeed <= maxOptimalSpeed) {
             return optimalPower;
         } else if (currentSpeed <= minOptimalSpeed) {

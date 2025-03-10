@@ -1,5 +1,6 @@
 package io.github.glandais.gpx.data;
 
+import io.github.glandais.gpx.data.values.ValueKey;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -8,45 +9,49 @@ import java.util.List;
 @Getter
 public enum PointField {
 
-    lat(),
+    lat(ValueKey.lat),
 
-    lon(),
+    lon(ValueKey.lon),
 
-    bearing(),
+    bearing(ValueKey.bearing),
 
-    speed(),
+    speed(ValueKey.speed),
 
-    cadence("gpxtpx:cad", "cadence"),
+    cadence(ValueKey.cadence, "gpxtpx:cad", "cadence"),
 
-    dist(),
+    dist(ValueKey.dist),
 
-    speed_max(),
+    speed_max(ValueKey.speed_max),
 
-    time(),
+    time(ValueKey.time),
 
-    power("power"),
+    power(ValueKey.power, "power"),
 
-    grade(),
+    grade(ValueKey.grade),
 
-    ele(),
+    ele(ValueKey.ele),
 
-    aeroCoef(),
+    aeroCoef(ValueKey.aeroCoef),
 
-    elapsed(),
+    elapsed(ValueKey.elapsed),
 
-    originalSpeed(),
+    originalSpeed(ValueKey.originalSpeed),
 
-    simulatedSpeed(),
+    simulatedSpeed(ValueKey.simulatedSpeed),
 
-    speedDifference(),
+    speedDifference(ValueKey.speedDifference),
 
-    mKg(),
+    mKg(ValueKey.mKg),
 
-    temperature("gpxx:Temperature");
+    temperature(ValueKey.temperature, "gpxx:Temperature");
+
+    @Getter
+    private final ValueKey valueKey;
 
     private final List<String> gpxTags;
 
-    PointField(String... gpxTag) {
+    PointField(ValueKey valueKey, String... gpxTag) {
+        this.valueKey = valueKey;
         this.gpxTags = Arrays.asList(gpxTag);
     }
 

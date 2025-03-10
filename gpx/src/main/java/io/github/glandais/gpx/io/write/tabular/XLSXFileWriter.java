@@ -1,10 +1,7 @@
 package io.github.glandais.gpx.io.write.tabular;
 
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.values.Formul;
-import io.github.glandais.gpx.data.values.Value;
-import io.github.glandais.gpx.data.values.ValueKey;
-import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.gpx.data.values.*;
 import io.github.glandais.gpx.data.values.unit.HumanUnit;
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
 import jakarta.inject.Singleton;
@@ -37,7 +34,7 @@ public class XLSXFileWriter extends TabularFileWriter {
             cellStyle.setDataFormat(dataFormat.getFormat("yyyy-mm-dd hh:mm:ss"));
 
             Map<String, CellStyle> cellStyles = new HashMap<>();
-            Map<ValueKey, String> columnsByValueKey = new HashMap<>();
+            Map<ValueKeyKind, String> columnsByValueKey = new HashMap<>();
 
             AtomicReference<Row> row = new AtomicReference<>();
             write(path,
@@ -45,10 +42,10 @@ public class XLSXFileWriter extends TabularFileWriter {
                         Row headerRow = sheet.createRow(0);
                         headerRow.setHeight((short) 566);
                         int j = 0;
-                        for (Map.Entry<String, Set<ValueKind>> column : columns.entrySet()) {
+                        for (Map.Entry<ValueKey, Set<ValueKind>> column : columns.entrySet()) {
                             for (ValueKind valueKind : column.getValue()) {
                                 headerRow.createCell(j++).setCellValue(column.getKey() + "\n" + valueKind);
-                                columnsByValueKey.put(new ValueKey(column.getKey(), valueKind), CellReference.convertNumToColString(j - 1));
+                                columnsByValueKey.put(new ValueKeyKind(column.getKey(), valueKind), CellReference.convertNumToColString(j - 1));
                             }
                         }
                     },
@@ -69,7 +66,7 @@ public class XLSXFileWriter extends TabularFileWriter {
                                 cell.setCellStyle(getCellStyle(cellStyles, wb, dataFormat, unit.getFormat()));
                             } else if (value1 instanceof Formul) {
                                 String excelFormula = ((Formul) value1).getFormula();
-                                for (ValueKey input : ((Formul) value1).getInputs()) {
+                                for (ValueKeyKind input : ((Formul) value1).getInputs()) {
                                     String inputCell = columnsByValueKey.get(input) + (row.get().getRowNum() + 1);
 
                                     Value<?, ?> refVal = values.get(input.key(), input.kind());
@@ -80,7 +77,7 @@ public class XLSXFileWriter extends TabularFileWriter {
                                         }
                                     }
 
-                                    excelFormula = excelFormula.replaceAll(input.key(), inputCell);
+                                    excelFormula = excelFormula.replaceAll(input.key().name(), inputCell);
                                 }
 
                                 String formulaPartSIToHuman = ((Formul) value1).getUnit().getFormulaPartSIToHuman();

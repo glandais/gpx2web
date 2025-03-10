@@ -3,6 +3,7 @@ package io.github.glandais.gpx.virtual;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
@@ -43,6 +44,8 @@ public class VirtualizeService {
         Instant now = start;
 
         GPXPath gpxPath = course.getGpxPath();
+        double[] dists = gpxPath.getDists();
+        int distsLength = dists.length;
         List<Point> input = gpxPath.getPoints();
 
         // current is first point
@@ -54,13 +57,13 @@ public class VirtualizeService {
         newPoints.add(current);
 
         while (current.getDist() != gpxPath.getDist()) {
-            int index = getNextIndex(input, current.getDist(), 0.0);
+            int index = getNextIndex(dists, distsLength, current.getDist(), 0.0);
 
             double currentSpeed = current.getSpeed();
             double speedNew = powerComputer.getNewSpeedAfterDt(course, current);
             double dx = DT * (currentSpeed + speedNew) / 2;
 
-            int newIndex = getNextIndex(input, current.getDist(), dx);
+            int newIndex = getNextIndex(dists, distsLength, current.getDist(), dx);
             double dxToNext;
             double dtToNext;
             if (index != newIndex) {
@@ -107,7 +110,7 @@ public class VirtualizeService {
         }
         for (int i = 0; i < realNewPoints.size() - 1; i++) {
             double cyclistPower = powerComputer.computeCyclistPower(course, realNewPoints.get(i), realNewPoints.get(i + 1));
-            realNewPoints.get(i).putDebug("p_cyclist_recomputed", cyclistPower, Unit.WATTS);
+            realNewPoints.get(i).putDebug(ValueKey.p_cyclist_recomputed, cyclistPower, Unit.WATTS);
             realNewPoints.get(i).setPower(cyclistPower, ValueKind.staging);
         }
         gpxPath.setPoints(realNewPoints, ValueKind.computed);
@@ -120,22 +123,34 @@ public class VirtualizeService {
         return Duration.ofSeconds(fullSeconds, nanoAdjustment);
     }
 
-    private int getNextIndex(List<Point> input, double dist, double dx) {
-        int i1 = getIndex(input, dist);
-        int i2 = getIndex(input, dist + dx);
+    private int getNextIndex(double[] dists, int distsLength, double dist, double dx) {
+        int i1 = getIndex(dists, distsLength, dist);
+        int i2 = getIndex(dists, distsLength, dist + dx);
         if (i1 != i2) {
             return i1 + 1;
         }
         return i1;
     }
 
-    private int getIndex(List<Point> points, double dist) {
-        for (int i = points.size() - 1; i >= 0; i--) {
-            if (dist >= points.get(i).getDist()) {
-                return i;
+    private int getIndex(double[] dists, int distsLength, double dist) {
+        int left = 0;
+        int right = distsLength - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (dists[mid] <= dist && (mid == distsLength - 1 || dist < dists[mid + 1])) {
+                return mid;
+            }
+
+            if (dists[mid] < dist) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
             }
         }
         return -1;
     }
+
 
 }

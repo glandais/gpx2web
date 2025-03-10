@@ -10,19 +10,19 @@ public class Formul {
 
     String formula;
 
-    ValueKey[] inputs;
+    ValueKeyKind[] inputs;
 
     StorageUnit<?> unit;
 
-    public Formul(String formula, StorageUnit<?> unit, ValueKey... inputs) {
+    public Formul(String formula, StorageUnit<?> unit, ValueKeyKind... inputs) {
         this.formula = formula;
         this.unit = unit;
         this.inputs = inputs;
     }
 
-    public Formul(String formula, StorageUnit<?> unit, List<ValueKey> inputs) {
+    public Formul(String formula, StorageUnit<?> unit, List<ValueKeyKind> inputs) {
         this.formula = formula;
         this.unit = unit;
-        this.inputs = inputs.toArray(new ValueKey[0]);
+        this.inputs = inputs.toArray(new ValueKeyKind[0]);
     }
 }

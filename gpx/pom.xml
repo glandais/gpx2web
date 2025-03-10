@@ -31,5 +31,11 @@
             <artifactId>quarkus-arc</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>eu.lestard</groupId>
+            <artifactId>easy-di</artifactId>
+            <version>0.6.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

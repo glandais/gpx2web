@@ -2,6 +2,7 @@ package io.github.glandais.gpx.virtual.maxspeed;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.Unit;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.util.Vector;
 import io.github.glandais.gpx.virtual.Course;
@@ -39,7 +40,7 @@ public class MaxSpeedComputer {
                 // compute max speed
                 computeMaxSpeedByIncline(pm1, p, pp1, cyclist);
             }
-            p.putDebug("speed_max_incline", p.getSpeedMax(), Unit.SPEED_S_M);
+            p.putDebug(ValueKey.speed_max_incline, p.getSpeedMax(), Unit.SPEED_S_M);
         }
     }
 
@@ -72,7 +73,7 @@ public class MaxSpeedComputer {
         double radius = Math.hypot(rad.x(), rad.y());
         // add 2m for trajectory, a trajectory computer would be better
         radius = radius + 2;
-        p.putDebug("radius", radius, Unit.METERS);
+        p.putDebug(ValueKey.radius, radius, Unit.METERS);
 
         // https://en.wikipedia.org/wiki/Bicycle_and_motorcycle_dynamics#Leaning
         double vmax = Math.sqrt(Constants.G * radius * cyclist.getTanMaxAngle());

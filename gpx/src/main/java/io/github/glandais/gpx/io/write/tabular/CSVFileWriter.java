@@ -2,6 +2,7 @@ package io.github.glandais.gpx.io.write.tabular;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.values.Value;
+import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.unit.StorageUnit;
 import jakarta.inject.Singleton;
@@ -30,8 +31,8 @@ public class CSVFileWriter extends TabularFileWriter {
     }
 
     @SneakyThrows
-    private void writeHeader(FileWriter fw, Map<String, Set<ValueKind>> columns) {
-        for (Map.Entry<String, Set<ValueKind>> column : columns.entrySet()) {
+    private void writeHeader(FileWriter fw, Map<ValueKey, Set<ValueKind>> columns) {
+        for (Map.Entry<ValueKey, Set<ValueKind>> column : columns.entrySet()) {
             for (ValueKind valueKind : column.getValue()) {
                 fw.write(column.getKey() + "-" + valueKind + ";");
             }
