@@ -1,6 +1,7 @@
 package io.github.glandais.gpx.data.values.unit;
 
-public abstract class DoubleUnit extends NumberUnit<Double> {
+public class DoubleUnit implements Unit<Double> {
+    public static final DoubleUnit INSTANCE = new DoubleUnit();
 
     @Override
     public Double interpolate(Double v, Double vp1, double coef) {
@@ -8,17 +9,10 @@ public abstract class DoubleUnit extends NumberUnit<Double> {
     }
 
     @Override
-    public String formatData(Double aDouble) {
-        return Double.toString(aDouble);
-    }
-
-    @Override
-    public String getFormulaPartHumanToSI() {
-        return null;
-    }
-
-    @Override
-    public String getFormulaPartSIToHuman() {
-        return null;
+    public String formatHuman(Double value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toString();
     }
 }

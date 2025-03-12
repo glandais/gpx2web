@@ -37,7 +37,7 @@ class GPXPathEnhancerTest {
         JsonFileWriter jsonFileWriter = easyDI.getInstance(JsonFileWriter.class);
         FitFileWriter fitFileWriter = easyDI.getInstance(FitFileWriter.class);
 
-        String file = "/ventoux.gpx";
+        String file = "/AMR.gpx";
         String output = "stelvio";
 
         new File("output").mkdirs();
@@ -49,7 +49,9 @@ class GPXPathEnhancerTest {
         Bike bike = Bike.getDefault();
         Course course = new Course(gpxPath, Instant.now(), cyclist, bike, new PowerProviderConstant(), new WindProviderNone(), new AeroProviderConstant());
 
+        long now = System.currentTimeMillis();
         gpxPathEnhancer.virtualize(course, false);
+        System.out.println(System.currentTimeMillis() - now);
         gpxFileWriter.writeGPXPath(gpxPath, new File("output/" + output + ".gpx"), true);
 //        xlsxFileWriter.writeGPXPath(gpxPath, new File("output/" + output + ".xlsx"));
         jsonFileWriter.writeGPXPath(gpxPath, new File("output/" + output + ".json"));

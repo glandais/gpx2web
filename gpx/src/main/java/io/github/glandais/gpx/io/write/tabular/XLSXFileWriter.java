@@ -1,30 +1,21 @@
 package io.github.glandais.gpx.io.write.tabular;
 
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.values.*;
-import io.github.glandais.gpx.data.values.unit.HumanUnit;
-import io.github.glandais.gpx.data.values.unit.StorageUnit;
 import jakarta.inject.Singleton;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Date;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Singleton
 public class XLSXFileWriter extends TabularFileWriter {
 
     @Override
     public void writeGPXPath(GPXPath path, File file) throws IOException {
+        /*
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("data");
 
@@ -99,6 +90,7 @@ public class XLSXFileWriter extends TabularFileWriter {
                 wb.write(fileOut);
             }
         }
+         */
     }
 
     private CellStyle getCellStyle(Map<String, CellStyle> cellStyles, Workbook wb, DataFormat dataFormat, String format) {

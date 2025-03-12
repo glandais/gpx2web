@@ -1,38 +1,23 @@
 package io.github.glandais.gpx.data.values.unit;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
-public class InstantUnit extends StorageUnit<Instant> {
+public class InstantUnit implements Unit<Instant> {
+    public static final InstantUnit INSTANCE = new InstantUnit();
 
     @Override
     public Instant interpolate(Instant v, Instant vp1, double coef) {
-
-        return Instant.ofEpochMilli((long) (v.toEpochMilli() + coef * (vp1.toEpochMilli() - v.toEpochMilli())));
+        Duration d = Duration.between(v, vp1);
+        Duration interpolate = DurationUnit.INSTANCE.interpolate(Duration.ZERO, d, coef);
+        return v.plus(interpolate);
     }
 
     @Override
-    public String formatData(Instant instant) {
-        return DateTimeFormatter.ISO_INSTANT.format(instant);
-    }
-
-    @Override
-    public String formatHuman(Instant instant) {
-        return DateTimeFormatter.ISO_INSTANT.format(instant);
-    }
-
-    @Override
-    public String getFormat() {
-        return null;
-    }
-
-    @Override
-    public String getFormulaPartHumanToSI() {
-        return null;
-    }
-
-    @Override
-    public String getFormulaPartSIToHuman() {
-        return null;
+    public String formatHuman(Instant value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toString();
     }
 }

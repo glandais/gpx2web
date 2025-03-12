@@ -1,8 +1,7 @@
 package io.github.glandais.gpx.virtual.power.cyclist;
 
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKey;
+import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.power.PowerProvider;
 import io.github.glandais.gpx.virtual.power.PowerProviderId;
@@ -21,7 +20,7 @@ public class MuscularPowerProvider implements PowerProvider {
     @Override
     public double getPowerW(Course course, Point location) {
         double w = course.getCyclistPowerProvider().getPowerW(course, location);
-        location.putDebug(ValueKey.p_cyclist_raw, w, Unit.WATTS);
+        location.putDebug(PropertyKeys.p_cyclist_raw, w);
         w = w * course.getBike().getEfficiency();
         return w;
     }

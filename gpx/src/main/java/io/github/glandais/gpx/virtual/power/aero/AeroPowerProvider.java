@@ -1,7 +1,11 @@
 package io.github.glandais.gpx.virtual.power.aero;
 
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.*;
+import io.github.glandais.gpx.data.values.PropertyKeyKind;
+import io.github.glandais.gpx.data.values.PropertyKeys;
+import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.gpx.data.values.unit.DoubleUnit;
+import io.github.glandais.gpx.data.values.unit.Formul;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.power.PowerProvider;
 import io.github.glandais.gpx.virtual.power.PowerProviderId;
@@ -13,9 +17,9 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class AeroPowerProvider implements PowerProvider {
 
-    public static final Formul FORMUL_SIMPLE = new Formul("-aeroCoef*POWER(speed,3)", Unit.WATTS,
-            new ValueKeyKind(ValueKey.aeroCoef, ValueKind.debug),
-            new ValueKeyKind(ValueKey.speed, ValueKind.staging)
+    public static final Formul FORMUL_SIMPLE = new Formul("-aeroCoef*POWER(speed,3)", DoubleUnit.INSTANCE,
+            new PropertyKeyKind<>(PropertyKeys.aeroCoef, ValueKind.debug),
+            new PropertyKeyKind<>(PropertyKeys.speed, ValueKind.staging)
     );
 
     @Override
@@ -26,12 +30,12 @@ public class AeroPowerProvider implements PowerProvider {
     @Override
     public double getPowerW(Course course, Point location) {
         final double aeroCoef = course.getAeroProvider().getAeroCoef(course, location);
-        location.putDebug(ValueKey.aeroCoef, aeroCoef, Unit.AERO_COEF);
+        location.putDebug(PropertyKeys.aeroCoef, aeroCoef);
         final Wind wind = course.getWindProvider().getWind(course, location);
         double p_air;
         if (wind.windSpeed() == 0) {
             double speed = location.getSpeed();
-            location.putDebug(ValueKey.p_aero_formula, FORMUL_SIMPLE, Unit.FORMULA_WATTS);
+            location.putDebug(PropertyKeys.p_aero_formula, FORMUL_SIMPLE);
             p_air = -aeroCoef * speed * speed * speed;
         } else {
             p_air = computePAirWithWind(location, aeroCoef, wind);
@@ -43,14 +47,13 @@ public class AeroPowerProvider implements PowerProvider {
     private double computePAirWithWind(Point current, double aeroCoef, Wind wind) {
         double speed = current.getSpeed();
         double bearing = current.getBearing();
-        current.putDebug(ValueKey.wind_speed, wind.windSpeed(), Unit.SPEED_S_M);
-        current.putDebug(ValueKey.wind_direction, wind.windDirection(), Unit.RADIANS);
-        current.putDebug(ValueKey.cyclist_bearing, bearing, Unit.RADIANS);
+        current.putDebug(PropertyKeys.wind_speed, wind.windSpeed());
+        current.putDebug(PropertyKeys.wind_direction, wind.windDirection());
         double windDirectionAsBearing = (Math.PI / 2) - wind.windDirection();
-        current.putDebug(ValueKey.wind_bearing, windDirectionAsBearing, Unit.RADIANS);
+        current.putDebug(PropertyKeys.wind_bearing, windDirectionAsBearing);
 
         double alpha = windDirectionAsBearing - bearing;
-        current.putDebug(ValueKey.wind_alpha, alpha, Unit.RADIANS);
+        current.putDebug(PropertyKeys.wind_alpha, alpha);
 
         double v = wind.windSpeed();
 

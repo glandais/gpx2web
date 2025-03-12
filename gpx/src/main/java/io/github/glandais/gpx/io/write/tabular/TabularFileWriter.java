@@ -2,36 +2,43 @@ package io.github.glandais.gpx.io.write.tabular;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.*;
+import io.github.glandais.gpx.data.values.PropertyKey;
+import io.github.glandais.gpx.data.values.PropertyKeyKind;
+import io.github.glandais.gpx.data.values.PropertyKeys;
+import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.io.write.FileExporter;
 
 import java.util.*;
-import java.util.function.Consumer;
 
-public abstract class TabularFileWriter implements FileExporter {
+public abstract class TabularFileWriter<C> implements FileExporter {
 
-    public void write(GPXPath path, Consumer<Map<ValueKey, Set<ValueKind>>> writeHeaders,
-                      TabularRowInit initRow,
-                      TabularCellWriter writeCell) {
+    public void write(C context, GPXPath path,
+                      TabularHeadersInit<C> initHeaders,
+                      TabularRowInit<C> initRow,
+                      TabularCellWriter<C> writeCell) {
 
         List<Point> points = path.getPoints();
-        List<Values> valuesList = points.stream().map(Point::getCsvData).toList();
 
-        Map<ValueKey, Set<ValueKind>> columns = new LinkedHashMap<>();
-        valuesList.forEach(values -> values.getKeySet().forEach(key ->
-                columns.computeIfAbsent(key, k -> new LinkedHashSet<>()).addAll(values.getAll(key).keySet())
-        ));
+        Map<PropertyKey<?, ?>, Set<ValueKind>> columns = new LinkedHashMap<>();
+        for (Point point : points) {
+            for (PropertyKey<?, ?> propertyKey : PropertyKeys.getList()) {
+                for (ValueKind valueKind : ValueKind.values()) {
+                    if (point.get(propertyKey, valueKind) != null) {
+                        columns.computeIfAbsent(propertyKey, k -> new LinkedHashSet<>()).add(valueKind);
+                    }
+                }
+            }
+        }
         columns.forEach((k, v) -> v.removeIf(valueKind -> valueKind == ValueKind.current));
-        writeHeaders.accept(columns);
+        initHeaders.writeHeaders(context, columns);
 
         int i = 0;
-        for (Values values : valuesList) {
-            initRow.accept(i++, values);
+        for (Point point : points) {
+            initRow.accept(context, i++, point);
             int j = 0;
-            for (Map.Entry<ValueKey, Set<ValueKind>> column : columns.entrySet()) {
+            for (Map.Entry<PropertyKey<?, ?>, Set<ValueKind>> column : columns.entrySet()) {
                 for (ValueKind valueKind : column.getValue()) {
-                    Value<?, ?> value = values.get(column.getKey(), valueKind);
-                    writeCell.accept(i - 1, j++, values, new ValueKeyKind(column.getKey(), valueKind), value);
+                    writeCell.accept(context, i - 1, j++, point, new PropertyKeyKind<>(column.getKey(), valueKind));
                 }
             }
         }

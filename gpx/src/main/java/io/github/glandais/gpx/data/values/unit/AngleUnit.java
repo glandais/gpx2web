@@ -1,37 +1,18 @@
 package io.github.glandais.gpx.data.values.unit;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
+import io.github.glandais.gpx.data.values.converter.Converters;
 
-public class AngleUnit extends DoubleUnit implements HumanUnit {
-
-    public static final String PATTERN = "0.00#####";
-    private static final ThreadLocal<DecimalFormat> LAT_LON_FORMATTER = ThreadLocal
-            .withInitial(() -> new DecimalFormat(PATTERN, new DecimalFormatSymbols(Locale.ENGLISH)));
+/**
+ * Radians
+ */
+public class AngleUnit extends DoubleUnit {
+    public static final AngleUnit INSTANCE = new AngleUnit();
 
     @Override
-    public String formatHuman(Double aDouble) {
-        return LAT_LON_FORMATTER.get().format(getHumanValue(aDouble));
-    }
-
-    @Override
-    public String getFormat() {
-        return PATTERN;
-    }
-
-    @Override
-    public double getHumanValue(double doubleValue) {
-        return Math.toDegrees(doubleValue);
-    }
-
-    @Override
-    public String getFormulaPartHumanToSI() {
-        return "*PI()/180";
-    }
-
-    @Override
-    public String getFormulaPartSIToHuman() {
-        return "*180/PI()";
+    public String formatHuman(Double value) {
+        if (value == null) {
+            return "";
+        }
+        return super.formatHuman(Converters.DEGREES_CONVERTER.convertFromStorage(value));
     }
 }

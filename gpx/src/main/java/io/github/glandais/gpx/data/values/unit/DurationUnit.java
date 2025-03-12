@@ -1,23 +1,29 @@
 package io.github.glandais.gpx.data.values.unit;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
+import io.github.glandais.gpx.data.values.converter.Converters;
 
-public class DurationUnit extends DoubleUnit {
+import java.time.Duration;
 
-    public static final String PATTERN = "0.###";
-
-    private static final ThreadLocal<DecimalFormat> DURATION_FORMATTER = ThreadLocal
-            .withInitial(() -> new DecimalFormat(PATTERN, new DecimalFormatSymbols(Locale.ENGLISH)));
+public class DurationUnit implements Unit<Duration> {
+    public static final DurationUnit INSTANCE = new DurationUnit();
 
     @Override
-    public String formatHuman(Double aDouble) {
-        return DURATION_FORMATTER.get().format(aDouble);
+    public Duration interpolate(Duration v, Duration vp1, double coef) {
+        long nanosD1 = v.toNanos();
+        long nanosD2 = vp1.toNanos();
+
+        long diffNanos = nanosD2 - nanosD1;
+
+        long interpolatedNanos = nanosD1 + (long) (coef * diffNanos);
+
+        return Duration.ofNanos(interpolatedNanos);
     }
 
     @Override
-    public String getFormat() {
-        return PATTERN;
+    public String formatHuman(Duration value) {
+        if (value == null) {
+            return "";
+        }
+        return Converters.DURATION_SECONDS_CONVERTER.convertFromStorage(value).toString();
     }
 }

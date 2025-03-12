@@ -1,7 +1,5 @@
 package io.github.glandais.gpx.data;
 
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.Vector;
 import lombok.Getter;
@@ -126,7 +124,6 @@ public class GPXPath {
                 p.setGrade(grade, kind);
 
                 double dt = time[maxi] - time[i];
-                p.putDebug(ValueKey.dist_computed, dist, Unit.METERS);
                 p.setSpeed(1000.0 * dist / dt, kind);
 
                 Point pmin = points.get(i);

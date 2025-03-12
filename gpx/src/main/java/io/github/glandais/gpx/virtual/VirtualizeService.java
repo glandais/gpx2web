@@ -2,8 +2,6 @@ package io.github.glandais.gpx.virtual;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKey;
 import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
@@ -110,7 +108,6 @@ public class VirtualizeService {
         }
         for (int i = 0; i < realNewPoints.size() - 1; i++) {
             double cyclistPower = powerComputer.computeCyclistPower(course, realNewPoints.get(i), realNewPoints.get(i + 1));
-            realNewPoints.get(i).putDebug(ValueKey.p_cyclist_recomputed, cyclistPower, Unit.WATTS);
             realNewPoints.get(i).setPower(cyclistPower, ValueKind.staging);
         }
         gpxPath.setPoints(realNewPoints, ValueKind.computed);

@@ -1,8 +1,8 @@
 package io.github.glandais.gpx.io.read;
 
 import io.github.glandais.gpx.data.*;
-import io.github.glandais.gpx.data.values.Unit;
 import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.gpx.io.GPXField;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -207,9 +207,9 @@ public class GPXFileReader {
                     try {
                         double value = Double.parseDouble(child.getTextContent());
                         String tagName = child.getTagName();
-                        PointField pointField = PointField.fromGpxTag(tagName);
+                        GPXField pointField = GPXField.fromGpxTag(tagName);
                         if (pointField != null) {
-                            p.put(pointField, value, Unit.DOUBLE_ANY, ValueKind.source);
+                            p.put(pointField.getPropertyKey(), ValueKind.source, value);
 //                        } else {
                             //p.putDebug(tagName, value, Unit.DOUBLE_ANY);
                         }

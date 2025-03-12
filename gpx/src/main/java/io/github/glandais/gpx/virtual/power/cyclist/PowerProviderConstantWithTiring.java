@@ -15,7 +15,7 @@ public class PowerProviderConstantWithTiring extends PowerProviderConstant {
     public double getPowerW(Course course, Point location) {
 
         double powerW = super.getPowerW(course, location);
-        double c = Math.max(0.5, 1 - (0.6 * location.getElapsed() / duration));
+        double c = Math.max(0.5, 1 - (0.6 * location.getElapsedSeconds() / duration));
         return powerW * c;
     }
 }

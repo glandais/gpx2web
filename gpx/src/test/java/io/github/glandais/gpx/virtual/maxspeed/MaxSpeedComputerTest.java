@@ -1,27 +1,9 @@
 package io.github.glandais.gpx.virtual.maxspeed;
 
 
-import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.Unit;
-import io.github.glandais.gpx.data.values.ValueKey;
-import io.github.glandais.gpx.data.values.unit.StorageUnit;
-import io.github.glandais.gpx.io.read.GPXFileReader;
-import io.github.glandais.gpx.util.Constants;
-import io.github.glandais.gpx.virtual.Bike;
-import io.github.glandais.gpx.virtual.Course;
-import io.github.glandais.gpx.virtual.Cyclist;
-import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
-import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderNone;
-import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
 
 public class MaxSpeedComputerTest {
-
+/*
     @SneakyThrows
     @Test
     @Disabled
@@ -63,5 +45,5 @@ public class MaxSpeedComputerTest {
             return "null";
         }
     }
-
+*/
 }

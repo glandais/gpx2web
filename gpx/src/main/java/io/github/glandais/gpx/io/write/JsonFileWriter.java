@@ -2,12 +2,10 @@ package io.github.glandais.gpx.io.write;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.Value;
-import io.github.glandais.gpx.data.values.ValueKey;
+import io.github.glandais.gpx.data.values.PropertyKey;
+import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.gpx.data.values.Values;
-import io.github.glandais.gpx.data.values.unit.NumberUnit;
-import io.github.glandais.gpx.data.values.unit.StorageUnit;
+import io.github.glandais.gpx.data.values.unit.Unit;
 import jakarta.inject.Singleton;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +22,17 @@ public class JsonFileWriter implements FileExporter {
     public void writeGPXPath(GPXPath path, File file) throws IOException {
         Map<String, Object> map = new LinkedHashMap<>();
 
-        Set<ValueKey> keys = new TreeSet<>();
-        List<Map<ValueKey, Object>> pointsValues = new ArrayList<>();
+        Set<String> keys = new HashSet<>();
+        List<Map<String, Object>> pointsValues = new ArrayList<>();
         for (Point point : path.getPoints()) {
-            Values values = point.getCsvData();
-            Map<ValueKey, Object> pointValues = new LinkedHashMap<>();
-            for (ValueKey key : values.getKeySet()) {
-                keys.add(key);
-                pointValues.put(key, getValue(values.get(key, ValueKind.current)));
+            Map<String, Object> pointValues = new LinkedHashMap<>();
+            for (PropertyKey<?, ?> key : PropertyKeys.getList()) {
+                Object value = getValue(point, key);
+                if (value != null) {
+                    String propertyKeyName = key.getPropertyKeyName();
+                    pointValues.put(propertyKeyName, value);
+                    keys.add(propertyKeyName);
+                }
             }
             pointsValues.add(pointValues);
         }
@@ -42,16 +43,14 @@ public class JsonFileWriter implements FileExporter {
         write(map, file);
     }
 
-    private String getValue(Value<?, ?> value) {
+    private <S, U extends Unit<S>> Object getValue(Point point, PropertyKey<S, U> key) {
+        S value = point.get(key, ValueKind.current);
         if (value == null) {
             return null;
+        } else if (value instanceof Number) {
+            return key.formatHuman(value);
         } else {
-            StorageUnit unit = value.unit();
-            String result = unit.formatHuman(value.value());
-            if (!(unit instanceof NumberUnit<?>)) {
-                result = "\"" + result + "\"";
-            }
-            return result;
+            return "\"" + key.formatHuman(value) + "\"";
         }
     }
 
