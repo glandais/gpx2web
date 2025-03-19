@@ -11,11 +11,6 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class WheelBearingsPowerProvider implements PowerProvider {
 
-//    public static final Formul FORMUL = new Formul("-(speed)*(91 + 8.7 * (speed))/1000",
-//            Unit.WATTS,
-//            new ValueKey("speed", ValueKind.staging)
-//    );
-
     @Override
     public PowerProviderId getId() {
         return PowerProviderId.bearings;
@@ -23,9 +18,6 @@ public class WheelBearingsPowerProvider implements PowerProvider {
 
     @Override
     public double getPowerW(Course course, Point location) {
-
-//        location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
         return -location.getSpeed() * (91 + 8.7 * location.getSpeed()) / 1000.0;
     }
-
 }

@@ -5,9 +5,8 @@ import io.github.glandais.gpx.virtual.power.aero.aero.AeroProvider;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProvider;
 import io.github.glandais.gpx.virtual.power.cyclist.CyclistPowerProvider;
 import io.github.glandais.gpx.virtual.power.cyclist.GradeSpeeds;
-import lombok.Data;
-
 import java.time.Instant;
+import lombok.Data;
 
 @Data
 public class Course {

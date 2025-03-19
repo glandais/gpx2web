@@ -1,15 +1,14 @@
 package io.github.glandais.gpx.map;
 
-import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.util.MagicPower2MapSpace;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javax.imageio.ImageIO;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -34,13 +33,13 @@ public class MapImage {
 
     protected Graphics2D graphics;
 
-    protected MapImage(GPXPath gpxPath, double margin) {
+    protected MapImage(GPX gpx, double margin) {
         super();
 
-        this.minlon = gpxPath.getMinlonDeg();
-        this.maxlon = gpxPath.getMaxlonDeg();
-        this.minlat = gpxPath.getMinlatDeg();
-        this.maxlat = gpxPath.getMaxlatDeg();
+        this.minlon = gpx.getMinlonDeg();
+        this.maxlon = gpx.getMaxlonDeg();
+        this.minlat = gpx.getMinlatDeg();
+        this.maxlat = gpx.getMaxlatDeg();
         setZoom(16);
 
         int xmin = (int) (getX(minlon) + startx);
@@ -60,8 +59,8 @@ public class MapImage {
         this.minlat = getLat((int) (ymax - starty));
     }
 
-    public MapImage(GPXPath gpxPath, double margin, int maxSize) {
-        this(gpxPath, margin);
+    public MapImage(GPX gpx, double margin, int maxSize) {
+        this(gpx, margin);
         this.zoom = 0;
         do {
             setZoom(this.zoom + 1);
@@ -70,17 +69,17 @@ public class MapImage {
         initImage();
     }
 
-    public MapImage(GPXPath gpxPath, double margin, Integer width, Integer height) {
+    public MapImage(GPX gpx, double margin, Integer width, Integer height) {
         super();
 
         this.width = width;
         this.height = height;
         this.zoom = 16;
 
-        double xmin = MAPSPACE.cLonToX(gpxPath.getMinlonDeg(), zoom);
-        double xmax = MAPSPACE.cLonToX(gpxPath.getMaxlonDeg(), zoom);
-        double ymax = MAPSPACE.cLatToY(gpxPath.getMinlatDeg(), zoom);
-        double ymin = MAPSPACE.cLatToY(gpxPath.getMaxlatDeg(), zoom);
+        double xmin = MAPSPACE.cLonToX(gpx.getMinlonDeg(), zoom);
+        double xmax = MAPSPACE.cLonToX(gpx.getMaxlonDeg(), zoom);
+        double ymax = MAPSPACE.cLatToY(gpx.getMinlatDeg(), zoom);
+        double ymin = MAPSPACE.cLatToY(gpx.getMaxlatDeg(), zoom);
 
         int delta = (int) Math.max((xmax - xmin) * margin / 2.0, (ymax - ymin) * margin / 2.0);
         xmin = xmin - delta;
@@ -118,10 +117,10 @@ public class MapImage {
     protected void setZoom(int zoom) {
         this.zoom = zoom;
 
-        this.width = ((int) Math
-                .round(Math.abs(MAPSPACE.cLonToX(this.maxlon, zoom) - MAPSPACE.cLonToX(this.minlon, zoom))));
-        this.height = ((int) Math
-                .round(Math.abs(MAPSPACE.cLatToY(this.maxlat, zoom) - MAPSPACE.cLatToY(this.minlat, zoom))));
+        this.width =
+                ((int) Math.round(Math.abs(MAPSPACE.cLonToX(this.maxlon, zoom) - MAPSPACE.cLonToX(this.minlon, zoom))));
+        this.height =
+                ((int) Math.round(Math.abs(MAPSPACE.cLatToY(this.maxlat, zoom) - MAPSPACE.cLatToY(this.minlat, zoom))));
 
         this.startx = MAPSPACE.cLonToX(this.minlon, zoom);
         this.starty = MAPSPACE.cLatToY(this.maxlat, zoom);
@@ -159,5 +158,4 @@ public class MapImage {
     public double getTileJ(double lat) {
         return MAPSPACE.cLatToY(lat, zoom) / 256.0;
     }
-
 }

@@ -15,5 +15,4 @@ public class Constants {
     public static final double CIRC = SEMI_MAJOR_AXIS * 2 * Math.PI;
 
     public static boolean DEBUG = false;
-
 }

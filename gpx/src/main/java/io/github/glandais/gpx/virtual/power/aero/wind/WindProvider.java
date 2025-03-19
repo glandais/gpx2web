@@ -6,5 +6,4 @@ import io.github.glandais.gpx.virtual.Course;
 public interface WindProvider {
 
     Wind getWind(Course course, Point location);
-
 }

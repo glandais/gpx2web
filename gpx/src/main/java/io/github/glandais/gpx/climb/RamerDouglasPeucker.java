@@ -1,19 +1,17 @@
 package io.github.glandais.gpx.climb;
 
 import io.github.glandais.gpx.filter.R3;
-
 import java.util.ArrayList;
 import java.util.List;
 
 class RamerDouglasPeucker {
 
-    private RamerDouglasPeucker() {
-    }
+    private RamerDouglasPeucker() {}
 
     /**
      * Simplification using Ramer-Douglas-Peucker algorithm.
      *
-     * @param points    a list of points to be simplified
+     * @param points a list of points to be simplified
      * @param tolerance tolerance (meters)
      * @return a list of simplified points
      */

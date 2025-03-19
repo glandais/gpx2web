@@ -32,6 +32,8 @@
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <poi-ooxml.version>5.4.0</poi-ooxml.version>
         <fit.version>21.158.0</fit.version>
+        <timeshape.version>2024a.25</timeshape.version>
+        <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -68,12 +70,16 @@
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi-ooxml.version}</version>
             </dependency>
+            <dependency>
+                <groupId>net.iakovlev</groupId>
+                <artifactId>timeshape</artifactId>
+                <version>${timeshape.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
         <module>gpx</module>
-        <module>gpxtools-api</module>
         <module>gpxtools-cli</module>
     </modules>
     <dependencies>
@@ -108,6 +114,26 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless-maven-plugin.version}</version>
+                <configuration>
+                    <java>
+                        <importOrder />
+                        <removeUnusedImports />
+                        <palantirJavaFormat />
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jboss.jandex</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>

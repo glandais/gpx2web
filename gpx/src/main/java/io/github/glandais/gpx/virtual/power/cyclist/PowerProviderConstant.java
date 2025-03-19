@@ -3,7 +3,6 @@ package io.github.glandais.gpx.virtual.power.cyclist;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.virtual.Course;
-
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
@@ -19,11 +18,7 @@ public class PowerProviderConstant implements CyclistPowerProvider {
     public PowerProviderConstant() {
         Random r = new SecureRandom();
         harmonics = IntStream.range(0, 20)
-                .mapToObj(i -> new Harmonic(
-                        r.nextDouble(1.0, 10.0),
-                        r.nextDouble(0, Math.PI),
-                        r.nextDouble(0, 0.01)
-                ))
+                .mapToObj(i -> new Harmonic(r.nextDouble(1.0, 10.0), r.nextDouble(0, Math.PI), r.nextDouble(0, 0.01)))
                 .toList();
     }
 
@@ -54,12 +49,12 @@ public class PowerProviderConstant implements CyclistPowerProvider {
         if (minOptimalSpeed <= currentSpeed && currentSpeed <= maxOptimalSpeed) {
             return optimalPower;
         } else if (currentSpeed <= minOptimalSpeed) {
-            return optimalPower * MAX_MULTIPLIER - (currentSpeed / minOptimalSpeed) * optimalPower * (MAX_MULTIPLIER - 1.0);
+            return optimalPower * MAX_MULTIPLIER
+                    - (currentSpeed / minOptimalSpeed) * optimalPower * (MAX_MULTIPLIER - 1.0);
         } else {
             double diffSpeed = currentSpeed - maxOptimalSpeed;
             double coef = Math.min(1.0, Math.max(0.0, diffSpeed / maxOptimalSpeed));
             return optimalPower - coef * optimalPower;
         }
     }
-
 }

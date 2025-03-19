@@ -6,10 +6,9 @@ import io.github.glandais.gpx.virtual.power.grav.GravPowerProvider;
 import io.github.glandais.gpx.virtual.power.rolling.RollingResistancePowerProvider;
 import io.github.glandais.gpx.virtual.power.rolling.WheelBearingsPowerProvider;
 import jakarta.inject.Singleton;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -32,8 +31,6 @@ public class PowerProviderList {
                 rollingResistancePowerProvider,
                 gravPowerProvider,
                 aeroPowerProvider,
-                muscularPowerProvider
-        );
+                muscularPowerProvider);
     }
-
 }

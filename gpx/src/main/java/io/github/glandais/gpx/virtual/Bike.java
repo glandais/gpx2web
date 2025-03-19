@@ -16,5 +16,4 @@ public class Bike {
     public static Bike getDefault() {
         return new Bike(0.004, 0.05, 0.07, 0.7, 0.976);
     }
-
 }

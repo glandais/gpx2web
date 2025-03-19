@@ -13,5 +13,4 @@ public class WindProviderConstant implements WindProvider {
     public Wind getWind(Course course, Point location) {
         return wind;
     }
-
 }

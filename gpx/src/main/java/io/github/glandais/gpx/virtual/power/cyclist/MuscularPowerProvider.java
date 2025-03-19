@@ -22,7 +22,7 @@ public class MuscularPowerProvider implements PowerProvider {
         double w = course.getCyclistPowerProvider().getPowerW(course, location);
         location.putDebug(PropertyKeys.p_cyclist_raw, w);
         w = w * course.getBike().getEfficiency();
+        location.putDebug(PropertyKeys.p_cyclist_wheel, w);
         return w;
     }
-
 }

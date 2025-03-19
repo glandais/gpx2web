@@ -12,5 +12,4 @@ public class PowerProviderFromData implements CyclistPowerProvider {
 
         return location.getPower();
     }
-
 }

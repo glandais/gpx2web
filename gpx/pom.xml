@@ -19,6 +19,11 @@
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.iakovlev</groupId>
+            <artifactId>timeshape</artifactId>
+            <version>${timeshape.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>

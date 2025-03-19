@@ -1,23 +1,23 @@
 package io.github.glandais.gpx.virtual;
 
+import static io.github.glandais.gpx.virtual.Constants.DT;
+
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.ValueKind;
+import io.github.glandais.gpx.data.values.PropertyKeys;
+import io.github.glandais.gpx.data.values.converter.Converters;
 import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
 import io.github.glandais.gpx.virtual.power.cyclist.GradeSpeedService;
 import io.github.glandais.gpx.virtual.power.cyclist.GradeSpeeds;
 import jakarta.inject.Singleton;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.github.glandais.gpx.virtual.Constants.DT;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
@@ -36,6 +36,8 @@ public class VirtualizeService {
         GradeSpeeds gradeSpeeds = new GradeSpeeds(gradeSpeedService, course);
         course.setGradeSpeeds(gradeSpeeds);
 
+        double equivalentMass = powerComputer.getEquivalentMass(course);
+
         final List<Point> newPoints = new ArrayList<>();
 
         Instant start = course.getStart();
@@ -48,26 +50,25 @@ public class VirtualizeService {
 
         // current is first point
         Point current = input.get(0).copy();
-        current.setDist(0, ValueKind.staging);
-        current.setInstant(now, ValueKind.staging);
-        current.computeElapsedTime(now, ValueKind.staging);
-        current.setSpeed(Constants.MINIMAL_SPEED, ValueKind.staging);
+        current.setDist(0);
+        current.setInstant(start, now);
+        current.setSpeed(Constants.MINIMAL_SPEED);
         newPoints.add(current);
 
         while (current.getDist() != gpxPath.getDist()) {
             int index = getNextIndex(dists, distsLength, current.getDist(), 0.0);
 
             double currentSpeed = current.getSpeed();
-            double speedNew = powerComputer.getNewSpeedAfterDt(course, current);
-            double dx = DT * (currentSpeed + speedNew) / 2;
+            current.putDebug(PropertyKeys.virt_speed_current, currentSpeed);
+            double pSum = powerComputer.getNewPower(course, current, true);
+            double dx = powerComputer.getDx(pSum, equivalentMass, currentSpeed, DT);
 
             int newIndex = getNextIndex(dists, distsLength, current.getDist(), dx);
             double dxToNext;
             double dtToNext;
             if (index != newIndex) {
                 dxToNext = input.get(newIndex).getDist() - current.getDist();
-                dtToNext = DT * dxToNext / dx;
-
+                dtToNext = powerComputer.getDt(pSum, equivalentMass, currentSpeed, dxToNext);
                 current = input.get(newIndex).copy();
             } else {
                 dxToNext = dx;
@@ -80,44 +81,31 @@ public class VirtualizeService {
                 current = Point.interpolate(input.get(index), input.get(index + 1), coef);
             }
 
-            speedNew = 2 * (dxToNext / dtToNext) - currentSpeed;
+            double speedNew = 2 * (dxToNext / dtToNext) - currentSpeed;
             if (speedNew > current.getSpeedMax()) {
                 speedNew = current.getSpeedMax();
             }
             dtToNext = 2 * dxToNext / (currentSpeed + speedNew);
 
-            current.setSpeed(speedNew, ValueKind.staging);
+            current.setSpeed(speedNew);
 
             Duration dtToNextDuration = getDuration(dtToNext);
             now = now.plus(dtToNextDuration);
-            current.setInstant(now, ValueKind.staging);
-            current.computeElapsedTime(start, ValueKind.staging);
+            current.setInstant(start, now);
             newPoints.add(current);
         }
 
-        final List<Point> realNewPoints = new ArrayList<>();
-        for (int i = 0; i < newPoints.size(); i++) {
-            if (i == newPoints.size() - 1) {
-                realNewPoints.add(newPoints.get(i));
-            } else {
-                double dx = newPoints.get(i + 1).getDist() - newPoints.get(i).getDist();
-                if (dx >= 1.0) {
-                    realNewPoints.add(newPoints.get(i));
-                }
-            }
+        for (int i = 0; i < newPoints.size() - 1; i++) {
+            double cyclistPower =
+                    powerComputer.computeCyclistPower(course, equivalentMass, newPoints.get(i), newPoints.get(i + 1));
+            newPoints.get(i).setPower(cyclistPower);
         }
-        for (int i = 0; i < realNewPoints.size() - 1; i++) {
-            double cyclistPower = powerComputer.computeCyclistPower(course, realNewPoints.get(i), realNewPoints.get(i + 1));
-            realNewPoints.get(i).setPower(cyclistPower, ValueKind.staging);
-        }
-        gpxPath.setPoints(realNewPoints, ValueKind.computed);
-        smoothService.smoothPower(gpxPath);
+        gpxPath.setPoints(newPoints);
+        //        smoothService.smoothPower(gpxPath);
     }
 
     private Duration getDuration(double dtToNext) {
-        long fullSeconds = (long) dtToNext;
-        long nanoAdjustment = (long) ((dtToNext - fullSeconds) * 1_000_000_000);
-        return Duration.ofSeconds(fullSeconds, nanoAdjustment);
+        return Converters.DURATION_SECONDS_CONVERTER.convertToStorage(dtToNext);
     }
 
     private int getNextIndex(double[] dists, int distsLength, double dist, double dx) {
@@ -148,6 +136,4 @@ public class VirtualizeService {
         }
         return -1;
     }
-
-
 }

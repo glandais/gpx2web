@@ -1,13 +1,17 @@
 package io.github.glandais.gpx.data.values;
 
 import io.github.glandais.gpx.data.values.unit.Unit;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PropertyKey<S, U extends Unit<S>> {
 
+    @EqualsAndHashCode.Include
     final PropertyKeyEnum propertyKeyEnum;
 
     final U unit;
+
     @Getter
     final int ordinal;
 

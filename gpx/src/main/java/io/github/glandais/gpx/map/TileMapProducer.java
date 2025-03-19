@@ -1,15 +1,11 @@
 package io.github.glandais.gpx.map;
 
+import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.util.CacheFolderProvider;
 import io.github.glandais.gpx.util.Vector;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Service;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,13 +18,17 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import javax.imageio.ImageIO;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
-@Slf4j
 public class TileMapProducer {
 
-    public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36";
+    public static final String USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    + " Chrome/76.0.3809.132 Safari/537.36";
     protected final HttpClient httpClient;
 
     protected static final String SEPARATOR = File.separator;
@@ -43,32 +43,27 @@ public class TileMapProducer {
         this.httpClient = HttpClient.newBuilder().build();
     }
 
-    public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, Integer width, Integer height)
+    public TileMapImage createTileMap(GPX gpx, String urlPattern, double margin, Integer width, Integer height)
             throws IOException {
-        log.debug("start createTileMap");
-        TileMapImage tileMapImage = new TileMapImage(path, margin, cacheFolder, urlPattern, width, height);
-        return doCreateTileMap(path, tileMapImage);
+        TileMapImage tileMapImage = new TileMapImage(gpx, margin, cacheFolder, urlPattern, width, height);
+        return doCreateTileMap(gpx, tileMapImage);
     }
 
-    public TileMapImage createTileMap(GPXPath path, String urlPattern, double margin, int maxSize) throws IOException {
-        log.debug("start createTileMap");
-        TileMapImage tileMapImage = new TileMapImage(path, margin, maxSize, cacheFolder, urlPattern);
-        return doCreateTileMap(path, tileMapImage);
+    public TileMapImage createTileMap(GPX gpx, String urlPattern, double margin, int maxSize) throws IOException {
+        TileMapImage tileMapImage = new TileMapImage(gpx, margin, maxSize, cacheFolder, urlPattern);
+        return doCreateTileMap(gpx, tileMapImage);
     }
 
-    public TileMapImage createTileMap(GPXPath path, String urlPattern, int zoom, double margin) throws IOException {
-        log.debug("start createTileMap");
-        TileMapImage tileMapImage = new TileMapImage(path, margin, cacheFolder, urlPattern, zoom);
-        return doCreateTileMap(path, tileMapImage);
+    public TileMapImage createTileMap(GPX gpx, String urlPattern, int zoom, double margin) throws IOException {
+        TileMapImage tileMapImage = new TileMapImage(gpx, margin, cacheFolder, urlPattern, zoom);
+        return doCreateTileMap(gpx, tileMapImage);
     }
 
-    private TileMapImage doCreateTileMap(GPXPath path, TileMapImage tileMapImage) throws IOException {
-        log.debug("Creating a map of {}x{} pixels", tileMapImage.getWidth(), tileMapImage.getHeight());
-
+    private TileMapImage doCreateTileMap(GPX gpx, TileMapImage tileMapImage) throws IOException {
         fillWithImages(tileMapImage);
-        addPoints(tileMapImage, path);
-
-        log.debug("end createTileMap");
+        for (GPXPath path : gpx.paths()) {
+            addPoints(tileMapImage, path);
+        }
         return tileMapImage;
     }
 
@@ -110,15 +105,19 @@ public class TileMapProducer {
     }
 
     private synchronized void downloadTile(int i, int j, int zoom, String urlPattern, File tile) throws IOException {
-        String url = urlPattern.replace("{z}", "" + zoom).replace("{x}", "" + i).replace("{y}", "" + j).replace("{s}",
-                "" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
+        String url = urlPattern
+                .replace("{z}", "" + zoom)
+                .replace("{x}", "" + i)
+                .replace("{y}", "" + j)
+                .replace("{s}", "" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
         tile.getParentFile().mkdirs();
-        log.debug("Downloading {}", url);
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                     .setHeader("User-Agent", USER_AGENT)
                     .build();
-            httpClient.send(request, HttpResponse.BodyHandlers.ofFile(tile.toPath())).body();
+            httpClient
+                    .send(request, HttpResponse.BodyHandlers.ofFile(tile.toPath()))
+                    .body();
         } catch (FileNotFoundException | InterruptedException e) {
             FileUtils.touch(tile);
         }
@@ -135,7 +134,7 @@ public class TileMapProducer {
         graphics.setColor(Color.RED);
 
         drawPath(tileMapImage, path);
-//		drawArrows(tileMapImage, path);
+        // drawArrows(tileMapImage, path);
     }
 
     private void drawPath(TileMapImage tileMapImage, GPXPath path) {

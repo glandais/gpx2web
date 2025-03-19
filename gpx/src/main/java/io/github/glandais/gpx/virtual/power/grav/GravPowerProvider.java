@@ -12,13 +12,6 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class GravPowerProvider implements PowerProvider {
 
-//    public static final Formul FORMUL = new Formul("-mKg*9.81*(speed)*SIN(ATAN(grade))",
-//            Unit.WATTS,
-//            new ValueKey("mKg", ValueKind.debug),
-//            new ValueKey("speed", ValueKind.staging),
-//            new ValueKey("grade", ValueKind.staging)
-//    );
-
     @Override
     public PowerProviderId getId() {
         return PowerProviderId.gravity;
@@ -29,8 +22,6 @@ public class GravPowerProvider implements PowerProvider {
         final double mKg = course.getCyclist().getMKg();
         double grade = location.getGrade();
         double coef = Math.sin(Math.atan(grade));
-//        location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
         return -mKg * Constants.G * location.getSpeed() * coef;
     }
-
 }

@@ -1,7 +1,6 @@
 package io.github.glandais.gpx.data.values.converter;
 
 import io.github.glandais.gpx.data.values.unit.InstantUnit;
-
 import java.time.Instant;
 import java.util.Date;
 

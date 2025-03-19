@@ -13,6 +13,4 @@ record DetectedClimb(
         double positiveElevation,
         double negativeElevation,
         double grade,
-        double climbingGrade
-) {
-}
+        double climbingGrade) {}

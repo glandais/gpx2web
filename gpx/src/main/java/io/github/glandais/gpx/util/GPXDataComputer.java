@@ -1,20 +1,24 @@
 package io.github.glandais.gpx.util;
 
+import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.filter.GPXFilter;
 import jakarta.inject.Singleton;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 @Singleton
 @Slf4j
 public class GPXDataComputer {
+
+    public boolean isCrossing(GPX gpx) {
+        return gpx.paths().stream().anyMatch(this::isCrossing);
+    }
 
     public boolean isCrossing(GPXPath orig) {
 
@@ -26,8 +30,7 @@ public class GPXDataComputer {
         GPXFilter.filterPointsDouglasPeucker(path, 50);
         if (path.getPoints().size() > 2) {
             for (int i = 0; i < path.getPoints().size() - 1; i++) {
-                for (int j = i + 2;
-                     j < path.getPoints().size() - 1; j++) {
+                for (int j = i + 2; j < path.getPoints().size() - 1; j++) {
 
                     if (isIntersects(path, i, j)) {
                         return true;
@@ -70,54 +73,36 @@ public class GPXDataComputer {
     }
 
     /*
-    public Vector getWindNew(GPXPath gpxPath, double power) {
-
-        gpxElevationFixer.fixElevation(gpxPath, true);
-        Cyclist cyclist = new Cyclist();
-        Wind noWind = new Wind(0, 0);
-        Course course = getCourse(gpxPath, power, cyclist, noWind, 0);
-        maxSpeedComputer.computeMaxSpeeds(course);
-        powerComputer.computeTrack(course);
-        long[] time = course.getGpxPath().getTime();
-        double duration = (time[time.length - 1] - time[0]) / 1000.0;
-
-        int count = 18;
-        long[] dur = new long[count];
-        long longMinDur = Long.MAX_VALUE;
-        for (int i = 0; i < count; i++) {
-
-            int deg = i * (360 / count);
-
-            Wind wind = new Wind(3, Math.toRadians(deg));
-            course = getCourse(gpxPath, power, cyclist, wind, duration);
-            powerComputer.computeTrack(course);
-            time = course.getGpxPath().getTime();
-            dur[i] = time[time.length - 1] - time[0];
-            longMinDur = Math.min(longMinDur, dur[i]);
-        }
-        for (int i = 0; i < count; i++) {
-
-            int deg = i * (360 / count);
-            final long ms = dur[i] - longMinDur;
-            final long s = ms / 1000;
-            final long m = ms / 60000;
-            System.out.println(deg + "° " + dur[i] + " (" + ms + "ms = " + s + "s = " + m + "m)");
-        }
-        return getWind(gpxPath);
-    }
-
-    private Course getCourse(GPXPath gpxPath, double power, Cyclist cyclist, Wind wind, double duration) {
-        PowerProviderConstant powerProvider;
-        if (duration == 0) {
-            powerProvider = new PowerProviderConstant(power);
-        } else {
-            powerProvider = new PowerProviderConstantWithTiring(power, duration);
-        }
-        return new Course(gpxPath, Instant.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant());
-    }
+     * public Vector getWindNew(GPXPath gpxPath, double power) { gpxElevationFixer.fixElevation(gpxPath, true); Cyclist
+     * cyclist = new Cyclist(); Wind noWind = new Wind(0, 0); Course course = getCourse(gpxPath, power, cyclist, noWind,
+     * 0); maxSpeedComputer.computeMaxSpeeds(course); powerComputer.computeTrack(course); long[] time =
+     * course.getGpxPath().getTime(); double duration = (time[time.length - 1] - time[0]) / 1000.0; int count = 18;
+     * long[] dur = new long[count]; long longMinDur = Long.MAX_VALUE; for (int i = 0; i < count; i++) { int deg = i *
+     * (360 / count); Wind wind = new Wind(3, Math.toRadians(deg)); course = getCourse(gpxPath, power, cyclist, wind,
+     * duration); powerComputer.computeTrack(course); time = course.getGpxPath().getTime(); dur[i] = time[time.length -
+     * 1] - time[0]; longMinDur = Math.min(longMinDur, dur[i]); } for (int i = 0; i < count; i++) { int deg = i * (360 /
+     * count); final long ms = dur[i] - longMinDur; final long s = ms / 1000; final long m = ms / 60000;
+     * System.out.println(deg + "° " + dur[i] + " (" + ms + "ms = " + s + "s = " + m + "m)"); } return getWind(gpxPath);
+     * } private Course getCourse(GPXPath gpxPath, double power, Cyclist cyclist, Wind wind, double duration) {
+     * PowerProviderConstant powerProvider; if (duration == 0) { powerProvider = new PowerProviderConstant(power); }
+     * else { powerProvider = new PowerProviderConstantWithTiring(power, duration); } return new Course(gpxPath,
+     * Instant.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant()); }
      */
 
+    public Vector getWind(GPX gpx) {
+        Vector vector = new Vector(0.0, 0.0);
+        for (GPXPath path : gpx.paths()) {
+            vector.add(getWindUnscaled(path));
+        }
+        return vector.normalize();
+    }
+
     public Vector getWind(GPXPath path) {
+        Vector windUnscaled = getWindUnscaled(path);
+        return windUnscaled.normalize();
+    }
+
+    public Vector getWindUnscaled(GPXPath path) {
 
         final List<Point> points = path.getPoints();
         final int size = points.size();
@@ -130,11 +115,10 @@ public class GPXDataComputer {
                 tot = tot.add(vector(start, project(point)));
             }
             tot = tot.mul(1.0 / size);
-            return tot.normalize().mul(-1.0);
+            return tot.mul(-1.0);
         } else {
             return new Vector(0.0, 0.0);
         }
-
     }
 
     private Vector vector(final Vector p1, final Vector p2) {
@@ -144,8 +128,8 @@ public class GPXDataComputer {
 
     private Vector project(final Point point) {
 
-        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLonDeg(), 12),
+        return new Vector(
+                MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLonDeg(), 12),
                 MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLatDeg(), 12));
     }
-
 }

@@ -1,10 +1,9 @@
 package io.github.glandais.gpx.map;
 
-import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.GPX;
+import java.io.File;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.File;
 
 @Getter
 @Setter
@@ -14,20 +13,19 @@ public class TileMapImage extends MapImage {
 
     protected String urlPattern;
 
-    public TileMapImage(GPXPath path, double margin, int maxSize, File cacheFolder, String urlPattern) {
-        super(path, margin, maxSize);
+    public TileMapImage(GPX gpx, double margin, int maxSize, File cacheFolder, String urlPattern) {
+        super(gpx, margin, maxSize);
         init(cacheFolder, urlPattern);
     }
 
-    public TileMapImage(GPXPath path, double margin, File cacheFolder, String urlPattern, int zoom) {
-        super(path, margin);
+    public TileMapImage(GPX gpx, double margin, File cacheFolder, String urlPattern, int zoom) {
+        super(gpx, margin);
         setZoom(zoom);
         init(cacheFolder, urlPattern);
     }
 
-    public TileMapImage(GPXPath path, double margin, File cacheFolder, String urlPattern, Integer width,
-                        Integer height) {
-        super(path, margin, width, height);
+    public TileMapImage(GPX gpx, double margin, File cacheFolder, String urlPattern, Integer width, Integer height) {
+        super(gpx, margin, width, height);
         init(cacheFolder, urlPattern);
     }
 
@@ -36,5 +34,4 @@ public class TileMapImage extends MapImage {
         this.urlPattern = urlPattern;
         initImage();
     }
-
 }

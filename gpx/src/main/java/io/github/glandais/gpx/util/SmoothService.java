@@ -4,16 +4,14 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKey;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.converter.Converter;
 import io.github.glandais.gpx.data.values.converter.Converters;
 import io.github.glandais.gpx.data.values.converter.NoopConverter;
 import io.github.glandais.gpx.data.values.unit.Unit;
 import jakarta.inject.Singleton;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Singleton
@@ -22,22 +20,22 @@ public class SmoothService {
 
     public void smoothPower(GPXPath path) {
         smoothTime(path, PropertyKeys.power, 5);
-        path.computeArrays(ValueKind.computed);
+        path.computeArrays();
     }
 
     public void smoothAeroCoef(GPXPath path) {
         smoothDist(path, PropertyKeys.aeroCoef, 100);
-        path.computeArrays(ValueKind.computed);
+        path.computeArrays();
     }
 
     public void smoothSpeed(GPXPath path) {
         smoothTime(path, PropertyKeys.speed, 10);
-        path.computeArrays(ValueKind.computed);
+        path.computeArrays();
     }
 
     public void smoothEle(GPXPath path, double buffer) {
         smoothDist(path, PropertyKeys.ele, buffer);
-        path.computeArrays(ValueKind.computed);
+        path.computeArrays();
     }
 
     private void smoothDist(GPXPath path, PropertyKey<Double, ?> attribute, double dist) {
@@ -45,10 +43,15 @@ public class SmoothService {
     }
 
     private void smoothTime(GPXPath path, PropertyKey<Double, ?> attribute, double dist) {
-        smooth(path, attribute, PropertyKeys.time, Converters.EPOCH_SECONDS_CONVERTER, dist);
+        smooth(path, attribute, PropertyKeys.elapsed, Converters.DURATION_SECONDS_CONVERTER, dist);
     }
 
-    private <S, U extends Unit<S>> void smooth(GPXPath path, PropertyKey<Double, ?> attribute, PropertyKey<S, U> bufferOver, Converter<S, U, Double> converter, double dist) {
+    private <S, U extends Unit<S>> void smooth(
+            GPXPath path,
+            PropertyKey<Double, ?> attribute,
+            PropertyKey<S, U> bufferOver,
+            Converter<S, U, Double> converter,
+            double dist) {
         log.debug("Smoothing {}", attribute);
         List<Point> points = path.getPoints();
         double[] data = new double[points.size()];
@@ -61,7 +64,7 @@ public class SmoothService {
         for (int j = 0; j < data.length; j++) {
             double newValue = computeNewValue(j, dist, data, time);
             Point p = points.get(j);
-            p.put(attribute, ValueKind.smoothed, newValue);
+            p.put(attribute, newValue);
         }
         log.debug("Smoothed {}", attribute);
     }
@@ -95,7 +98,5 @@ public class SmoothService {
         } else {
             return totv / totc;
         }
-
     }
-
 }

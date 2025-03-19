@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- track-length = 3985 filtered ascend = 0 plain-ascend = -342 cost=48958 energy=0.0kwh time=7m 58s -->
+<gpx 
+ xmlns="http://www.topografix.com/GPX/1/1" 
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" 
+ version="1.1" 
+ creator="bikerouter.de 2025.2">
+ <trk>
+  <name>stelvio short</name>
+  <link href="https://bikerouter.de/#map=16/46.5306/10.4607/Esri.WorldImagery&amp;lonlats=10.45441,46.529388;10.46529,46.532466&amp;profile=m11n-gravel-pre">
+   <text>bikerouter.de</text>
+  </link>
+  <trkseg>
+   <trkpt lat="46.529384" lon="10.454421"><ele>2745.25</ele></trkpt>
+   <trkpt lat="46.529738" lon="10.454546"><ele>2741.5</ele></trkpt>
+   <trkpt lat="46.530067" lon="10.45464"><ele>2738.5</ele></trkpt>
+   <trkpt lat="46.530224" lon="10.454671"><ele>2737.5</ele></trkpt>
+   <trkpt lat="46.530316" lon="10.454706"><ele>2737</ele></trkpt>
+   <trkpt lat="46.53035" lon="10.454734"><ele>2736.75</ele></trkpt>
+   <trkpt lat="46.530383" lon="10.454774"><ele>2736</ele></trkpt>
+   <trkpt lat="46.530552" lon="10.455037"><ele>2731.75</ele></trkpt>
+   <trkpt lat="46.530594" lon="10.455089"><ele>2730</ele></trkpt>
+  </trkseg>
+ </trk>
+</gpx>

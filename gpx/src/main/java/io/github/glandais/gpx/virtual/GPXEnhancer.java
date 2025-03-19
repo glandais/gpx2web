@@ -1,24 +1,25 @@
 package io.github.glandais.gpx.virtual;
 
+import io.github.glandais.gpx.data.GPX;
+import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
-import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.srtm.GPXElevationFixer;
 import io.github.glandais.gpx.virtual.maxspeed.MaxSpeedComputer;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderNone;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import jakarta.inject.Singleton;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @RequiredArgsConstructor
 @Service
 @Singleton
-public class GPXPathEnhancer {
+public class GPXEnhancer {
 
     private final GPXElevationFixer gpxElevationFixer;
 
@@ -30,11 +31,33 @@ public class GPXPathEnhancer {
 
     private final GPXPerDistance gpxPerDistance;
 
+    private final StartTimeProvider startTimeProvider;
+
+    public void virtualize(GPX gpx, boolean filter) {
+        for (int i = 0; i < gpx.paths().size(); i++) {
+            virtualize(gpx.paths().get(i), filter, i + 1);
+        }
+    }
 
     public void virtualize(GPXPath gpxPath, boolean filter) {
+        virtualize(gpxPath, filter, 1);
+    }
+
+    public void virtualize(GPXPath gpxPath, boolean filter, int ddays) {
         Cyclist cyclist = Cyclist.getDefault();
         Bike bike = Bike.getDefault();
-        Course course = new Course(gpxPath, Instant.now(), cyclist, bike, new PowerProviderConstant(), new WindProviderNone(), new AeroProviderConstant());
+
+        Point point = gpxPath.getPoints().get(0);
+        Instant instant = startTimeProvider.getStart(point, ddays);
+
+        Course course = new Course(
+                gpxPath,
+                instant,
+                cyclist,
+                bike,
+                new PowerProviderConstant(),
+                new WindProviderNone(),
+                new AeroProviderConstant());
         virtualize(course, filter);
     }
 

@@ -7,9 +7,8 @@ import io.github.glandais.gpx.util.Vector;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.Cyclist;
 import jakarta.inject.Singleton;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
@@ -118,8 +117,7 @@ public class MaxSpeedComputer {
         double F = C * (ax + cx) + D * (ay + cy);
 
         double G = 2 * (A * (cy - by) - B * (cx - bx));
-        if (Math.abs(G) < 0.001)
-            return null; // a, b, c must be collinear
+        if (Math.abs(G) < 0.001) return null; // a, b, c must be collinear
 
         double px = (D * E - B * F) / G;
         double py = (A * F - C * E) / G;
@@ -133,5 +131,4 @@ public class MaxSpeedComputer {
         double y = (lat / (2 * Math.PI)) * Constants.CIRC;
         return new Vector(x, y);
     }
-
 }

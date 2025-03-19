@@ -1,8 +1,6 @@
 package io.github.glandais.gpx.data.values.unit;
 
-/**
- * m.s-2
- */
+/** m.s-2 */
 public class SpeedUnit extends DoubleUnit {
     public static final SpeedUnit INSTANCE = new SpeedUnit();
 

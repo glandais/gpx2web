@@ -8,5 +8,4 @@ public class AeroProviderConstant implements AeroProvider {
     public double getAeroCoef(Course course, Point location) {
         return course.getCyclist().getCd() * course.getCyclist().getA() * course.getRho() / 2;
     }
-
 }

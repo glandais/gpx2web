@@ -4,15 +4,13 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKey;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.unit.Unit;
 import jakarta.inject.Singleton;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
@@ -22,7 +20,7 @@ public class JsonFileWriter implements FileExporter {
     public void writeGPXPath(GPXPath path, File file) throws IOException {
         Map<String, Object> map = new LinkedHashMap<>();
 
-        Set<String> keys = new HashSet<>();
+        Set<String> keys = new TreeSet<>();
         List<Map<String, Object>> pointsValues = new ArrayList<>();
         for (Point point : path.getPoints()) {
             Map<String, Object> pointValues = new LinkedHashMap<>();
@@ -44,7 +42,7 @@ public class JsonFileWriter implements FileExporter {
     }
 
     private <S, U extends Unit<S>> Object getValue(Point point, PropertyKey<S, U> key) {
-        S value = point.get(key, ValueKind.current);
+        S value = point.get(key);
         if (value == null) {
             return null;
         } else if (value instanceof Number) {
@@ -92,5 +90,4 @@ public class JsonFileWriter implements FileExporter {
             fw.write(o.toString());
         }
     }
-
 }

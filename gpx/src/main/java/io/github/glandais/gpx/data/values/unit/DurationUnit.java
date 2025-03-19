@@ -1,7 +1,6 @@
 package io.github.glandais.gpx.data.values.unit;
 
 import io.github.glandais.gpx.data.values.converter.Converters;
-
 import java.time.Duration;
 
 public class DurationUnit implements Unit<Duration> {

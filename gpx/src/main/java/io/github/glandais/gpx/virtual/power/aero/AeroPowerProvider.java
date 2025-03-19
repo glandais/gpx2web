@@ -1,11 +1,7 @@
 package io.github.glandais.gpx.virtual.power.aero;
 
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.PropertyKeyKind;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.data.values.ValueKind;
-import io.github.glandais.gpx.data.values.unit.DoubleUnit;
-import io.github.glandais.gpx.data.values.unit.Formul;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.power.PowerProvider;
 import io.github.glandais.gpx.virtual.power.PowerProviderId;
@@ -16,11 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Singleton
 public class AeroPowerProvider implements PowerProvider {
-
-    public static final Formul FORMUL_SIMPLE = new Formul("-aeroCoef*POWER(speed,3)", DoubleUnit.INSTANCE,
-            new PropertyKeyKind<>(PropertyKeys.aeroCoef, ValueKind.debug),
-            new PropertyKeyKind<>(PropertyKeys.speed, ValueKind.staging)
-    );
 
     @Override
     public PowerProviderId getId() {
@@ -35,7 +26,6 @@ public class AeroPowerProvider implements PowerProvider {
         double p_air;
         if (wind.windSpeed() == 0) {
             double speed = location.getSpeed();
-            location.putDebug(PropertyKeys.p_aero_formula, FORMUL_SIMPLE);
             p_air = -aeroCoef * speed * speed * speed;
         } else {
             p_air = computePAirWithWind(location, aeroCoef, wind);
@@ -69,5 +59,4 @@ public class AeroPowerProvider implements PowerProvider {
 
         return -aeroCoef * lambda * Math.sqrt(l3) * l1 * speed;
     }
-
 }

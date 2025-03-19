@@ -32,5 +32,4 @@ public class Cyclist {
     public double getMaxSpeedMs() {
         return maxSpeedKmH / 3.6;
     }
-
 }

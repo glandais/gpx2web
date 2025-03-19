@@ -2,7 +2,6 @@ package io.github.glandais.gpx.data;
 
 import io.github.glandais.gpx.data.values.PropertyKey;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.data.values.converter.Converter;
 import io.github.glandais.gpx.data.values.converter.Converters;
 import io.github.glandais.gpx.data.values.unit.Unit;
@@ -10,46 +9,39 @@ import io.github.glandais.gpx.io.GPXField;
 import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.util.MagicPower2MapSpace;
 import io.github.glandais.gpx.util.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @EqualsAndHashCode
 @Slf4j
 public class Point {
 
-    public static Point interpolate(Point p, Point pp1, double coef, long epochMillis) {
-        Point point = interpolate(p, pp1, coef);
-        point.setInstant(Instant.ofEpochMilli(epochMillis), ValueKind.computed);
-        return point;
-    }
-
     public static Point interpolate(Point p, Point pp1, double coef) {
         Point point = new Point();
         for (PropertyKey<?, ?> propertyKey : PropertyKeys.getList()) {
-            for (ValueKind valueKind : ValueKind.values()) {
-                interpolate(propertyKey, valueKind, point, p, pp1, coef);
-            }
+            interpolate(propertyKey, point, p, pp1, coef);
         }
         return point;
     }
 
-    private static <S, U extends Unit<S>> void interpolate(PropertyKey<S, U> propertyKey, ValueKind valueKind, Point target, Point p, Point pp1, double coef) {
-        S interpolated = interpolate(p, pp1, propertyKey, valueKind, coef);
+    private static <S, U extends Unit<S>> void interpolate(
+            PropertyKey<S, U> propertyKey, Point target, Point p, Point pp1, double coef) {
+        S interpolated = interpolate(p, pp1, propertyKey, coef);
         if (interpolated != null) {
-            target.rawPut(propertyKey, valueKind, interpolated);
+            target.rawPut(propertyKey, interpolated);
         }
     }
 
-    private static <S, U extends Unit<S>> S interpolate(Point properties, Point data, PropertyKey<S, U> propertyKey, ValueKind valueKind, double coef) {
-        S s1 = properties.get(propertyKey, valueKind);
-        S s2 = data.get(propertyKey, valueKind);
+    private static <S, U extends Unit<S>> S interpolate(
+            Point properties, Point data, PropertyKey<S, U> propertyKey, double coef) {
+        S s1 = properties.get(propertyKey);
+        S s2 = data.get(propertyKey);
         if (s1 != null && s2 != null) {
             return propertyKey.interpolate(s1, s2, coef);
         } else {
@@ -57,15 +49,14 @@ public class Point {
         }
     }
 
-    private static final int KIND_SIZE = ValueKind.values().length;
-    private static final int VALUES_SIZE = PropertyKeys.getList().size() * KIND_SIZE;
+    private static final int VALUES_SIZE = PropertyKeys.getList().size();
 
     private final Object[] values;
 
     public Point() {
         super();
         this.values = new Object[VALUES_SIZE];
-        setInstant(Instant.EPOCH, ValueKind.computed);
+        setInstant(null, Instant.EPOCH);
     }
 
     public Point(Point point) {
@@ -73,56 +64,40 @@ public class Point {
         this.values = Arrays.copyOf(point.values, VALUES_SIZE);
     }
 
-    private <S, U extends Unit<S>> int getIndex(PropertyKey<S, U> key, ValueKind valueKind) {
-        int result = KIND_SIZE * key.getOrdinal() + valueKind.ordinal();
-        return result;
+    private <S, U extends Unit<S>> int getIndex(PropertyKey<S, U> key) {
+        return key.getOrdinal();
     }
 
-    public <S, U extends Unit<S>, V> void put(PropertyKey<S, U> key, Converter<S, U, V> converter, V value, ValueKind valueKind) {
+    public <S, U extends Unit<S>, V> void put(PropertyKey<S, U> key, Converter<S, U, V> converter, V value) {
         S storageValue = value == null ? null : converter.convertToStorage(value);
-        put(key, valueKind, storageValue);
+        put(key, storageValue);
     }
 
-    public <S, U extends Unit<S>> void put(PropertyKey<S, U> key, ValueKind valueKind, S value) {
-        rawPut(key, ValueKind.current, value);
-        rawPut(key, valueKind, value);
+    public <S, U extends Unit<S>> void put(PropertyKey<S, U> key, S value) {
+        rawPut(key, value);
     }
 
-    private <S, U extends Unit<S>> void rawPut(PropertyKey<S, U> key, ValueKind valueKind, S value) {
-        values[getIndex(key, valueKind)] = value;
-    }
-
-    public <S, U extends Unit<S>> S get(PropertyKey<S, U> key) {
-        return get(key, ValueKind.current);
+    private <S, U extends Unit<S>> void rawPut(PropertyKey<S, U> key, S value) {
+        values[getIndex(key)] = value;
     }
 
     public <S, U extends Unit<S>, V> V get(PropertyKey<S, U> key, Converter<S, U, V> converter) {
-        return get(key, converter, ValueKind.current);
-    }
-
-    public <S, U extends Unit<S>, V> V get(PropertyKey<S, U> key, Converter<S, U, V> converter, ValueKind valueKind) {
-        S storageValue = get(key, valueKind);
+        S storageValue = get(key);
         return storageValue == null ? null : converter.convertFromStorage(storageValue);
     }
 
-    public <S, U extends Unit<S>> S get(PropertyKey<S, U> key, ValueKind valueKind) {
-        return (S) values[getIndex(key, valueKind)];
+    public <S, U extends Unit<S>> S get(PropertyKey<S, U> key) {
+        return (S) values[getIndex(key)];
     }
 
     public <S, U extends Unit<S>> void putDebug(PropertyKey<S, U> key, S value) {
         if (Constants.DEBUG) {
-            this.put(key, ValueKind.debug, value);
-        }
-    }
-
-    public <S, U extends Unit<S>, V> void putDebug(PropertyKey<S, U> key, Converter<S, U, V> converter, V value) {
-        if (Constants.DEBUG) {
-            this.put(key, converter, value, ValueKind.debug);
+            this.put(key, value);
         }
     }
 
     public void setLat(Double value) {
-        put(PropertyKeys.lat, ValueKind.source, value);
+        put(PropertyKeys.lat, value);
     }
 
     public double getLat() {
@@ -130,7 +105,7 @@ public class Point {
     }
 
     public void setLon(Double value) {
-        put(PropertyKeys.lon, ValueKind.source, value);
+        put(PropertyKeys.lon, value);
     }
 
     public double getLon() {
@@ -153,8 +128,8 @@ public class Point {
         return get(PropertyKeys.lon, Converters.DEGREES_CONVERTER);
     }
 
-    public void setEle(Double value, ValueKind kind) {
-        put(PropertyKeys.ele, kind, value);
+    public void setEle(Double value) {
+        put(PropertyKeys.ele, value);
     }
 
     public double getEle() {
@@ -162,29 +137,28 @@ public class Point {
         return ele == null ? 0.0 : ele;
     }
 
-    public void setGrade(Double value, ValueKind kind) {
-        put(PropertyKeys.grade, kind, value);
+    public void setGrade(Double value) {
+        put(PropertyKeys.grade, value);
     }
 
     public double getGrade() {
         return get(PropertyKeys.grade);
     }
 
-    public void setPower(Double value, ValueKind kind) {
-        put(PropertyKeys.power, kind, value);
+    public void setPower(Double value) {
+        put(PropertyKeys.power, value);
     }
 
     public Double getPower() {
         return get(PropertyKeys.power);
     }
 
-    public void setInstant(Instant value, ValueKind kind) {
-        put(PropertyKeys.time, kind, value);
-    }
-
-    public void computeElapsedTime(Instant start, ValueKind kind) {
-        Duration duration = Duration.between(start, getInstant());
-        put(PropertyKeys.elapsed, kind, duration);
+    public void setInstant(Instant start, Instant value) {
+        put(PropertyKeys.time, value);
+        if (start != null) {
+            Duration duration = Duration.between(start, value);
+            put(PropertyKeys.elapsed, duration);
+        }
     }
 
     public Instant getInstant() {
@@ -203,50 +177,42 @@ public class Point {
         return get(PropertyKeys.time, Converters.DATE_CONVERTER);
     }
 
-    public long getEpochMilli() {
-        Long epochMilli = get(PropertyKeys.time, Converters.EPOCH_MILLIS_CONVERTER);
-        return epochMilli == null ? 0 : epochMilli;
-    }
-
-    public double getEpochSeconds() {
-        return get(PropertyKeys.time, Converters.EPOCH_SECONDS_CONVERTER);
-    }
-
     public double getSpeedMax() {
         return get(PropertyKeys.speed_max);
     }
 
     public void setSpeedMax(double maxSpeed) {
-        put(PropertyKeys.speed_max, ValueKind.computed, maxSpeed);
+        put(PropertyKeys.speed_max, maxSpeed);
     }
 
     public double getDist() {
         return get(PropertyKeys.dist);
     }
 
-    public void setDist(double dist, ValueKind kind) {
-        put(PropertyKeys.dist, kind, dist);
+    public void setDist(double dist) {
+        put(PropertyKeys.dist, dist);
     }
 
     public Double getSpeed() {
         return get(PropertyKeys.speed);
     }
 
-    public void setSpeed(double speed, ValueKind kind) {
-        put(PropertyKeys.speed, kind, speed);
+    public void setSpeed(double speed) {
+        put(PropertyKeys.speed, speed);
     }
 
     public double getBearing() {
         return get(PropertyKeys.bearing);
     }
 
-    public void setBearing(double bearing, ValueKind kind) {
-        put(PropertyKeys.bearing, kind, bearing);
+    public void setBearing(double bearing) {
+        put(PropertyKeys.bearing, bearing);
     }
 
     public Vector project() {
 
-        return new Vector(MagicPower2MapSpace.INSTANCE_256.cLonToX(getLonDeg(), 12),
+        return new Vector(
+                MagicPower2MapSpace.INSTANCE_256.cLonToX(getLonDeg(), 12),
                 MagicPower2MapSpace.INSTANCE_256.cLatToY(getLatDeg(), 12));
     }
 
@@ -257,8 +223,7 @@ public class Point {
         double lon2 = otherPoint.getLon();
 
         // great circle distance in radians
-        double a = Math.sin(lat) * Math.sin(lat2)
-                + Math.cos(lat) * Math.cos(lat2) * Math.cos(lon - lon2);
+        double a = Math.sin(lat) * Math.sin(lat2) + Math.cos(lat) * Math.cos(lat2) * Math.cos(lon - lon2);
         double alpha = Math.acos(Math.max(-1.0, Math.min(1.0, a)));
         // WGS-84 semi-major axis
         return alpha * Constants.SEMI_MAJOR_AXIS;
@@ -282,18 +247,15 @@ public class Point {
 
     @Override
     public String toString() {
-        return PropertyKeys.getList().stream().flatMap(
-                        pk -> Arrays.stream(ValueKind.values()).map(
-                                vk -> {
-                                    Object v = get(pk, vk);
-                                    if (v != null) {
-                                        return "[" + pk.getPropertyKeyName() + "," + vk + "]=" + v;
-                                    } else {
-                                        return null;
-                                    }
-                                }
-                        )
-                )
+        return PropertyKeys.getList().stream()
+                .map(pk -> {
+                    Object v = get(pk);
+                    if (v != null) {
+                        return "[" + pk.getPropertyKeyName() + "]=" + v;
+                    } else {
+                        return null;
+                    }
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(","));
     }

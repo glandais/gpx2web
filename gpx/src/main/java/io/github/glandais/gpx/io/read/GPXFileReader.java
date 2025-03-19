@@ -1,9 +1,16 @@
 package io.github.glandais.gpx.io.read;
 
 import io.github.glandais.gpx.data.*;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.io.GPXField;
 import jakarta.inject.Singleton;
+import java.io.File;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -11,59 +18,72 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.InputStream;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-
 @Service
 @Singleton
 @Slf4j
 public class GPXFileReader {
-    public GPX parseGpx(InputStream is) throws Exception {
-        return parseGpx(is, "path");
+
+    public static final String DEFAULT_NAME = "gpx";
+
+    public GPX parseGPX(InputStream is) throws Exception {
+        return parseGPX(is, null, false);
     }
 
-    public GPX parseGpx(InputStream is, String defaultName) throws Exception {
-        return parseGpx(is, (db, f) -> {
+    public GPX parseGPX(InputStream is, String forcedName, boolean erasePathNames) throws Exception {
+        return parseGPX(is, forcedName, erasePathNames, (db, f) -> {
             try {
                 return db.parse(f);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }, defaultName);
+        });
     }
 
-    public GPX parseGpx(File file) throws Exception {
-        return parseGpx(file, "path");
+    public GPX parseGPX(File file) throws Exception {
+        return parseGPX(file, null, false);
     }
 
-    public GPX parseGpx(File file, String defaultName) throws Exception {
-        return parseGpx(file, (db, f) -> {
+    public GPX parseGPX(File file, String forcedName, boolean erasePathNames) throws Exception {
+        return parseGPX(file, forcedName, erasePathNames, (db, f) -> {
             try {
                 return db.parse(f);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }, defaultName);
+        });
     }
 
-    private <T> GPX parseGpx(T file, BiFunction<DocumentBuilder, T, Document> parser, String defaultName) throws Exception {
+    private <T> GPX parseGPX(
+            T file, String forcedName, boolean erasePathNames, BiFunction<DocumentBuilder, T, Document> parser)
+            throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document gpxDocument = parser.apply(db, file);
-        String metadataName = getMetadataName(gpxDocument.getDocumentElement());
-        if (metadataName == null || metadataName.isEmpty()) {
-            metadataName = defaultName;
+        String gpxName;
+        if (forcedName != null) {
+            gpxName = forcedName;
+        } else {
+            gpxName = getMetadataName(gpxDocument.getDocumentElement());
         }
-        GPX gpx = new GPX(metadataName, new ArrayList<>(), new ArrayList<>());
-        processElement(gpxDocument.getDocumentElement(), metadataName, gpx);
+        GPX gpx = new GPX(gpxName, new ArrayList<>(), new ArrayList<>());
+        processElement(gpxDocument.getDocumentElement(), forcedName, erasePathNames, gpx);
+
+        List<GPXPath> paths = gpx.paths().stream()
+                .filter(gpxPath -> gpxPath.getPoints().size() >= 2)
+                .toList();
+
+        if (gpxName == null) {
+            if (!paths.isEmpty()) {
+                gpxName = paths.get(0).getName();
+            } else {
+                gpxName = DEFAULT_NAME;
+            }
+        }
+
+        gpx = new GPX(gpxName, paths, gpx.waypoints());
+
         for (GPXPath gpxPath : gpx.paths()) {
-            gpxPath.computeArrays(ValueKind.source);
+            gpxPath.computeArrays();
         }
         return gpx;
     }
@@ -89,11 +109,11 @@ public class GPXFileReader {
         return result;
     }
 
-    private void processElement(Element element, String defaultName, GPX gpx) {
+    private void processElement(Element element, String forcedName, boolean erasePathNames, GPX gpx) {
         String tagName = element.getTagName().toLowerCase();
 
         if (tagName.equals("trk") || tagName.equals("rte")) {
-            String name = getPathName(element, defaultName, gpx);
+            String name = getPathName(element, forcedName, erasePathNames, gpx);
             log.debug("Parsing {}", name);
             GPXPath currentPath = new GPXPath(name, GPXPathType.getByTagName(tagName));
             gpx.paths().add(currentPath);
@@ -110,23 +130,27 @@ public class GPXFileReader {
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node node = childNodes.item(i);
                 if (node instanceof Element) {
-                    processElement((Element) node, defaultName, gpx);
+                    processElement((Element) node, forcedName, erasePathNames, gpx);
                 }
             }
         }
     }
 
-    private String getPathName(final Element element, final String defaultName, final GPX gpx) {
-        Element nameElement = findElement(element, "name");
+    private String getPathName(final Element element, final String forcedName, boolean erasePathNames, final GPX gpx) {
         String baseName = "";
-        if (nameElement != null) {
-            baseName = nameElement.getTextContent();
-        }
-        if (baseName == null || baseName.isEmpty()) {
-            baseName = defaultName;
-        }
-        if (baseName == null || baseName.isEmpty()) {
-            baseName = "path";
+        if (forcedName != null && erasePathNames) {
+            baseName = forcedName;
+        } else {
+            Element nameElement = findElement(element, "name");
+            if (nameElement != null) {
+                baseName = nameElement.getTextContent();
+            }
+            if (baseName == null || baseName.isEmpty()) {
+                baseName = gpx.name();
+            }
+            if (baseName == null || baseName.isEmpty()) {
+                baseName = DEFAULT_NAME;
+            }
         }
         int i = 0;
         String name;
@@ -185,12 +209,12 @@ public class GPXFileReader {
         Point p = new Point();
         p.setLon(lon);
         p.setLat(lat);
-        p.setEle(ele, ValueKind.source);
-        p.setInstant(date, ValueKind.source);
+        p.setEle(ele);
+        p.setInstant(null, date);
         Element powerInWatts = findElement(element, "PowerInWatts");
         if (powerInWatts != null) {
             double value = Double.parseDouble(powerInWatts.getTextContent());
-            p.setPower(value, ValueKind.source);
+            p.setPower(value);
         }
         Element extensions = findElement(element, "extensions");
         getExtensionValues(p, extensions);
@@ -209,9 +233,9 @@ public class GPXFileReader {
                         String tagName = child.getTagName();
                         GPXField pointField = GPXField.fromGpxTag(tagName);
                         if (pointField != null) {
-                            p.put(pointField.getPropertyKey(), ValueKind.source, value);
-//                        } else {
-                            //p.putDebug(tagName, value, Unit.DOUBLE_ANY);
+                            p.put(pointField.getPropertyKey(), value);
+                            // } else {
+                            // p.putDebug(tagName, value, Unit.DOUBLE_ANY);
                         }
                     } catch (NumberFormatException e) {
                         // oops
@@ -235,5 +259,4 @@ public class GPXFileReader {
         }
         return ele;
     }
-
 }

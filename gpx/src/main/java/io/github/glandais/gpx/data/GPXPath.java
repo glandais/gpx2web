@@ -1,14 +1,13 @@
 package io.github.glandais.gpx.data;
 
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.Vector;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Slf4j
@@ -43,8 +42,8 @@ public class GPXPath {
     private double dist;
     // m
     private double[] eles;
-    // epoch millis
-    private long[] time;
+    // nanos from start
+    private long[] nanos;
 
     public GPXPath(String name, GPXPathType type) {
         super();
@@ -52,21 +51,23 @@ public class GPXPath {
         this.type = type;
     }
 
-    public void setPoints(List<Point> points, ValueKind kind) {
+    public void setPoints(List<Point> points) {
         this.points = new ArrayList<>(points);
-        computeArrays(kind);
+        computeArrays();
     }
 
     public void addPoint(Point p) {
         points.add(p);
     }
 
-    public void computeArrays(ValueKind kind) {
+    public void computeArrays() {
+        Instant start = points.get(0).getInstant();
+
         Point previousPoint = null;
         dist = 0;
         dists = new double[points.size()];
         eles = new double[points.size()];
-        time = new long[points.size()];
+        nanos = new long[points.size()];
 
         minElevation = Double.MAX_VALUE;
         maxElevation = -Double.MAX_VALUE;
@@ -79,8 +80,9 @@ public class GPXPath {
 
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
+            p.setInstant(start, p.getInstant());
             eles[i] = p.getEle();
-            time[i] = p.getEpochMilli();
+            nanos[i] = p.getElapsed().toNanos();
 
             double lon = p.getLon();
             double lat = p.getLat();
@@ -102,8 +104,7 @@ public class GPXPath {
                 }
             }
             dists[i] = dist;
-            p.setDist(dists[i], kind);
-            p.computeElapsedTime(points.get(0).getInstant(), kind);
+            p.setDist(dists[i]);
 
             previousPoint = p;
         }
@@ -121,10 +122,13 @@ public class GPXPath {
             if (dist > 0) {
                 double dele = eles[maxi] - eles[i];
                 double grade = dele / dist;
-                p.setGrade(grade, kind);
+                p.setGrade(grade);
 
-                double dt = time[maxi] - time[i];
-                p.setSpeed(1000.0 * dist / dt, kind);
+                double dt = nanos[maxi] - nanos[i];
+                if (dt > 0) {
+                    double speed = 1_000_000_000.0 * dist / dt;
+                    p.setSpeed(speed);
+                }
 
                 Point pmin = points.get(i);
                 Point pmax = points.get(maxi);
@@ -134,10 +138,10 @@ public class GPXPath {
                 double dx2 = v_to.x() - v_from.x();
                 double bearing = Math.atan2(-dy2, dx2);
 
-                p.setBearing(bearing, kind);
+                p.setBearing(bearing);
             } else {
-                p.setGrade(0.0, kind);
-                p.setBearing(0.0, kind);
+                p.setGrade(0.0);
+                p.setBearing(0.0);
             }
         }
 
@@ -163,5 +167,4 @@ public class GPXPath {
     public double getMaxlonDeg() {
         return Math.toDegrees(maxlon);
     }
-
 }

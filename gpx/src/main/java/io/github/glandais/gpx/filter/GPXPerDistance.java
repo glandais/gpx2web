@@ -2,13 +2,11 @@ package io.github.glandais.gpx.filter;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.ValueKind;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
@@ -36,8 +34,7 @@ public class GPXPerDistance {
         }
         newPoints.add(points.get(points.size() - 1));
 
-        path.setPoints(newPoints, ValueKind.computed);
+        path.setPoints(newPoints);
         log.debug("Done - a point per distant for {} {}", path.getName(), minDist);
     }
-
 }

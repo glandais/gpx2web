@@ -4,9 +4,8 @@ import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.reader.dem.SkadiProvider;
 import io.github.glandais.gpx.util.CacheFolderProvider;
 import jakarta.inject.Singleton;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
@@ -16,8 +15,8 @@ public class GpxElevationProvider {
 
     public GpxElevationProvider(final CacheFolderProvider cacheFolderProvider) {
         File cacheFolder = cacheFolderProvider.getCacheFolder();
-        this.elevationProvider = new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath())
-                .setInterpolate(true);
+        this.elevationProvider =
+                new SkadiProvider(new File(cacheFolder, "skadi").getAbsolutePath()).setInterpolate(true);
     }
 
     public synchronized double getElevationRad(double lon, double lat) {
@@ -31,5 +30,4 @@ public class GpxElevationProvider {
         }
         return ele;
     }
-
 }

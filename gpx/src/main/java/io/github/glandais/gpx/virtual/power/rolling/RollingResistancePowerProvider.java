@@ -12,14 +12,6 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class RollingResistancePowerProvider implements PowerProvider {
 
-//    public static final Formul FORMUL = new Formul("-(crr)*mKg*9.81*(speed)*COS(ATAN(grade))",
-//            Unit.WATTS,
-//            new ValueKey("crr", ValueKind.debug),
-//            new ValueKey("mKg", ValueKind.debug),
-//            new ValueKey("speed", ValueKind.staging),
-//            new ValueKey("grade", ValueKind.staging)
-//    );
-
     @Override
     public PowerProviderId getId() {
         return PowerProviderId.rolling_resistance;
@@ -33,9 +25,6 @@ public class RollingResistancePowerProvider implements PowerProvider {
         final double grade = location.getGrade();
 
         double coef = Math.cos(Math.atan(grade));
-
-//        location.putDebug("p_" + getId(), FORMUL, Unit.FORMULA_WATTS);
         return -coef * mKg * Constants.G * location.getSpeed() * crr;
     }
-
 }

@@ -1,7 +1,6 @@
 package io.github.glandais.gpx.virtual.power.cyclist;
 
 import io.github.glandais.gpx.virtual.Course;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,5 +20,4 @@ public class GradeSpeeds {
     public double getOptimalSpeed(double grade) {
         return speeds.get((int) (grade * 10) + 200);
     }
-
 }

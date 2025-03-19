@@ -1,16 +1,15 @@
 package io.github.glandais.gpx.map;
 
+import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.srtm.GpxElevationProvider;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
@@ -24,11 +23,11 @@ public class SRTMMapProducer {
         this.gpxElevationProvider = gpxElevationProvider;
     }
 
-    public MapImage createSRTMMap(GPXPath path, int maxsize, double margin) throws IOException {
+    public MapImage createSRTMMap(GPX gpx, int maxsize, double margin) {
         log.debug("start createSRTMMap");
-        MapImage mapImage = new MapImage(path, margin, maxsize);
+        MapImage mapImage = new MapImage(gpx, margin, maxsize);
         fillWithEle(mapImage);
-        addPoints(mapImage, path);
+        addPoints(mapImage, gpx);
         log.debug("end createSRTMMap");
         return mapImage;
     }
@@ -61,6 +60,12 @@ public class SRTMMapProducer {
                 int rgb = getRgb(getRelativeEle(ele, minele, maxele));
                 image.setRGB(i, j, rgb);
             }
+        }
+    }
+
+    private void addPoints(MapImage mapImage, GPX gpx) {
+        for (GPXPath path : gpx.paths()) {
+            addPoints(mapImage, path);
         }
     }
 
@@ -134,5 +139,4 @@ public class SRTMMapProducer {
         }
         return (r << 16) + (g << 8) + b;
     }
-
 }

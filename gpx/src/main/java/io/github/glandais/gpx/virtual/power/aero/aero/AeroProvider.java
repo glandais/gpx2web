@@ -6,5 +6,4 @@ import io.github.glandais.gpx.virtual.Course;
 public interface AeroProvider {
 
     double getAeroCoef(Course course, Point location);
-
 }

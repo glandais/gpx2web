@@ -2,9 +2,7 @@ package io.github.glandais.gpx.data.values.unit;
 
 import io.github.glandais.gpx.data.values.converter.Converters;
 
-/**
- * Radians
- */
+/** Radians */
 public class AngleUnit extends DoubleUnit {
     public static final AngleUnit INSTANCE = new AngleUnit();
 

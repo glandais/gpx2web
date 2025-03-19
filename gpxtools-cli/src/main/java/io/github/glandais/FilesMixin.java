@@ -3,19 +3,20 @@ package io.github.glandais;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.io.read.GPXFileReader;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
 
 @Slf4j
 public class FilesMixin {
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output folder")
+    @CommandLine.Option(
+            names = {"-o", "--output"},
+            description = "Output folder")
     protected File output = new File("output");
 
     @CommandLine.Parameters(paramLabel = "FILE", description = "Files or folders to process")
@@ -36,9 +37,8 @@ public class FilesMixin {
         for (File gpxFile : gpxFiles) {
             log.info("Processing GPX {}", gpxFile.toString());
 
-            GPX gpx = gpxFileReader.parseGpx(gpxFile);
-            File gpxFolder = new File(output, gpxFile.getName()
-                    .replace(".gpx", ""));
+            GPX gpx = gpxFileReader.parseGPX(gpxFile);
+            File gpxFolder = new File(output, gpxFile.getName().replace(".gpx", ""));
             gpxFolder.mkdirs();
             for (GPXPath path : gpx.paths()) {
                 log.info("Processing path {}", path.getName());
@@ -53,7 +53,6 @@ public class FilesMixin {
             }
             log.info("Processed GPX {}", gpxFile);
         }
-
     }
 
     private void checkFile(File fin) {
@@ -73,5 +72,4 @@ public class FilesMixin {
             }
         }
     }
-
 }

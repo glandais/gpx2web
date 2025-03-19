@@ -5,8 +5,6 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.GPXWaypoint;
 import io.github.glandais.gpx.data.Point;
 import jakarta.inject.Singleton;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.springframework.stereotype.Service;
 
 /**
  * Writes a GPX file.
@@ -26,34 +25,30 @@ import java.util.Map;
 @Singleton
 public class GPXFileWriter implements FileExporter {
 
-    /**
-     * XML header.
-     */
+    /** XML header. */
     private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
 
-    /**
-     * GPX opening tag
-     */
-    private static final String TAG_GPX = "<gpx " +
-            "creator=\"https://www.mapstogpx.com/strava\" " +
-            "version=\"1.1\" " +
-            "xmlns=\"http://www.topografix.com/GPX/1/1\" " +
-            "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-            "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" " +
-            "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" " +
-            "xmlns:gpxpx=\"http://www.garmin.com/xmlschemas/PowerExtension/v1\" " +
-            "xsi:schemaLocation=\"" +
-            "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd " +
-            "http://www.garmin.com/xmlschemas/GpxExtensions/v3 https://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd " +
-            "http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd " +
-            "http://www.garmin.com/xmlschemas/PowerExtension/v1 http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd" +
-            "\">";
+    /** GPX opening tag */
+    private static final String TAG_GPX = "<gpx creator=\"https://www.mapstogpx.com/strava\" version=\"1.1\""
+            + " xmlns=\"http://www.topografix.com/GPX/1/1\""
+            + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+            + " xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\""
+            + " xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\""
+            + " xmlns:gpxpx=\"http://www.garmin.com/xmlschemas/PowerExtension/v1\" "
+            + "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1"
+            + " http://www.topografix.com/GPX/1/1/gpx.xsd"
+            + " http://www.garmin.com/xmlschemas/GpxExtensions/v3"
+            + " https://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd"
+            + " http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
+            + " http://www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd"
+            + " http://www.garmin.com/xmlschemas/PowerExtension/v1"
+            + " http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd\">";
 
-    private static final ThreadLocal<DecimalFormat> LAT_LON_FORMATTER = ThreadLocal
-            .withInitial(() -> new DecimalFormat("0.00#####", new DecimalFormatSymbols(Locale.ENGLISH)));
+    private static final ThreadLocal<DecimalFormat> LAT_LON_FORMATTER =
+            ThreadLocal.withInitial(() -> new DecimalFormat("0.00#####", new DecimalFormatSymbols(Locale.ENGLISH)));
 
-    private static final ThreadLocal<DecimalFormat> ELEVATION_FORMATTER = ThreadLocal
-            .withInitial(() -> new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.ENGLISH)));
+    private static final ThreadLocal<DecimalFormat> ELEVATION_FORMATTER =
+            ThreadLocal.withInitial(() -> new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.ENGLISH)));
 
     @Override
     public void writeGPXPath(GPXPath path, File file) throws IOException {
@@ -68,7 +63,7 @@ public class GPXFileWriter implements FileExporter {
     /**
      * Writes the GPX file
      *
-     * @param gpx    gpx.
+     * @param gpx gpx.
      * @param target Target GPX file
      * @throws IOException
      */
@@ -101,18 +96,25 @@ public class GPXFileWriter implements FileExporter {
     }
 
     private void writeWaypoint(FileWriter fw, GPXWaypoint waypoint) throws IOException {
-        String out = "\t<wpt lat=\"" +
-                LAT_LON_FORMATTER.get().format(waypoint.point().getLatDeg()) + "\" " +
-                "lon=\"" + LAT_LON_FORMATTER.get().format(waypoint.point().getLonDeg()) + "\">\n" +
-                "\t\t" + "<name>" + escape(waypoint.name()) + "</name>" + "\n" +
-                "\t</wpt>\n";
+        String out = "\t<wpt lat=\""
+                + LAT_LON_FORMATTER.get().format(waypoint.point().getLatDeg())
+                + "\" "
+                + "lon=\""
+                + LAT_LON_FORMATTER.get().format(waypoint.point().getLonDeg())
+                + "\">\n"
+                + "\t\t"
+                + "<name>"
+                + escape(waypoint.name())
+                + "</name>"
+                + "\n"
+                + "\t</wpt>\n";
         fw.write(out);
     }
 
     /**
      * Iterates on track points and write them.
      *
-     * @param fw         Writer to the target file.
+     * @param fw Writer to the target file.
      * @param extensions
      * @throws IOException
      */
@@ -125,11 +127,19 @@ public class GPXFileWriter implements FileExporter {
         List<Point> points = gpxPath.getPoints();
         for (Point point : points) {
             StringBuffer out = new StringBuffer();
-            out.append("\t\t\t" + "<trkpt lat=\"").append(LAT_LON_FORMATTER.get().format(point.getLatDeg())).append("\" ")
-                    .append("lon=\"").append(LAT_LON_FORMATTER.get().format(point.getLonDeg())).append("\">");
-            out.append("<ele>").append(ELEVATION_FORMATTER.get().format(point.getEle())).append("</ele>");
+            out.append("\t\t\t" + "<trkpt lat=\"")
+                    .append(LAT_LON_FORMATTER.get().format(point.getLatDeg()))
+                    .append("\" ")
+                    .append("lon=\"")
+                    .append(LAT_LON_FORMATTER.get().format(point.getLonDeg()))
+                    .append("\">");
+            out.append("<ele>")
+                    .append(ELEVATION_FORMATTER.get().format(point.getEle()))
+                    .append("</ele>");
             if (point.getInstant() != null) {
-                out.append("<time>").append(DateTimeFormatter.ISO_INSTANT.format(point.getInstant())).append("</time>");
+                out.append("<time>")
+                        .append(DateTimeFormatter.ISO_INSTANT.format(point.getInstant()))
+                        .append("</time>");
             }
             // out.append("<extensions><gpxx:Depth>8</gpxx:Depth></extensions>");
             Map<String, String> gpxData = point.getGpxData();

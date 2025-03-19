@@ -3,14 +3,13 @@ package io.github.glandais.virtualize;
 import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
 import io.github.glandais.FilesMixin;
-import io.github.glandais.gpx.filter.GPXPerDistance;
-import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.filter.GPXFilter;
+import io.github.glandais.gpx.filter.GPXPerDistance;
+import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.io.read.GPXFileReader;
 import io.github.glandais.gpx.io.write.GPXFileWriter;
 import io.github.glandais.gpx.io.write.tabular.CSVFileWriter;
-import io.github.glandais.gpx.io.write.tabular.XLSXFileWriter;
 import io.github.glandais.gpx.srtm.GPXElevationFixer;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.VirtualizeService;
@@ -23,15 +22,14 @@ import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderConstant;
 import io.github.glandais.gpx.virtual.power.cyclist.CyclistPowerProvider;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import jakarta.inject.Inject;
+import java.io.File;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-
-import java.io.File;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 
 @Slf4j
 @Command(name = "virtualize", mixinStandardHelpOptions = true)
@@ -61,9 +59,6 @@ public class VirtualizeCommand implements Runnable {
     @Inject
     protected CSVFileWriter csvFileWriter;
 
-    @Inject
-    protected XLSXFileWriter xlsxFileWriter;
-
     @CommandLine.Mixin
     protected FilesMixin filesMixin;
 
@@ -73,21 +68,28 @@ public class VirtualizeCommand implements Runnable {
     @CommandLine.Mixin
     protected BikeMixin bikeMixin;
 
-    @Option(names = {"--csv"}, negatable = true, description = "Output CSV file")
+    @Option(
+            names = {"--csv"},
+            negatable = true,
+            description = "Output CSV file")
     protected boolean csv = false;
 
-    @Option(names = {"--xlsx"}, negatable = true, description = "Output XLSX file")
-    protected boolean xlsx = false;
-
     // m.s-2
-    @Option(names = {"--wind-speed"}, description = "Wind speed (km/s)")
+    @Option(
+            names = {"--wind-speed"},
+            description = "Wind speed (km/s)")
     protected double windSpeedKmH = 0.0;
 
-    @Option(names = {"--wind-direction"}, description = "Wind direction (°, clockwise, 0=N)")
+    @Option(
+            names = {"--wind-direction"},
+            description = "Wind direction (°, clockwise, 0=N)")
     protected double windDirectionDegree = 0.0;
 
-    @Option(names = {"--start"}, description = "Start date ISO8601")
-    protected Instant startDate = ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
+    @Option(
+            names = {"--start"},
+            description = "Start date ISO8601")
+    protected Instant startDate =
+            ZonedDateTime.now().withHour(7).withMinute(0).minusYears(1).toInstant();
 
     protected WindProvider windProvider;
     protected AeroProvider aeroProvider;
@@ -137,12 +139,8 @@ public class VirtualizeCommand implements Runnable {
 
         Instant start = getNextStart();
 
-        Course course = new Course(path, start,
-                cyclistMixin.getCyclist(),
-                bikeMixin.getBike(),
-                powerProvider,
-                windProvider,
-                aeroProvider);
+        Course course = new Course(
+                path, start, cyclistMixin.getCyclist(), bikeMixin.getBike(), powerProvider, windProvider, aeroProvider);
         maxSpeedComputer.computeMaxSpeeds(course);
         virtualizeService.virtualizeTrack(course);
 
@@ -156,11 +154,5 @@ public class VirtualizeCommand implements Runnable {
             log.info("Writing CSV for path {}", path.getName());
             csvFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".csv"));
         }
-
-        if (xlsx) {
-            log.info("Writing XLSX for path {}", path.getName());
-            xlsxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".xlsx"));
-        }
     }
-
 }

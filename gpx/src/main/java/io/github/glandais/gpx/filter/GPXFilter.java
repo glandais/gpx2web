@@ -2,12 +2,10 @@ package io.github.glandais.gpx.filter;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.Constants;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GPXFilter {
@@ -29,14 +27,14 @@ public class GPXFilter {
         log.debug("Filtering {} ({})", path.getName(), points.size());
 
         List<Point> newPoints = simplifyDouglasPeucker(points, tolerance);
-        path.setPoints(newPoints, ValueKind.computed);
+        path.setPoints(newPoints);
         log.debug("Filtered {} ({} -> {})", path.getName(), points.size(), newPoints.size());
     }
 
     /**
      * Simplification using Ramer-Douglas-Peucker algorithm.
      *
-     * @param points    a list of points to be simplified
+     * @param points a list of points to be simplified
      * @param tolerance tolerance (meters)
      * @return a list of simplified points
      */
@@ -94,11 +92,11 @@ public class GPXFilter {
         double lon = p.getLon();
         // fake z : increase 3x
         double ele = 3 * p.getEle();
-        double n = Constants.SEMI_MAJOR_AXIS / Math.sqrt(1 - Constants.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
-        double x = (n + ele) * Math.cos(lat) * Math.cos(lon);    //ECEF x
-        double y = (n + ele) * Math.cos(lat) * Math.sin(lon);    //ECEF y
-        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + ele) * Math.sin(lat);         //ECEF z
-        return new R3(x, y, z);     //Return x, y, z in ECEF
+        double n = Constants.SEMI_MAJOR_AXIS
+                / Math.sqrt(1 - Constants.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
+        double x = (n + ele) * Math.cos(lat) * Math.cos(lon); // ECEF x
+        double y = (n + ele) * Math.cos(lat) * Math.sin(lon); // ECEF y
+        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + ele) * Math.sin(lat); // ECEF z
+        return new R3(x, y, z); // Return x, y, z in ECEF
     }
-
 }

@@ -2,9 +2,8 @@ package io.github.glandais;
 
 import io.github.glandais.gpx.util.CacheFolderProvider;
 import jakarta.inject.Singleton;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import java.io.File;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Singleton
 public class CacheFolderProviderImpl implements CacheFolderProvider {

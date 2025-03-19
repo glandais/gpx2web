@@ -2,7 +2,6 @@ package io.github.glandais.gpx.srtm;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.ValueKind;
 import io.github.glandais.gpx.util.SmoothService;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +28,15 @@ public class GPXElevationFixer {
     }
 
     private void setEleOnPath(GPXPath path) {
-        log.debug("Setting elevations for {} ({})", path.getName(), path.getPoints().size());
+        log.debug(
+                "Setting elevations for {} ({})",
+                path.getName(),
+                path.getPoints().size());
 
         for (Point point : path.getPoints()) {
-            point.setEle(gpxElevationProvider.getElevationRad(point.getLon(), point.getLat()), ValueKind.srtm);
+            point.setEle(gpxElevationProvider.getElevationRad(point.getLon(), point.getLat()));
         }
 
         log.debug("Set elevations for {} ({})", path.getName(), path.getPoints().size());
     }
-
 }

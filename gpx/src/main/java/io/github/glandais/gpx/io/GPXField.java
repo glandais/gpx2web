@@ -3,14 +3,12 @@ package io.github.glandais.gpx.io;
 import io.github.glandais.gpx.data.values.PropertyKey;
 import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.data.values.unit.DoubleUnit;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public enum GPXField {
-
     cadence(PropertyKeys.cadence, "gpxtpx:cad", "cadence"),
 
     power(PropertyKeys.power, "power"),
