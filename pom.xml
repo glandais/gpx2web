@@ -28,7 +28,7 @@
         <graphhopper-core.version>10.2</graphhopper-core.version>
         <jfreechart.version>1.5.5</jfreechart.version>
         <commons-io.version>2.18.0</commons-io.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <poi-ooxml.version>5.4.0</poi-ooxml.version>
         <fit.version>21.158.0</fit.version>
