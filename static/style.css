@@ -1,0 +1,22 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.map {
+    flex: 0 0 50%;
+}
+
+.fieldsContainer {
+    flex: 0 0 auto;
+}
+
+.chartContainer {
+    flex: 1;
+}

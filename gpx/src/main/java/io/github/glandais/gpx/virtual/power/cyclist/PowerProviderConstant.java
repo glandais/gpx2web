@@ -26,21 +26,18 @@ public class PowerProviderConstant implements CyclistPowerProvider {
     public double getPowerW(Course course, Point location) {
 
         double optimalPower = course.getCyclist().getPower();
-        double x = location.getInstant().toEpochMilli() / 10000.0;
-        for (Harmonic harmonic : harmonics) {
-            optimalPower = optimalPower + harmonic.amp() * optimalPower * Math.cos(harmonic.freq() * x - harmonic.d());
+        if (course.getCyclist().isHarmonics()) {
+            double x = location.getInstant().toEpochMilli() / 10000.0;
+            for (Harmonic harmonic : harmonics) {
+                optimalPower =
+                        optimalPower + harmonic.amp() * optimalPower * Math.cos(harmonic.freq() * x - harmonic.d());
+            }
         }
 
         location.putDebug(PropertyKeys.p_cyclist_optimal_power, optimalPower);
 
-        double grade = location.getGrade();
-        if (grade < -0.20) {
-            return 0.0;
-        } else if (grade > 0.20) {
-            return course.getCyclist().getPower();
-        }
-
-        double optimalSpeed = course.getGradeSpeeds().getOptimalSpeed(100.0 * location.getGrade());
+        double grade = Math.max(-0.2, Math.min(0.2, location.getGrade()));
+        double optimalSpeed = course.getGradeSpeeds().getOptimalSpeed(100.0 * grade);
         location.putDebug(PropertyKeys.p_cyclist_optimal_speed, optimalSpeed);
         double minOptimalSpeed = optimalSpeed * (1 - TOLERANCE);
         double maxOptimalSpeed = optimalSpeed * (1 + TOLERANCE);

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="load.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="map" id="map"></div>
+    <div class="fieldsContainer">
+        <label for="dataSelect1">Field 1 :</label>
+        <select id="dataSelect1">
+        </select>
+        <label for="dataSelect2">Field 2 :</label>
+        <select id="dataSelect2">
+        </select>
+        <label for="dataSelect3">Field 3 :</label>
+        <select id="dataSelect3">
+        </select></div>
+    <div class="chartContainer" id="chartContainer">
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Charger les données au chargement de la page
+    loadData();
+</script>
+</body>
+</html>

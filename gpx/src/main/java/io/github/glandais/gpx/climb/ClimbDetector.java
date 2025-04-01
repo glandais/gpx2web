@@ -1,6 +1,8 @@
 package io.github.glandais.gpx.climb;
 
 import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.util.Simplifier;
+import io.github.glandais.gpx.util.Vector;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,11 +13,13 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class ClimbDetector {
 
-    public List<Climb> getClimbs(GPXPath gpxPath) {
+    private final Simplifier<ClimbPoint> simplifier = new Simplifier<>(p -> new Vector(p.dist(), p.ele(), 0.0));
+
+    public Climbs getClimbs(GPXPath gpxPath) {
         return getClimbs(gpxPath, 10.0, 35.0, 100.0, 3.0, 1.3, 1.3);
     }
 
-    public List<Climb> getClimbs(
+    public Climbs getClimbs(
             GPXPath gpxPath,
             double minMinClimbElevation,
             double maxMinClimbElevation,
@@ -23,7 +27,7 @@ public class ClimbDetector {
             double minGrade,
             double maxDiffRealGrade,
             double booster) {
-        return detectClimbs(
+        return new Climbs(detectClimbs(
                         gpxPath,
                         minMinClimbElevation,
                         maxMinClimbElevation,
@@ -33,7 +37,7 @@ public class ClimbDetector {
                         booster)
                 .stream()
                 .map(detectedClimb -> getClimb(gpxPath, detectedClimb))
-                .toList();
+                .toList());
     }
 
     List<DetectedClimb> detectClimbs(
@@ -181,7 +185,7 @@ public class ClimbDetector {
     }
 
     private Climb getClimb(GPXPath gpxPath, DetectedClimb detectedClimb) {
-        List<ClimbPart> parts = getParts(gpxPath, detectedClimb);
+        ClimbParts parts = getParts(gpxPath, detectedClimb);
         return new Climb(
                 detectedClimb.startDist(),
                 detectedClimb.startEle(),
@@ -196,7 +200,7 @@ public class ClimbDetector {
                 parts);
     }
 
-    private List<ClimbPart> getParts(GPXPath gpxPath, DetectedClimb detectedClimb) {
+    private ClimbParts getParts(GPXPath gpxPath, DetectedClimb detectedClimb) {
         double initialDist = gpxPath.getDists()[detectedClimb.i()];
         List<ClimbPoint> points = getClimbPoints(gpxPath, detectedClimb, initialDist);
         return getClimbParts(points);
@@ -211,13 +215,13 @@ public class ClimbDetector {
         }
         double tolerance = detectedClimb.elevation() / 50;
         tolerance = Math.max(10, Math.min(50, tolerance));
-        points = RamerDouglasPeucker.douglasPeucker(points, tolerance);
+        points = simplifier.douglasPeucker(points, tolerance);
 
         return points;
     }
 
-    private List<ClimbPart> getClimbParts(List<ClimbPoint> points) {
-        List<ClimbPart> parts = new ArrayList<>();
+    private ClimbParts getClimbParts(List<ClimbPoint> points) {
+        ClimbParts parts = new ClimbParts();
         for (int i = 0; i < points.size() - 1; i++) {
             double startDist = points.get(i).dist();
             double startEle = points.get(i).ele();

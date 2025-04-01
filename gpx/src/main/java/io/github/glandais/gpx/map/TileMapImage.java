@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TileMapImage extends MapImage {
+class TileMapImage extends MapImage {
 
     protected File cache;
 

@@ -30,7 +30,6 @@
         <commons-io.version>2.18.0</commons-io.version>
         <lombok.version>1.18.38</lombok.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
-        <poi-ooxml.version>5.4.0</poi-ooxml.version>
         <fit.version>21.158.0</fit.version>
         <timeshape.version>2024a.25</timeshape.version>
         <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
@@ -64,11 +63,6 @@
                 <groupId>org.jfree</groupId>
                 <artifactId>jfreechart</artifactId>
                 <version>${jfreechart.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.poi</groupId>
-                <artifactId>poi-ooxml</artifactId>
-                <version>${poi-ooxml.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.iakovlev</groupId>

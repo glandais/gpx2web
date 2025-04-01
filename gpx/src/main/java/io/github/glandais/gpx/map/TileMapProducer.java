@@ -26,9 +26,7 @@ import org.springframework.stereotype.Service;
 @Singleton
 public class TileMapProducer {
 
-    public static final String USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
-                    + " Chrome/76.0.3809.132 Safari/537.36";
+    public static final String USER_AGENT = "gpx2web (https://github.com/glandais/gpx2web)";
     protected final HttpClient httpClient;
 
     protected static final String SEPARATOR = File.separator;
@@ -43,28 +41,28 @@ public class TileMapProducer {
         this.httpClient = HttpClient.newBuilder().build();
     }
 
-    public TileMapImage createTileMap(GPX gpx, String urlPattern, double margin, Integer width, Integer height)
+    public void createTileMap(File file, GPX gpx, String urlPattern, double margin, Integer width, Integer height)
             throws IOException {
         TileMapImage tileMapImage = new TileMapImage(gpx, margin, cacheFolder, urlPattern, width, height);
-        return doCreateTileMap(gpx, tileMapImage);
+        doCreateTileMap(file, gpx, tileMapImage);
     }
 
-    public TileMapImage createTileMap(GPX gpx, String urlPattern, double margin, int maxSize) throws IOException {
+    public void createTileMap(File file, GPX gpx, String urlPattern, double margin, int maxSize) throws IOException {
         TileMapImage tileMapImage = new TileMapImage(gpx, margin, maxSize, cacheFolder, urlPattern);
-        return doCreateTileMap(gpx, tileMapImage);
+        doCreateTileMap(file, gpx, tileMapImage);
     }
 
-    public TileMapImage createTileMap(GPX gpx, String urlPattern, int zoom, double margin) throws IOException {
+    public void createTileMap(File file, GPX gpx, String urlPattern, int zoom, double margin) throws IOException {
         TileMapImage tileMapImage = new TileMapImage(gpx, margin, cacheFolder, urlPattern, zoom);
-        return doCreateTileMap(gpx, tileMapImage);
+        doCreateTileMap(file, gpx, tileMapImage);
     }
 
-    private TileMapImage doCreateTileMap(GPX gpx, TileMapImage tileMapImage) throws IOException {
+    private void doCreateTileMap(File file, GPX gpx, TileMapImage tileMapImage) throws IOException {
         fillWithImages(tileMapImage);
         for (GPXPath path : gpx.paths()) {
             addPoints(tileMapImage, path);
         }
-        return tileMapImage;
+        tileMapImage.saveImage(file);
     }
 
     protected void fillWithImages(TileMapImage tileMapImage) throws IOException {
@@ -158,7 +156,7 @@ public class TileMapProducer {
         double[] dists = gpxPath.getDists();
         double length = dists[dists.length - 1];
         int count = 5;
-        double arrowSize = Math.min(tileMapImage.getWidth(), tileMapImage.getHeight()) / 10.0;
+        double arrowSize = Math.min(tileMapImage.getWidth(), tileMapImage.getHeight()) / 100.0;
         List<Point> points = gpxPath.getPoints();
         int c = 0;
         List<Vector> checkpoints = new ArrayList<>();
@@ -176,7 +174,7 @@ public class TileMapProducer {
                 Point p = points.get(i);
                 int x = tileMapImage.getX(p.getLonDeg());
                 int y = tileMapImage.getY(p.getLatDeg());
-                checkpoints.add(new Vector(x, y));
+                checkpoints.add(new Vector(x, y, 0));
                 c++;
                 if (c == count * 3) {
                     break;

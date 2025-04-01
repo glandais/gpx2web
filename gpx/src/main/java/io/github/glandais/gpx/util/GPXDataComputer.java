@@ -72,27 +72,10 @@ public class GPXDataComputer {
         return intersects;
     }
 
-    /*
-     * public Vector getWindNew(GPXPath gpxPath, double power) { gpxElevationFixer.fixElevation(gpxPath, true); Cyclist
-     * cyclist = new Cyclist(); Wind noWind = new Wind(0, 0); Course course = getCourse(gpxPath, power, cyclist, noWind,
-     * 0); maxSpeedComputer.computeMaxSpeeds(course); powerComputer.computeTrack(course); long[] time =
-     * course.getGpxPath().getTime(); double duration = (time[time.length - 1] - time[0]) / 1000.0; int count = 18;
-     * long[] dur = new long[count]; long longMinDur = Long.MAX_VALUE; for (int i = 0; i < count; i++) { int deg = i *
-     * (360 / count); Wind wind = new Wind(3, Math.toRadians(deg)); course = getCourse(gpxPath, power, cyclist, wind,
-     * duration); powerComputer.computeTrack(course); time = course.getGpxPath().getTime(); dur[i] = time[time.length -
-     * 1] - time[0]; longMinDur = Math.min(longMinDur, dur[i]); } for (int i = 0; i < count; i++) { int deg = i * (360 /
-     * count); final long ms = dur[i] - longMinDur; final long s = ms / 1000; final long m = ms / 60000;
-     * System.out.println(deg + "° " + dur[i] + " (" + ms + "ms = " + s + "s = " + m + "m)"); } return getWind(gpxPath);
-     * } private Course getCourse(GPXPath gpxPath, double power, Cyclist cyclist, Wind wind, double duration) {
-     * PowerProviderConstant powerProvider; if (duration == 0) { powerProvider = new PowerProviderConstant(power); }
-     * else { powerProvider = new PowerProviderConstantWithTiring(power, duration); } return new Course(gpxPath,
-     * Instant.now(), cyclist, powerProvider, new WindProviderConstant(wind), new CxProviderConstant()); }
-     */
-
     public Vector getWind(GPX gpx) {
-        Vector vector = new Vector(0.0, 0.0);
+        Vector vector = new Vector(0.0, 0.0, 0.0);
         for (GPXPath path : gpx.paths()) {
-            vector.add(getWindUnscaled(path));
+            vector = vector.add(getWindUnscaled(path));
         }
         return vector.normalize();
     }
@@ -108,28 +91,21 @@ public class GPXDataComputer {
         final int size = points.size();
         if (size > 3) {
 
-            final Vector start = project(points.get(0));
+            final Vector start = points.get(0).project();
 
-            Vector tot = new Vector(0, 0);
+            Vector tot = new Vector(0, 0, 0);
             for (Point point : points) {
-                tot = tot.add(vector(start, project(point)));
+                tot = tot.add(vector(start, point.project()));
             }
-            tot = tot.mul(1.0 / size);
-            return tot.mul(-1.0);
+            tot = tot.scalar(1.0 / size);
+            return tot.scalar(-1.0);
         } else {
-            return new Vector(0.0, 0.0);
+            return new Vector(0.0, 0.0, 0.0);
         }
     }
 
     private Vector vector(final Vector p1, final Vector p2) {
 
-        return new Vector(p2.x() - p1.x(), p2.y() - p1.y()).normalize();
-    }
-
-    private Vector project(final Point point) {
-
-        return new Vector(
-                MagicPower2MapSpace.INSTANCE_256.cLonToX(point.getLonDeg(), 12),
-                MagicPower2MapSpace.INSTANCE_256.cLatToY(point.getLatDeg(), 12));
+        return new Vector(p2.x() - p1.x(), p2.y() - p1.y(), 0).normalize();
     }
 }

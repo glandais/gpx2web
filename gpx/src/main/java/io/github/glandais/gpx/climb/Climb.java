@@ -1,6 +1,5 @@
 package io.github.glandais.gpx.climb;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 public record Climb(
@@ -14,7 +13,7 @@ public record Climb(
         double negativeElevation,
         double grade,
         double climbingGrade,
-        List<ClimbPart> parts) {
+        ClimbParts parts) {
     public Climb shiftDist(double dx) {
         return new Climb(
                 startDist + dx,
@@ -27,6 +26,6 @@ public record Climb(
                 negativeElevation,
                 grade,
                 climbingGrade,
-                parts.stream().map(cp -> cp.shiftDist(dx)).collect(Collectors.toList()));
+                new ClimbParts(parts.stream().map(cp -> cp.shiftDist(dx)).collect(Collectors.toList())));
     }
 }

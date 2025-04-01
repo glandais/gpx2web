@@ -12,7 +12,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MapImage {
+class MapImage {
 
     protected static final MagicPower2MapSpace MAPSPACE = MagicPower2MapSpace.INSTANCE_256;
 

@@ -7,29 +7,29 @@ import io.github.glandais.gpx.srtm.GpxElevationProvider;
 import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Singleton
 @Slf4j
+@RequiredArgsConstructor
 public class SRTMMapProducer {
 
     private final GpxElevationProvider gpxElevationProvider;
 
-    public SRTMMapProducer(GpxElevationProvider gpxElevationProvider) {
-        super();
-        this.gpxElevationProvider = gpxElevationProvider;
-    }
-
-    public MapImage createSRTMMap(GPX gpx, int maxsize, double margin) {
+    @SneakyThrows
+    public void createSRTMMap(File file, GPX gpx, int maxsize, double margin) {
         log.debug("start createSRTMMap");
         MapImage mapImage = new MapImage(gpx, margin, maxsize);
         fillWithEle(mapImage);
         addPoints(mapImage, gpx);
         log.debug("end createSRTMMap");
-        return mapImage;
+        mapImage.saveImage(file);
     }
 
     protected void fillWithEle(MapImage mapImage) {

@@ -56,7 +56,6 @@ public class Point {
     public Point() {
         super();
         this.values = new Object[VALUES_SIZE];
-        setInstant(null, Instant.EPOCH);
     }
 
     public Point(Point point) {
@@ -155,7 +154,7 @@ public class Point {
 
     public void setInstant(Instant start, Instant value) {
         put(PropertyKeys.time, value);
-        if (start != null) {
+        if (start != null && value != null) {
             Duration duration = Duration.between(start, value);
             put(PropertyKeys.elapsed, duration);
         }
@@ -213,7 +212,8 @@ public class Point {
 
         return new Vector(
                 MagicPower2MapSpace.INSTANCE_256.cLonToX(getLonDeg(), 12),
-                MagicPower2MapSpace.INSTANCE_256.cLatToY(getLatDeg(), 12));
+                MagicPower2MapSpace.INSTANCE_256.cLatToY(getLatDeg(), 12),
+                0);
     }
 
     public double distanceTo(Point otherPoint) {

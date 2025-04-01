@@ -56,7 +56,7 @@ public class MaxSpeedComputer {
 
         // relative position of meters, in meters
         Vector tpm1 = transform(pm1, p);
-        Vector tp = new Vector(0, 0);
+        Vector tp = new Vector(0, 0, 0);
         Vector tpp1 = transform(pp1, p);
 
         // find center of circle going through the 3 points
@@ -121,7 +121,7 @@ public class MaxSpeedComputer {
 
         double px = (D * E - B * F) / G;
         double py = (A * F - C * E) / G;
-        return new Vector(px, py);
+        return new Vector(px, py, 0);
     }
 
     private Vector transform(Point point, Point pRef) {
@@ -129,6 +129,6 @@ public class MaxSpeedComputer {
         double lat = (point.getLat() - pRef.getLat());
         double x = (lon / (2 * Math.PI)) * Constants.CIRC * Math.cos(pRef.getLat());
         double y = (lat / (2 * Math.PI)) * Constants.CIRC;
-        return new Vector(x, y);
+        return new Vector(x, y, 0);
     }
 }

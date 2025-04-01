@@ -8,9 +8,7 @@ import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.io.read.GPXFileReader;
 import io.github.glandais.gpx.io.write.FitFileWriter;
 import io.github.glandais.gpx.io.write.GPXFileWriter;
-import io.github.glandais.gpx.map.MapImage;
 import io.github.glandais.gpx.map.SRTMMapProducer;
-import io.github.glandais.gpx.map.TileMapImage;
 import io.github.glandais.gpx.map.TileMapProducer;
 import jakarta.inject.Inject;
 import java.io.File;
@@ -98,14 +96,12 @@ public class ExportCommand implements Runnable {
 
         if (srtmMap) {
             File file = new File(pathFolder, "srtm.png");
-            MapImage map = srtmImageProducer.createSRTMMap(completeGPX, Math.max(width, height), 0.2);
-            map.saveImage(file);
+            srtmImageProducer.createSRTMMap(file, completeGPX, Math.max(width, height), 0.2);
         }
 
         if (tileMap) {
             File file = new File(pathFolder, "map.png");
-            TileMapImage map = tileImageProducer.createTileMap(completeGPX, tileUrl, 0.2, width, height);
-            map.saveImage(file);
+            tileImageProducer.createTileMap(file, completeGPX, tileUrl, 0.2, width, height);
         }
 
         if (fit) {
