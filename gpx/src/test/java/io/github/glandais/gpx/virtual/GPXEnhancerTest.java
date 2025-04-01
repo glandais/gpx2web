@@ -19,7 +19,6 @@ class GPXEnhancerTest {
 
     @SneakyThrows
     @Test
-    @Disabled
     public void virtualizeTest() {
         Constants.DEBUG = true;
 
