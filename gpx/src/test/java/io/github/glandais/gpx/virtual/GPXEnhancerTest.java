@@ -12,7 +12,6 @@ import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import java.io.File;
 import java.time.Instant;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class GPXEnhancerTest {
