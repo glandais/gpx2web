@@ -32,7 +32,7 @@
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <fit.version>21.158.0</fit.version>
         <timeshape.version>2024a.25</timeshape.version>
-        <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
