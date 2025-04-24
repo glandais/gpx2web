@@ -21,18 +21,18 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.version>3.21.0</quarkus.platform.version>
+        <quarkus.platform.version>3.21.4</quarkus.platform.version>
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
 
         <graphhopper-core.version>10.2</graphhopper-core.version>
         <jfreechart.version>1.5.5</jfreechart.version>
-        <commons-io.version>2.18.0</commons-io.version>
+        <commons-io.version>2.19.0</commons-io.version>
         <lombok.version>1.18.38</lombok.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <fit.version>21.158.0</fit.version>
         <timeshape.version>2024a.25</timeshape.version>
-        <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
