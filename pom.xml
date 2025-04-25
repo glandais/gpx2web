@@ -31,7 +31,7 @@
         <lombok.version>1.18.38</lombok.version>
         <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
         <fit.version>21.158.0</fit.version>
-        <timeshape.version>2024a.25</timeshape.version>
+        <timeshape.version>2025b.26</timeshape.version>
         <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
     </properties>
 
