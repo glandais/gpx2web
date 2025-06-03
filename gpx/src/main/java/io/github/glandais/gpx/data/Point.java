@@ -248,15 +248,17 @@ public class Point {
     @Override
     public String toString() {
         return PropertyKeys.getList().stream()
-                .map(pk -> {
-                    Object v = get(pk);
-                    if (v != null) {
-                        return "[" + pk.getPropertyKeyName() + "]=" + v;
-                    } else {
-                        return null;
-                    }
-                })
+                .map(this::getHuman)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(","));
+    }
+
+    private <S, U extends Unit<S>> String getHuman(PropertyKey<S, U> pk) {
+        S v = get(pk);
+        if (v != null) {
+            return "[" + pk.getPropertyKeyName() + "]=" + pk.formatHuman(v);
+        } else {
+            return null;
+        }
     }
 }

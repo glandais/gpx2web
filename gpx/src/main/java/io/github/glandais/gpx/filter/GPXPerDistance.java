@@ -20,9 +20,11 @@ public class GPXPerDistance {
 
         for (int i = 0; i < points.size() - 1; i++) {
             Point p = points.get(i);
-            newPoints.add(p);
             Point pp1 = points.get(i + 1);
             double dist = p.distanceTo(pp1);
+            if (dist > 0.5) {
+                newPoints.add(p);
+            }
             if (dist > minDist) {
                 double n = Math.ceil(dist / minDist);
                 for (int j = 1; j < n; j++) {
