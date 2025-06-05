@@ -68,21 +68,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(text || 'Server error occurred');
                 });
             }
-            return response.blob();
+            return response.json();
         })
-        .then(blob => {
-            // Download the file
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'virtualized_' + gpxFile.name;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
+        .then(result => {
             hideProgress();
+            
+            // Store session data for visualization
+            sessionStorage.setItem('virtualizationData', result.jsonData);
+            sessionStorage.setItem('gpxContent', result.gpxContent);
+            
+            // Redirect to visualization page
+            window.location.href = '/visualization';
         })
         .catch(error => {
             console.error('Error:', error);

@@ -1,8 +1,7 @@
 package io.github.glandais.gpx.web.resource;
 
-import io.github.glandais.gpx.data.GPX;
-import io.github.glandais.gpx.io.write.GPXFileWriter;
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
+import io.github.glandais.gpx.web.model.VirtualizationResponse;
 import io.github.glandais.gpx.web.service.VirtualizationService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -11,7 +10,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.io.StringWriter;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
@@ -22,26 +20,15 @@ public class GPXVirtualizationResource {
     @Inject
     VirtualizationService virtualizationService;
 
-    @Inject
-    GPXFileWriter gpxFileWriter;
-
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces("application/gpx+xml")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response virtualizeGpx(
             @RestForm("gpxFile") FileUpload gpxFile,
             @RestForm("parameters") @PartType(MediaType.APPLICATION_JSON) VirtualizationRequest parameters) {
         try {
-
-            GPX virtualizedGpx = virtualizationService.virtualizeGpx(gpxFile, parameters);
-
-            StringWriter sw = new StringWriter();
-            gpxFileWriter.writeGPX(virtualizedGpx, sw, true);
-
-            return Response.ok(sw.toString())
-                    .header("Content-Disposition", "attachment; filename=\"virtualized.gpx\"")
-                    .header("Content-Type", "application/gpx+xml")
-                    .build();
+            VirtualizationResponse response = virtualizationService.virtualizeGpx(gpxFile, parameters);
+            return Response.ok(response).build();
 
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
