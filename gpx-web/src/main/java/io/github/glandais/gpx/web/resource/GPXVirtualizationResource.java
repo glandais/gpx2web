@@ -11,11 +11,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import org.jboss.resteasy.reactive.MultipartForm;
+import java.io.StringWriter;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 @Path("/api/virtualize")
 public class GPXVirtualizationResource {
@@ -29,31 +28,25 @@ public class GPXVirtualizationResource {
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/gpx+xml")
-    public Response virtualizeGpx(@MultipartForm VirtualizationForm form) {
+    public Response virtualizeGpx(
+            @RestForm("gpxFile") FileUpload gpxFile,
+            @RestForm("parameters") @PartType(MediaType.APPLICATION_JSON) VirtualizationRequest parameters) {
         try {
-            GPX virtualizedGpx = virtualizationService.virtualizeGpx(form.gpxFile, form.parameters);
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            gpxFileWriter.writeGPX(virtualizedGpx, outputStream);
+            GPX virtualizedGpx = virtualizationService.virtualizeGpx(gpxFile, parameters);
 
-            return Response.ok(outputStream.toByteArray())
+            StringWriter sw = new StringWriter();
+            gpxFileWriter.writeGPX(virtualizedGpx, sw, true);
+
+            return Response.ok(sw.toString())
                     .header("Content-Disposition", "attachment; filename=\"virtualized.gpx\"")
                     .header("Content-Type", "application/gpx+xml")
                     .build();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Error processing GPX file: " + e.getMessage())
                     .build();
         }
-    }
-
-    public static class VirtualizationForm {
-        @RestForm("gpxFile")
-        public byte[] gpxFile;
-
-        @RestForm("parameters")
-        @PartType(MediaType.APPLICATION_JSON)
-        public VirtualizationRequest parameters;
     }
 }
