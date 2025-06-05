@@ -3,6 +3,8 @@ package io.github.glandais.gpx.web.service;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.io.write.GPXFileWriter;
+import io.github.glandais.gpx.io.write.JsonFileWriter;
 import io.github.glandais.gpx.virtual.Bike;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.Cyclist;
@@ -12,7 +14,12 @@ import io.github.glandais.gpx.virtual.power.aero.wind.Wind;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderConstant;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
+import io.github.glandais.gpx.web.model.VirtualizationResponse;
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.io.File;
+import java.io.StringWriter;
+import java.nio.file.Files;
 import lombok.RequiredArgsConstructor;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
@@ -22,28 +29,45 @@ public class VirtualizationService {
 
     private final GPXFileReader gpxFileReader;
     private final GPXEnhancer gpxEnhancer;
+    private final JsonFileWriter jsonFileWriter;
+    private final GPXFileWriter gpxFileWriter;
 
-    public GPX virtualizeGpx(FileUpload fileUpload, VirtualizationRequest request) throws Exception {
+    public VirtualizationResponse virtualizeGpx(FileUpload fileUpload, VirtualizationRequest request) throws Exception {
         GPX gpx = gpxFileReader.parseGPX(fileUpload.uploadedFile().toFile());
 
-        for (GPXPath gpxPath : gpx.paths()) {
-            Cyclist cyclist = createCyclist(request.cyclist());
-            Bike bike = createBike(request.bike());
-            Wind wind = createWind(request.wind());
-
-            Course course = new Course(
-                    gpxPath,
-                    request.startTime(),
-                    cyclist,
-                    bike,
-                    new PowerProviderConstant(),
-                    new WindProviderConstant(wind),
-                    new AeroProviderConstant());
-
-            gpxEnhancer.virtualize(course, false);
+        // Validate single track
+        if (gpx.paths().size() != 1) {
+            throw new IllegalArgumentException("GPX file must contain exactly one track, found: " + gpx.paths().size());
         }
 
-        return gpx;
+        GPXPath gpxPath = gpx.paths().get(0);
+        Cyclist cyclist = createCyclist(request.cyclist());
+        Bike bike = createBike(request.bike());
+        Wind wind = createWind(request.wind());
+
+        Course course = new Course(
+                gpxPath,
+                request.startTime(),
+                cyclist,
+                bike,
+                new PowerProviderConstant(),
+                new WindProviderConstant(wind),
+                new AeroProviderConstant());
+
+        gpxEnhancer.virtualize(course, false);
+
+        // Generate JSON data for visualization
+        File tempFile = File.createTempFile("gpx", ".json");
+        jsonFileWriter.writeGPXPath(gpxPath, tempFile);
+        String jsonData = Files.readString(tempFile.toPath());
+        tempFile.delete();
+
+        // Generate GPX content
+        StringWriter gpxWriter = new StringWriter();
+        gpxFileWriter.writeGPX(gpx, gpxWriter, true);
+        String gpxContent = gpxWriter.toString();
+        
+        return new VirtualizationResponse(gpxContent, jsonData);
     }
 
     private Cyclist createCyclist(VirtualizationRequest.CyclistParameters params) {
