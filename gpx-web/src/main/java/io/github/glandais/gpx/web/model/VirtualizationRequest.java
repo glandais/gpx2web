@@ -1,9 +1,14 @@
 package io.github.glandais.gpx.web.model;
 
 import java.time.Instant;
+import java.util.List;
 
 public record VirtualizationRequest(
-        Instant startTime, CyclistParameters cyclist, BikeParameters bike, WindParameters wind) {
+        Instant startTime,
+        CyclistParameters cyclist,
+        BikeParameters bike,
+        WindParameters wind,
+        List<PowerCurvePoint> powerCurve) {
 
     public record CyclistParameters(
             double weightKg,
