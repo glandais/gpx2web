@@ -15,8 +15,8 @@ import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderConstant;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
 import io.github.glandais.gpx.web.model.VirtualizationResponse;
+import io.github.glandais.gpx.web.virtual.PowerCurvePowerProvider;
 import jakarta.enterprise.context.ApplicationScoped;
-
 import java.io.File;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -37,7 +37,8 @@ public class VirtualizationService {
 
         // Validate single track
         if (gpx.paths().size() != 1) {
-            throw new IllegalArgumentException("GPX file must contain exactly one track, found: " + gpx.paths().size());
+            throw new IllegalArgumentException("GPX file must contain exactly one track, found: "
+                    + gpx.paths().size());
         }
 
         GPXPath gpxPath = gpx.paths().get(0);
@@ -45,12 +46,18 @@ public class VirtualizationService {
         Bike bike = createBike(request.bike());
         Wind wind = createWind(request.wind());
 
+        // Create power provider based on power curve or use constant
+        var powerProvider =
+                (request.powerCurve() != null && !request.powerCurve().isEmpty())
+                        ? new PowerCurvePowerProvider(request.powerCurve())
+                        : new PowerProviderConstant();
+
         Course course = new Course(
                 gpxPath,
                 request.startTime(),
                 cyclist,
                 bike,
-                new PowerProviderConstant(),
+                powerProvider,
                 new WindProviderConstant(wind),
                 new AeroProviderConstant());
 
@@ -66,7 +73,7 @@ public class VirtualizationService {
         StringWriter gpxWriter = new StringWriter();
         gpxFileWriter.writeGPX(gpx, gpxWriter, true);
         String gpxContent = gpxWriter.toString();
-        
+
         return new VirtualizationResponse(gpxContent, jsonData);
     }
 
