@@ -13,9 +13,8 @@ import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderConstant;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -24,8 +23,8 @@ public class VirtualizationService {
     private final GPXFileReader gpxFileReader;
     private final GPXEnhancer gpxEnhancer;
 
-    public GPX virtualizeGpx(byte[] gpxData, VirtualizationRequest request) throws IOException {
-        GPX gpx = gpxFileReader.readGPX(new ByteArrayInputStream(gpxData));
+    public GPX virtualizeGpx(FileUpload fileUpload, VirtualizationRequest request) throws Exception {
+        GPX gpx = gpxFileReader.parseGPX(fileUpload.uploadedFile().toFile());
 
         for (GPXPath gpxPath : gpx.paths()) {
             Cyclist cyclist = createCyclist(request.cyclist());
