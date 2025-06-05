@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>GPX Visualization - {title}</title>
+    <title>Results - {title}</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -23,6 +23,14 @@
             background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
             padding: 1rem;
+        }
+        
+        .step-indicator {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
         }
         
         .content-container {
@@ -83,51 +91,33 @@
             justify-content: center;
             z-index: 1000;
         }
-        
-        .stats-card {
-            background: white;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 1rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #007bff;
-        }
-        
-        .stat-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
-        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <!-- Header -->
         <div class="header">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <h5 class="mb-2">✓ Virtual Activity Generated Successfully!</h5>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">Your GPX file has been processed with your custom power curve</small>
+            </div>
+
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h4 mb-0">GPX Virtualization Results</h1>
+                <h1 class="h4 mb-0">Virtual Activity Analysis</h1>
                 <div>
-                    <button class="btn btn-primary" id="downloadGpxBtn">
+                    <button class="btn btn-success" id="downloadGpxBtn">
                         <i class="fas fa-download"></i> Download GPX
                     </button>
-                    <a href="/" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Upload
-                    </a>
+                    <button class="btn btn-outline-secondary" id="newActivityBtn">
+                        <i class="fas fa-plus"></i> New Activity
+                    </button>
+                    <button class="btn btn-outline-secondary" id="backToPowerCurveBtn">
+                        <i class="fas fa-edit"></i> Back to Power Curve
+                    </button>
                 </div>
             </div>
         </div>
@@ -188,38 +178,12 @@
         </div>
     </div>
 
-    <!-- Statistics Modal -->
-    <div class="modal fade" id="statsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Activity Statistics</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="statsContent">
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
-    <script src="/visualization.js"></script>
-    
-    <script>
-        // Check if we have data in sessionStorage
-        if (sessionStorage.getItem('virtualizationData')) {
-            // Load visualization data
-            initializeVisualization();
-        } else {
-            // Redirect to home if no data available
-            window.location.href = '/';
-        }
-    </script>
+    <script src="/results.js"></script>
 </body>
 </html>

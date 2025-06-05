@@ -1,4 +1,4 @@
-package io.github.glandais.gpx.web.resource;
+package io.github.glandais.gpx.web.resource.template;
 
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -8,15 +8,15 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("/visualization")
-public class VisualizationPageResource {
+@Path("/")
+public class IndexPageResource {
 
     @Inject
-    Template visualization;
+    Template index;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance get() {
-        return visualization.data("title", "GPX Virtualizer");
+        return index.data("title", "GPX Virtualizer");
     }
 }
