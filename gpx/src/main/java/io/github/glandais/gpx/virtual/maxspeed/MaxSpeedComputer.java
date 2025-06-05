@@ -28,9 +28,12 @@ public class MaxSpeedComputer {
         Cyclist cyclist = course.getCyclist();
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
-            if (i == 0 || i == points.size() - 1) {
-                // no info for first/last point
+            if (i == 0) {
+                // no info for first point
                 p.setSpeedMax(cyclist.getMaxSpeedMs());
+            } else if (i == points.size() - 1) {
+                // stop at last point
+                p.setSpeedMax(2);
             } else {
                 // point before/point after
                 Point pm1 = points.get(i - 1);

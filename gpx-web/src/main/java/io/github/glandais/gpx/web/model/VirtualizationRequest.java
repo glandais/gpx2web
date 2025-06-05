@@ -1,14 +1,9 @@
 package io.github.glandais.gpx.web.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.Instant;
 
 public record VirtualizationRequest(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-                Instant startTime,
-        CyclistParameters cyclist,
-        BikeParameters bike,
-        WindParameters wind) {
+        Instant startTime, CyclistParameters cyclist, BikeParameters bike, WindParameters wind) {
 
     public record CyclistParameters(
             double weightKg,

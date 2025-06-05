@@ -8,6 +8,7 @@ import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
@@ -72,30 +73,36 @@ public class GPXFileWriter implements FileExporter {
     }
 
     public void writeGPX(GPX gpx, File target, boolean extensions) throws IOException {
-        FileWriter fw = new FileWriter(target);
+        writeGPX(gpx, new FileWriter(target), extensions);
+    }
 
-        fw.write(XML_HEADER + "\n");
-        fw.write(TAG_GPX + "\n");
+    public void writeGPX(GPX gpx, Writer writer) throws IOException {
+        writeGPX(gpx, writer, false);
+    }
+
+    public void writeGPX(GPX gpx, Writer writer, boolean extensions) throws IOException {
+        writer.write(XML_HEADER + "\n");
+        writer.write(TAG_GPX + "\n");
 
         if (gpx.name() != null) {
-            fw.write("\t" + "<metadata>" + "\n");
-            fw.write("\t\t" + "<name>" + escape(gpx.name()) + "</name>" + "\n");
-            fw.write("\t" + "</metadata>" + "\n");
+            writer.write("\t" + "<metadata>" + "\n");
+            writer.write("\t\t" + "<name>" + escape(gpx.name()) + "</name>" + "\n");
+            writer.write("\t" + "</metadata>" + "\n");
         }
 
         for (GPXWaypoint waypoint : gpx.waypoints()) {
-            writeWaypoint(fw, waypoint);
+            writeWaypoint(writer, waypoint);
         }
         for (GPXPath gpxPath : gpx.paths()) {
-            writePath(fw, gpxPath, extensions);
+            writePath(writer, gpxPath, extensions);
         }
 
-        fw.write("</gpx>");
+        writer.write("</gpx>");
 
-        fw.close();
+        writer.close();
     }
 
-    private void writeWaypoint(FileWriter fw, GPXWaypoint waypoint) throws IOException {
+    private void writeWaypoint(Writer fw, GPXWaypoint waypoint) throws IOException {
         String out = "\t<wpt lat=\""
                 + LAT_LON_FORMATTER.get().format(waypoint.point().getLatDeg())
                 + "\" "
@@ -118,7 +125,7 @@ public class GPXFileWriter implements FileExporter {
      * @param extensions
      * @throws IOException
      */
-    public void writePath(FileWriter fw, GPXPath gpxPath, boolean extensions) throws IOException {
+    public void writePath(Writer fw, GPXPath gpxPath, boolean extensions) throws IOException {
         fw.write("\t" + "<trk>" + "\n");
         fw.write("\t\t" + "<name>" + escape(gpxPath.getName()) + "</name>" + "\n");
 
