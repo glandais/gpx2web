@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>cycling-tools</artifactId>
+        <groupId>io.github.glandais.gpx2web</groupId>
+        <version>1.1.34-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gpx-web</artifactId>
+
+    <properties>
+        <quarkus.container-image.image>glandais/gpx-web:latest</quarkus.container-image.image>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.glandais.gpx2web</groupId>
+            <artifactId>gpx</artifactId>
+            <version>1.1.34-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-qute-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-container-image-docker</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>gpx-web</finalName>
+    </build>
+</project>
