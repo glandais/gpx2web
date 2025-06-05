@@ -3,17 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
+    <title>Upload GPX - {title}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .form-section {
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
             background-color: #f8f9fa;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .required {
-            color: #dc3545;
+        
+        .upload-area:hover {
+            border-color: #0056b3;
+            background-color: #e7f1ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .progress-section {
+            margin-top: 2rem;
+        }
+        
+        .step-indicator {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
         }
     </style>
 </head>
@@ -21,143 +53,92 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <h1 class="text-center mb-4">{title}</h1>
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <h5 class="mb-2">Step 1 of 4: Upload GPX File</h5>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: 25%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Next: Configure cyclist and bike parameters</small>
+                </div>
+
+                <h1 class="text-center mb-4">GPX Virtualizer</h1>
                 <p class="text-center text-muted mb-4">
-                    Upload a GPX file and configure parameters to create a virtual cycling activity
+                    Upload your GPX file to create a virtual cycling activity with realistic power and timing data
                 </p>
 
-                <form id="virtualizationForm" enctype="multipart/form-data">
-                    <!-- GPX File Upload -->
-                    <div class="form-section">
-                        <h4 class="mb-3">GPX File</h4>
-                        <div class="mb-3">
-                            <label for="gpxFile" class="form-label">Select GPX File <span class="required">*</span></label>
-                            <input type="file" class="form-control" id="gpxFile" name="gpxFile" accept=".gpx" required>
-                        </div>
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
                     </div>
+                    <h4 class="mb-3">Drop your GPX file here</h4>
+                    <p class="text-muted mb-3">or click to browse files</p>
+                    <button type="button" class="btn btn-primary" id="browseBtn">
+                        <i class="fas fa-folder-open me-2"></i>Browse Files
+                    </button>
+                    <input type="file" class="file-input" id="gpxFile" accept=".gpx" required>
+                </div>
 
-                    <!-- Start Time -->
-                    <div class="form-section">
-                        <h4 class="mb-3">Activity Settings</h4>
-                        <div class="mb-3">
-                            <label for="startTime" class="form-label">Start Time <span class="required">*</span></label>
-                            <input type="datetime-local" class="form-control" id="startTime" name="startTime" required>
-                        </div>
-                    </div>
-
-                    <!-- Cyclist Parameters -->
-                    <div class="form-section">
-                        <h4 class="mb-3">Cyclist Parameters</h4>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="weightKg" class="form-label">Weight (kg) <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="weightKg" name="weightKg" step="0.1" min="40" max="150" value="80" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="powerWatts" class="form-label">Power (watts) <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="powerWatts" name="powerWatts" step="1" min="100" max="600" value="280" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="maxBrakeG" class="form-label">Max Brake (g-force)</label>
-                                <input type="number" class="form-control" id="maxBrakeG" name="maxBrakeG" step="0.1" min="0.1" max="2" value="0.6">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="maxSpeedKmH" class="form-label">Max Speed (km/h)</label>
-                                <input type="number" class="form-control" id="maxSpeedKmH" name="maxSpeedKmH" step="1" min="30" max="120" value="100">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="dragCoefficient" class="form-label">Drag Coefficient</label>
-                                <input type="number" class="form-control" id="dragCoefficient" name="dragCoefficient" step="0.01" min="0.2" max="1.5" value="0.7">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="frontalAreaM2" class="form-label">Frontal Area (m²)</label>
-                                <input type="number" class="form-control" id="frontalAreaM2" name="frontalAreaM2" step="0.01" min="0.2" max="1" value="0.5">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="maxAngleDeg" class="form-label">Max Lean Angle (degrees)</label>
-                                <input type="number" class="form-control" id="maxAngleDeg" name="maxAngleDeg" step="1" min="10" max="60" value="35">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check mt-4">
-                                    <input class="form-check-input" type="checkbox" id="harmonics" name="harmonics">
-                                    <label class="form-check-label" for="harmonics">
-                                        Use Harmonics
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bike Parameters -->
-                    <div class="form-section">
-                        <h4 class="mb-3">Bike Parameters</h4>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="rollingResistance" class="form-label">Rolling Resistance</label>
-                                <input type="number" class="form-control" id="rollingResistance" name="rollingResistance" step="0.001" min="0.001" max="0.02" value="0.004">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="efficiency" class="form-label">Efficiency</label>
-                                <input type="number" class="form-control" id="efficiency" name="efficiency" step="0.001" min="0.8" max="1" value="0.976">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="frontWheelInertia" class="form-label">Front Wheel Inertia</label>
-                                <input type="number" class="form-control" id="frontWheelInertia" name="frontWheelInertia" step="0.01" min="0.01" max="0.2" value="0.05">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="rearWheelInertia" class="form-label">Rear Wheel Inertia</label>
-                                <input type="number" class="form-control" id="rearWheelInertia" name="rearWheelInertia" step="0.01" min="0.01" max="0.2" value="0.07">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="wheelRadiusM" class="form-label">Wheel Radius (m)</label>
-                                <input type="number" class="form-control" id="wheelRadiusM" name="wheelRadiusM" step="0.01" min="0.3" max="1" value="0.7">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Wind Parameters -->
-                    <div class="form-section">
-                        <h4 class="mb-3">Wind Parameters</h4>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="windSpeedMs" class="form-label">Wind Speed (m/s)</label>
-                                <input type="number" class="form-control" id="windSpeedMs" name="windSpeedMs" step="0.1" min="0" max="30" value="0">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="windDirectionDeg" class="form-label">Wind Direction (degrees)</label>
-                                <input type="number" class="form-control" id="windDirectionDeg" name="windDirectionDeg" step="1" min="0" max="359" value="0">
-                                <div class="form-text">0° = North, 90° = East, 180° = South, 270° = West</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
-                            <span class="spinner-border spinner-border-sm me-2 d-none" id="spinner"></span>
-                            Virtualize GPX
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Progress and Results -->
-                <div id="progressSection" class="mt-4 d-none">
-                    <div class="alert alert-info">
-                        <strong>Processing...</strong> Please wait while your GPX file is being virtualized.
+                <!-- Selected File Info -->
+                <div id="fileInfo" class="mt-3 d-none">
+                    <div class="alert alert-success">
+                        <h6 class="mb-2">File Selected</h6>
+                        <p class="mb-1"><strong>Name:</strong> <span id="fileName"></span></p>
+                        <p class="mb-0"><strong>Size:</strong> <span id="fileSize"></span></p>
                     </div>
                 </div>
 
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-success btn-lg" id="analyzeBtn" disabled>
+                        <span class="spinner-border spinner-border-sm me-2 d-none" id="spinner"></span>
+                        <i class="fas fa-chart-line me-2"></i>
+                        Continue to Parameters
+                    </button>
+                </div>
+
+                <!-- Progress -->
+                <div id="progressSection" class="progress-section d-none">
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2"></div>
+                            <strong>Analyzing GPX file...</strong>
+                        </div>
+                        <small class="d-block mt-2">Please wait while we analyze your route data.</small>
+                    </div>
+                </div>
+
+                <!-- Error -->
                 <div id="errorSection" class="mt-4 d-none">
                     <div class="alert alert-danger">
-                        <strong>Error:</strong> <span id="errorMessage"></span>
+                        <h6 class="mb-2">Error</h6>
+                        <p class="mb-0" id="errorMessage"></p>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="row mt-5">
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="text-primary mb-2">
+                            <i class="fas fa-route fa-2x"></i>
+                        </div>
+                        <h6>Route Analysis</h6>
+                        <small class="text-muted">We analyze your route to determine distance and elevation profile</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="text-primary mb-2">
+                            <i class="fas fa-cog fa-2x"></i>
+                        </div>
+                        <h6>Parameter Setup</h6>
+                        <small class="text-muted">Configure cyclist, bike, and environmental parameters</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="text-primary mb-2">
+                            <i class="fas fa-chart-area fa-2x"></i>
+                        </div>
+                        <h6>Power Curve</h6>
+                        <small class="text-muted">Define how your power output varies throughout the ride</small>
                     </div>
                 </div>
             </div>
@@ -165,6 +146,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/gpx-virtualization.js"></script>
+    <script src="/index.js"></script>
 </body>
 </html>

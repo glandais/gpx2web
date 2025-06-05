@@ -8,13 +8,14 @@ public class PowerProviderConstantWithTiring extends PowerProviderConstant {
     private final double duration;
 
     public PowerProviderConstantWithTiring(double duration) {
+        super();
         this.duration = duration;
     }
 
     @Override
-    public double getPowerW(Course course, Point location) {
+    public double getOptimalPower(Course course, Point location) {
 
-        double powerW = super.getPowerW(course, location);
+        double powerW = super.getOptimalPower(course, location);
         double c = Math.max(0.5, 1 - (0.6 * location.getElapsedSeconds() / duration));
         return powerW * c;
     }

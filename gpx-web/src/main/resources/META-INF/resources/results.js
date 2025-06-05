@@ -5,14 +5,15 @@ let currentMarker = null;
 let polyline = null;
 
 // Initialize the visualization with session data
-async function initializeVisualization() {
+document.addEventListener('DOMContentLoaded', function() {
     try {
         showLoading();
         
         // Get the JSON data from sessionStorage
         const jsonData = sessionStorage.getItem('virtualizationData');
         if (!jsonData) {
-            throw new Error('No data found in session');
+            // No results data - redirect to start
+            window.location.href = '/';
         }
         
         currentData = JSON.parse(jsonData);
@@ -29,7 +30,7 @@ async function initializeVisualization() {
         console.error('Error initializing visualization:', error);
         showError('Failed to load visualization data: ' + error.message);
     }
-}
+});
 
 
 // Initialize the Leaflet map
@@ -232,6 +233,18 @@ function highlightPointOnMap(index) {
 
 // Setup event handlers
 function setupEventHandlers() {
+
+    // Setup additional buttons
+    document.getElementById('newActivityBtn').addEventListener('click', function() {
+        // Clear all data and start over
+        sessionStorage.clear();
+        window.location.href = '/';
+    });
+
+    document.getElementById('backToPowerCurveBtn').addEventListener('click', function() {
+        window.location.href = '/powercurve';
+    });
+
     // Field selector change events
     ['dataSelect1', 'dataSelect2', 'dataSelect3'].forEach(id => {
         document.getElementById(id).addEventListener('change', updateChart);

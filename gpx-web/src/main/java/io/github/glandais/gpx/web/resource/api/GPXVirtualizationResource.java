@@ -1,4 +1,4 @@
-package io.github.glandais.gpx.web.resource;
+package io.github.glandais.gpx.web.resource.api;
 
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
 import io.github.glandais.gpx.web.model.VirtualizationResponse;
