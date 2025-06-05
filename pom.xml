@@ -75,6 +75,7 @@
     <modules>
         <module>gpx</module>
         <module>gpxtools-cli</module>
+        <module>gpx-web</module>
     </modules>
     <dependencies>
         <dependency>
