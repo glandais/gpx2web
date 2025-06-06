@@ -38,8 +38,7 @@ public abstract class CyclistPowerProviderBase implements CyclistPowerProvider {
 
         location.putDebug(PropertyKeys.p_cyclist_optimal_power, optimalPower);
 
-        double grade = Math.max(-0.2, Math.min(0.2, location.getGrade()));
-        double optimalSpeed = course.getGradeSpeeds().getOptimalSpeed(100.0 * grade);
+        double optimalSpeed = course.getOptimalSpeeds().getOptimalSpeed(optimalPower, location.getGrade(), location.getBearing());
         location.putDebug(PropertyKeys.p_cyclist_optimal_speed, optimalSpeed);
         double minOptimalSpeed = optimalSpeed * (1 - TOLERANCE);
         double maxOptimalSpeed = optimalSpeed * (1 + TOLERANCE);

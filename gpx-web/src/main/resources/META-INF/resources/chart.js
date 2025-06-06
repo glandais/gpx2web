@@ -1,8 +1,189 @@
 
 var dataChart;
 
+const availableAxises = {
+    power: {
+        text: 'Power (W)',
+        color: '#dc3545'
+    },
+    elevation: {
+        text: 'Elevation (m)',
+        color: '#28a745'
+    },
+    speed: {
+        text: 'Speed (km/h)',
+        color: '#fd7e14'
+    },
+    radius: {
+        text: 'Radius (m)',
+        color: '#fd7e14'
+    }
+}
+
+function pointsDataProvider(key) {
+    return function(distances, points) {
+        return distances.map((dist, i) => {
+            const point = points[i]
+            let value = 0
+            if (point[key]) {
+                value = point[key]
+            }
+            return {
+                x: dist,
+                y: value
+            }
+        });
+    }
+}
+
+const defaultOptions = {
+    borderWidth: 2,
+    fill: false,
+    pointRadius: 0,
+    pointHoverRadius: 4
+}
+
+const availableData = {
+    user_power: {
+        axis: 'power',
+        label: 'Power Curve',
+        detail: 'Provided power',
+        options: {
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            borderWidth: 3,
+            fill: false,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#007bff',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+        }
+    },
+    ele: {
+        axis: 'elevation',
+        label: 'Elevation',
+        detail: 'Skadi data'
+    },
+    p_cyclist_current_speed: {
+        axis: 'speed',
+        label: 'Current speed',
+        detail: 'Speed during computation'
+    },
+    p_cyclist_optimal_power: {
+        axis: 'power',
+        label: 'Optimal power',
+        detail: 'Power Curve with harmonics'
+    },
+    p_cyclist_optimal_speed: {
+        axis: 'speed',
+        label: 'Optimal speed',
+        detail: 'Stable speed at optimal power given gradient'
+    },
+    p_cyclist_raw: {
+        axis: 'power',
+        label: 'Raw power',
+        detail: 'Power applied by cyclist during computation'
+    },
+    p_cyclist_wheel: {
+        axis: 'power',
+        label: 'Wheel power 1',
+        detail: 'Power applied to wheel during computation'
+    },
+    p_power_from_acc: {
+        axis: 'power',
+        label: 'Power from acceleration',
+        detail: 'Power computed with kinetic equation'
+    },
+    p_power_wheel_from_acc: {
+        axis: 'power',
+        label: 'Wheel power 2',
+        detail: 'Power from acceleration minus external power'
+    },
+    power: {
+        axis: 'power',
+        label: 'Power',
+        detail: 'Final power'
+    },
+    radius: {
+        axis: 'radius',
+        label: 'Radius',
+        detail: 'Road radius'
+    },
+    speed: {
+        axis: 'speed',
+        label: 'Speed',
+        detail: 'Computed speed'
+    },
+    speed_max: {
+        axis: 'speed',
+        label: 'Maximum speed',
+        detail: 'Maximum speed'
+    },
+    speed_max_incline: {
+        axis: 'speed',
+        label: 'Maximum speed incline',
+        detail: 'Maximum speed given incline and road radius'
+    },
+    virt_speed_current: {
+        axis: 'speed',
+        label: 'Current speed',
+        detail: 'Current speed during computation'
+    },
+}
+
+function getShades(hue, numberOfShades) {
+    var lightness = 0;
+    var saturation = 0;
+    var lightnessSteps = numberOfShades === 1 ? 50 : 90 / numberOfShades;
+    var saturationStepsDistance = 100 / Math.ceil(numberOfShades / 2);
+    var shades = new Array();
+
+    for (var i = 1; i <= numberOfShades; i++) {
+        lightness += lightnessSteps;
+        saturation += saturationStepsDistance;
+        shades.push("hsl(" + hue + ", " + saturation + "%, " + lightness + "%)");
+    }
+
+    return shades;
+};
+
+function getColorSet(numberOfHues, numberOfShades) {
+    var hueStepDistance = 360 / numberOfHues;
+    var hue = 0;
+    var colors = new Array();
+
+    for (var i = 0; i < numberOfHues; i++) {
+        colors.push(getShades(hue, numberOfShades));
+        hue += hueStepDistance;
+    }
+
+    return colors;
+};
+
+const chartColors = getColorSet(Object.keys(availableData).length, 1);
+
+Object.entries(availableData).forEach(([, value], index) => {
+    value.options = value.options || {};
+    value.options.borderColor = chartColors[index]
+    value.options.backgroundColor = chartColors[index]
+});
+
+Object.keys(availableData).forEach(key => {
+    availableData[key].provider = pointsDataProvider(key);
+});
+availableData.user_power.provider =
+    (distance, points) => (AppState.powerCurveData.map(point => ({ x: point.distanceKm, y: point.powerW })));
+
+
 StateManager.addListener(function (keys) {
     if (keys.indexOf("virtualizationResult") >= 0) {
+        updateDataCharts();
+    }
+});
+
+StateManager.addListener(function (keys) {
+    if (keys.indexOf("chartDatasets") >= 0) {
         updateDataCharts();
     }
 });
@@ -12,68 +193,56 @@ function updateDataCharts() {
         return;
     }
 
-    if (AppState.powerCurveData) {
-        dataChart.data.datasets[0].data = AppState.powerCurveData.map(point =>
-        ({ x: point.distanceKm, y: point.powerW })
-        );
-    } else {
-        dataChart.data.datasets[0].data = [];
-    }
-    if (AppState.virtualizationResult && AppState.virtualizationResult.points) {
+    Object.keys(dataChart.options.scales).forEach(key => {
+        dataChart.options.scales[key].display = false;
+    });
+    dataChart.data.datasets = [];
+    dataChart.options.scales.x.display = true;
+    if (AppState.powerCurveData && AppState.virtualizationResult && AppState.virtualizationResult.points) {
         const points = AppState.virtualizationResult.points;
         const distances = points.map(point => point.dist / 1000);
-        const elevations = points.map(point => point.ele);
-        const speeds = points.map(point => point.speed || 0);
-        const powers = points.map(point => point.power || 0);
-
-        dataChart.data.datasets[1].data = distances.map((dist, i) => ({ x: dist, y: elevations[i] }));
-        dataChart.data.datasets[2].data = distances.map((dist, i) => ({ x: dist, y: speeds[i] }));
-        dataChart.data.datasets[3].data = distances.map((dist, i) => ({ x: dist, y: powers[i] }));
-    } else {
-        dataChart.data.datasets[1].data = [];
-        dataChart.data.datasets[2].data = [];
-        dataChart.data.datasets[3].data = [];
+        dataChart.data.datasets = AppState.chartDatasets.map(dataset => {
+            const info = availableData[dataset];
+            dataChart.options.scales[info.axis].display = true;
+            const data = info.provider(distances, points);
+            const options = { ...defaultOptions };
+            if (info.options) {
+                Object.assign(options, info.options)
+            }
+            return {
+                label: info.label,
+                data,
+                yAxisID: info.axis,
+                ...options
+            };
+        });
     }
-
     updateChartScales();
     dataChart.update('none');
 }
 
 function updateChartScales() {
-    dataChart.options.scales.x.min = 0
-    dataChart.options.scales.x.max = AppState.totalDistanceKm()
-
-    let powerDataRange = { min: 0, max: 500 };
-    powerDataRange = getYRange(dataChart.data.datasets[0].data, powerDataRange);
-    powerDataRange = getYRange(dataChart.data.datasets[3].data, powerDataRange);
-    dataChart.options.scales.y2.min = addPadding(powerDataRange.min, powerDataRange.max, 0.1).min;
-    dataChart.options.scales.y2.max = addPadding(powerDataRange.min, powerDataRange.max, 0.1).max;
-
-    const elevationRange = getYRange(dataChart.data.datasets[1].data);
-    if (elevationRange) {
-        dataChart.options.scales.y.min = addPadding(elevationRange.min, elevationRange.max, 0.1).min;
-        dataChart.options.scales.y.max = addPadding(elevationRange.min, elevationRange.max, 0.1).max;
-    } else {
-        dataChart.options.scales.y.min = 0;
-        dataChart.options.scales.y.max = 100;
+    const ranges = {
+        x: {
+            min: 0,
+            max: AppState.totalDistanceKm()
+        }
     }
+    dataChart.data.datasets.forEach(dataset => {
+        let range = ranges[dataset.yAxisID]
+        range = getYRange(dataset.data, range);
+        ranges[dataset.yAxisID] = range
+    });
 
-    const speedRange = getYRange(dataChart.data.datasets[2].data);
-    if (speedRange) {
-        dataChart.options.scales.y1.min = addPadding(speedRange.min, speedRange.max, 0.1).min;
-        dataChart.options.scales.y1.max = addPadding(speedRange.min, speedRange.max, 0.1).max;
-    } else {
-        dataChart.options.scales.y1.min = 0;
-        dataChart.options.scales.y1.max = 100;
-    }
-    dataChart.options.plugins.zoom.limits.x.min = dataChart.options.scales.x.min;
-    dataChart.options.plugins.zoom.limits.x.max = dataChart.options.scales.x.max;
-    dataChart.options.plugins.zoom.limits.y.min = dataChart.options.scales.y.min;
-    dataChart.options.plugins.zoom.limits.y.max = dataChart.options.scales.y.max;
-    dataChart.options.plugins.zoom.limits.y1.min = dataChart.options.scales.y1.min;
-    dataChart.options.plugins.zoom.limits.y1.max = dataChart.options.scales.y1.max;
-    dataChart.options.plugins.zoom.limits.y2.min = dataChart.options.scales.y2.min;
-    dataChart.options.plugins.zoom.limits.y2.max = dataChart.options.scales.y2.max;
+    Object.keys(dataChart.options.scales).forEach(key => {
+        const range = ranges[key]
+        if (range) {
+            dataChart.options.scales[key].min = range.min;
+            dataChart.options.scales[key].max = range.max;
+            dataChart.options.plugins.zoom.limits[key].min = dataChart.options.scales[key].min
+            dataChart.options.plugins.zoom.limits[key].max = dataChart.options.scales[key].max
+        }
+    });
 }
 
 function getYRange(points, existingRange) {
@@ -120,58 +289,53 @@ function initializeDataChart() {
         }
     });
 
+    const scales = {
+        x: {
+            type: 'linear',
+            title: {
+                display: true,
+                text: 'Distance (km)',
+                font: { weight: 'bold' }
+            },
+            min: 0,
+            max: 10,
+            grid: {
+                color: 'rgba(0,0,0,0.1)'
+            }
+        }
+    }
+
+    const limits = {
+        x: {min: 0, max: 10}
+    }
+    Object.keys(availableAxises).forEach(key => {
+        const axis = availableAxises[key];
+        scales[key] = {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            offset: true,
+            title: {
+                display: true,
+                text: axis.text,
+                color: axis.color,
+                font: { weight: 'bold' }
+            },
+            ticks: {
+                color: axis.color
+            },
+            grid: {
+                drawOnChartArea: false,
+            }
+        }
+        limits[key] = {min: 0, max: 10}
+    });
+
+
     dataChart = new Chart(dataCtx, {
         type: 'line',
         data: {
             datasets: [
-                {
-                    label: 'Power Curve',
-                    data: AppState.powerCurveData.map(point => ({ x: point.distanceKm, y: point.powerW })),
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    borderWidth: 3,
-                    fill: false,
-                    tension: 0.1,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    pointBackgroundColor: '#007bff',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    yAxisID: 'y2'
-                },
-                {
-                    label: 'Elevation (m)',
-                    data: [],
-                    borderColor: '#28a745',
-                    backgroundColor: '#28a74520',
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Speed (km/h)',
-                    data: [],
-                    borderColor: '#fd7e14',
-                    backgroundColor: '#fd7e1420',
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    yAxisID: 'y1'
-                },
-                {
-                    label: 'Power (W)',
-                    data: [],
-                    borderColor: '#dc3545',
-                    backgroundColor: '#dc354520',
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    yAxisID: 'y2'
-                }
             ]
         },
         options: {
@@ -182,70 +346,7 @@ function initializeDataChart() {
                 intersect: false,
                 mode: 'nearest'
             },
-            scales: {
-                x: {
-                    type: 'linear',
-                    title: {
-                        display: true,
-                        text: 'Distance (km)',
-                        font: { weight: 'bold' }
-                    },
-                    min: 0,
-                    max: 10,
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Elevation (m)',
-                        color: '#28a745',
-                        font: { weight: 'bold' }
-                    },
-                    ticks: {
-                        color: '#28a745'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Speed (km/h)',
-                        color: '#fd7e14',
-                        font: { weight: 'bold' }
-                    },
-                    ticks: {
-                        color: '#fd7e14'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    }
-                },
-                y2: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    offset: true,
-                    title: {
-                        display: true,
-                        text: 'Power (W)',
-                        color: '#dc3545',
-                        font: { weight: 'bold' }
-                    },
-                    ticks: {
-                        color: '#dc3545'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    }
-                }
-            },
+            scales,
             plugins: {
                 legend: {
                     display: true,
@@ -277,12 +378,7 @@ function initializeDataChart() {
                         enabled: true,
                         mode: 'xy',
                     },
-                    limits: {
-                        x: {min: 0, max: 10},
-                        y: {min: 0, max: 100},
-                        y1: {min: 0, max: 100},
-                        y2: {min: 0, max: 1000}
-                    },
+                    limits,
                 }
             },
             onClick: function(event, elements) {
@@ -293,7 +389,7 @@ function initializeDataChart() {
                 if (!hasPowerCurvePoint) {
                     const canvasPosition = Chart.helpers.getRelativePosition(event, dataChart);
                     const dataX = dataChart.scales.x.getValueForPixel(canvasPosition.x);
-                    const dataY = dataChart.scales.y2.getValueForPixel(canvasPosition.y);
+                    const dataY = dataChart.scales.power.getValueForPixel(canvasPosition.y);
 
                     if (dataX >= 0 && dataX <= AppState.totalDistanceKm() && dataY >= 50 && dataY <= 3000) {
                         addPowerPoint(dataX, Math.round(dataY));
@@ -336,7 +432,7 @@ function setupDragAndDrop() {
         if (AppState.isDragging && AppState.dragPointIndex >= 0) {
             const canvasPosition = Chart.helpers.getRelativePosition(event, dataChart);
             const dataX = dataChart.scales.x.getValueForPixel(canvasPosition.x);
-            const dataY = dataChart.scales.y2.getValueForPixel(canvasPosition.y);
+            const dataY = dataChart.scales.power.getValueForPixel(canvasPosition.y);
 
             const isFirstPoint = AppState.dragPointIndex === 0;
             const isLastPoint = AppState.dragPointIndex === AppState.powerCurveData.length - 1;

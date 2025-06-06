@@ -158,7 +158,7 @@ async function performBackgroundVirtualization() {
             } });
         },
         (error) => {
-            console.warn('Background virtualization failed:', error.message);
+            StateManager.setError('Background virtualization failed:' + error.message);
         }
     );
 
