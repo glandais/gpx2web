@@ -9,14 +9,14 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/")
-public class IndexPageResource {
+public class AppPageResource {
 
     @Inject
-    Template index;
+    Template app;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance get() {
-        return index.data("title", "GPX Virtualizer");
+    public TemplateInstance index() {
+        return app.data("title", "GPX Virtual Cyclist");
     }
 }
