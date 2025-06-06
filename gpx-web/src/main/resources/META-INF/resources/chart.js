@@ -4,19 +4,35 @@ var dataChart;
 const availableAxises = {
     power: {
         text: 'Power (W)',
-        color: '#dc3545'
+        color: '#dc3545',
+        defaultRange: {
+            min: 0,
+            max: 1000
+        }
     },
     elevation: {
         text: 'Elevation (m)',
-        color: '#28a745'
+        color: '#28a745',
+        defaultRange: {
+            min: 0,
+            max: 1000
+        }
     },
     speed: {
         text: 'Speed (km/h)',
-        color: '#fd7e14'
+        color: '#fd7e14',
+        defaultRange: {
+            min: 0,
+            max: 100
+        }
     },
     radius: {
         text: 'Radius (m)',
-        color: '#fd7e14'
+        color: '#fd7e14',
+        defaultRange: {
+            min: 0,
+            max: 1000
+        }
     }
 }
 
@@ -43,8 +59,16 @@ const defaultOptions = {
     pointHoverRadius: 4
 }
 
+const datasetInterest = {
+    mustSee: 1,
+    insights: 2,
+    computing: 3,
+    debug: 4
+}
+
 const availableData = {
     user_power: {
+        interest: datasetInterest.mustSee,
         axis: 'power',
         label: 'Power Curve',
         detail: 'Provided power',
@@ -61,71 +85,109 @@ const availableData = {
         }
     },
     ele: {
+        interest: datasetInterest.mustSee,
         axis: 'elevation',
         label: 'Elevation',
         detail: 'Skadi data'
     },
     p_cyclist_current_speed: {
+        interest: datasetInterest.debug,
         axis: 'speed',
         label: 'Current speed',
         detail: 'Speed during computation'
     },
+    p_aero: {
+        interest: datasetInterest.insights,
+        axis: 'power',
+        label: 'Aero power',
+        detail: 'Power due to aerodynamics'
+    },
     p_cyclist_optimal_power: {
+        interest: datasetInterest.computing,
         axis: 'power',
         label: 'Optimal power',
         detail: 'Power Curve with harmonics'
     },
     p_cyclist_optimal_speed: {
+        interest: datasetInterest.computing,
         axis: 'speed',
         label: 'Optimal speed',
         detail: 'Stable speed at optimal power given gradient'
     },
     p_cyclist_raw: {
+        interest: datasetInterest.computing,
         axis: 'power',
         label: 'Raw power',
         detail: 'Power applied by cyclist during computation'
     },
     p_cyclist_wheel: {
+        interest: datasetInterest.computing,
         axis: 'power',
         label: 'Wheel power 1',
         detail: 'Power applied to wheel during computation'
     },
-    p_power_from_acc: {
+    p_gravity: {
+        interest: datasetInterest.insights,
         axis: 'power',
-        label: 'Power from acceleration',
+        label: 'Gravity power',
+        detail: 'Power due to gravity'
+    },
+    p_power_from_acc: {
+        interest: datasetInterest.computing,
+        axis: 'power',
+        label: 'Total power from acceleration',
         detail: 'Power computed with kinetic equation'
     },
     p_power_wheel_from_acc: {
+        interest: datasetInterest.computing,
         axis: 'power',
-        label: 'Wheel power 2',
-        detail: 'Power from acceleration minus external power'
+        label: 'Wheel power from acceleration',
+        detail: 'Power from acceleration minus external power, negative if breaking'
+    },
+    p_rolling_resistance: {
+        interest: datasetInterest.insights,
+        axis: 'power',
+        label: 'Rolling resistance power',
+        detail: 'Power due to rolling resistance'
+    },
+    p_wheel_bearings: {
+        interest: datasetInterest.insights,
+        axis: 'power',
+        label: 'Wheel bearings power',
+        detail: 'Power due to bearings'
     },
     power: {
+        interest: datasetInterest.mustSee,
         axis: 'power',
         label: 'Power',
         detail: 'Final power'
     },
     radius: {
+        interest: datasetInterest.computing,
         axis: 'radius',
         label: 'Radius',
         detail: 'Road radius'
     },
     speed: {
+        interest: datasetInterest.mustSee,
         axis: 'speed',
         label: 'Speed',
         detail: 'Computed speed'
     },
     speed_max: {
+        interest: datasetInterest.insights,
         axis: 'speed',
         label: 'Maximum speed',
         detail: 'Maximum speed'
     },
     speed_max_incline: {
+        interest: datasetInterest.computing,
         axis: 'speed',
         label: 'Maximum speed incline',
         detail: 'Maximum speed given incline and road radius'
     },
     virt_speed_current: {
+        interest: datasetInterest.debug,
         axis: 'speed',
         label: 'Current speed',
         detail: 'Current speed during computation'
@@ -182,11 +244,6 @@ StateManager.addListener(function (keys) {
     }
 });
 
-StateManager.addListener(function (keys) {
-    if (keys.indexOf("chartDatasets") >= 0) {
-        updateDataCharts();
-    }
-});
 
 function updateDataCharts() {
     if (!dataChart) {
@@ -237,8 +294,14 @@ function updateChartScales() {
     Object.keys(dataChart.options.scales).forEach(key => {
         const range = ranges[key]
         if (range) {
-            dataChart.options.scales[key].min = range.min;
-            dataChart.options.scales[key].max = range.max;
+            let withPadding;
+            if (range.min - range.max == 0) {
+                withPadding = availableAxises[key].defaultRange
+            } else {
+                withPadding = range;
+            }
+            dataChart.options.scales[key].min = withPadding.min;
+            dataChart.options.scales[key].max = withPadding.max;
             dataChart.options.plugins.zoom.limits[key].min = dataChart.options.scales[key].min
             dataChart.options.plugins.zoom.limits[key].max = dataChart.options.scales[key].max
         }
@@ -269,7 +332,10 @@ function getYRange(points, existingRange) {
 }
 
 function addPadding(min, max, paddingPercent) {
-    const range = max - min;
+    let range = max - min;
+    if (range === 0) {
+        range = 10;
+    }
     const padding = range * paddingPercent;
 
     return {
@@ -277,6 +343,113 @@ function addPadding(min, max, paddingPercent) {
         max: max + padding
     };
 }
+
+function populateDatasetModal() {
+    const powerContainer = document.getElementById('powerDatasets');
+    const speedContainer = document.getElementById('speedDatasets');
+    const otherContainer = document.getElementById('otherDatasets');
+    
+    // Clear containers
+    powerContainer.innerHTML = '';
+    speedContainer.innerHTML = '';
+    otherContainer.innerHTML = '';
+    
+    Object.entries(availableData).forEach(([key, dataset]) => {
+        const isSelected = AppState.chartDatasets.includes(key);
+        
+        const datasetItem = document.createElement('div');
+        datasetItem.className = `dataset-item ${isSelected ? 'selected' : ''}`;
+        datasetItem.style.cursor = 'pointer';
+        datasetItem.dataset.key = key;
+        
+        datasetItem.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="dataset_${key}" ${isSelected ? 'checked' : ''}>
+                <label class="form-check-label w-100" for="dataset_${key}">
+                    <div class="dataset-label">${dataset.label}</div>
+                    <div class="dataset-detail">${dataset.detail}</div>
+                </label>
+            </div>
+        `;
+        
+        // Add to appropriate container
+        if (dataset.axis === 'power') {
+            powerContainer.appendChild(datasetItem);
+        } else if (dataset.axis === 'speed') {
+            speedContainer.appendChild(datasetItem);
+        } else {
+            otherContainer.appendChild(datasetItem);
+        }
+    });
+}
+
+function setupDatasetModalHandlers() {
+    // Handle individual dataset selection
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('.dataset-item input[type="checkbox"]')) {
+            const key = e.target.closest('.dataset-item').dataset.key;
+            const isChecked = e.target.checked;
+            
+            let newDatasets = [...AppState.chartDatasets];
+            
+            if (isChecked && !newDatasets.includes(key)) {
+                newDatasets.push(key);
+            } else if (!isChecked && newDatasets.includes(key)) {
+                newDatasets = newDatasets.filter(d => d !== key);
+            }
+            
+            StateManager.setState({ chartDatasets: newDatasets });
+        }
+    });
+
+    // Select All button
+    document.getElementById('selectAllBtn').addEventListener('click', function() {
+        const allKeys = Object.keys(availableData);
+        StateManager.setState({ chartDatasets: allKeys });
+    });
+    
+    // Clear All button
+    document.getElementById('clearAllBtn').addEventListener('click', function() {
+        StateManager.setState({ chartDatasets: [] });
+    });
+}
+
+function updateDatasetModalSelection() {
+    document.querySelectorAll('.dataset-item').forEach(item => {
+        const key = item.dataset.key;
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const isSelected = AppState.chartDatasets.includes(key);
+        
+        checkbox.checked = isSelected;
+        item.classList.toggle('selected', isSelected);
+    });
+}
+
+function updateDatasetCounts() {
+    const count = AppState.chartDatasets.length;
+    const totalCount = Object.keys(availableData).length;
+    
+    // Update button text
+    const selectedCountSpan = document.getElementById('selectedDatasetCount');
+    if (selectedCountSpan) {
+        selectedCountSpan.textContent = count;
+    }
+    
+    // Update modal counter
+    const modalCountSpan = document.getElementById('modalSelectedCount');
+    if (modalCountSpan) {
+        modalCountSpan.textContent = count;
+    }
+}
+
+// Add listener for chartDatasets changes to update modal and charts
+StateManager.addListener(function (keys) {
+    if (keys.indexOf("chartDatasets") >= 0) {
+        updateDataCharts();
+        updateDatasetModalSelection();
+        updateDatasetCounts();
+    }
+});
 
 // Chart initialization and interaction functions
 function initializeDataChart() {
@@ -407,6 +580,8 @@ function initializeDataChart() {
         }
     });
     setupDragAndDrop();
+    populateDatasetModal();
+    setupDatasetModalHandlers();
 }
 
 function setupDragAndDrop() {
