@@ -1,39 +1,73 @@
 // Application State Management System
 
+const Step = {
+    UPLOAD: 0,
+    PARAMETERS: 1,
+    max: 1
+}
+
+const StepIds = ['upload', 'parameters'];
+
 // Global application state
 const AppState = {
-    // Current step (0: upload, 1: parameters, 2: powercurve, 3: results)
-    currentStep: 0,
-    
-    // Step 0 - File Upload
-    selectedGpxFile: null,
-    gpxFileData: null, // File object or data URL
-    
-    // Step 1 - Analysis
-    gpxAnalysis: null,
-    
-    // Step 2 - Parameters
-    parametersData: null,
-    
-    // Step 3 - Power Curve
-    powerCurveData: [],
-    totalDistanceKm: 0,
-    
-    // Step 4 - Results
-    virtualizationData: null,
-    gpxContent: null,
-    
-    // UI State
-    isLoading: false,
-    error: null,
-    
-    // Chart state
-    dataChart: null,
-    virtualizationTimeout: null,
-    isVirtualizing: false,
-    isDragging: false,
-    dragPointIndex: -1
+    totalDistanceKm() {
+        if (this.gpxAnalysis) {
+            return this.gpxAnalysis.totalDistanceMeters / 1000;
+        }
+    },
+
+    // Update state and trigger re-render
+    setState(updates) {
+        Object.assign(AppState, updates);
+    },
+
+    // Reset
+    resetUpdates() {
+        return {
+            // Current step (Step)
+            currentStep : Step.UPLOAD,
+            // Step 0 - File Upload
+            gpxFileData : null,
+            // Step 1 - Analysis / Parameters
+            gpxAnalysis : null,
+            parametersData : {
+                startTime : new Date(),
+                // cyclist
+                weightKg: 80,
+                powerWatts: 250,
+                harmonics: false,
+                maxBrakeG: 0.6,
+                dragCoefficient: 0.7,
+                frontalAreaM2: 0.5,
+                maxAngleDeg: 35,
+                maxSpeedKmH: 100,
+                // bike
+                rollingResistance: 0.004,
+                frontWheelInertia: 0.05,
+                rearWheelInertia: 0.07,
+                wheelRadiusM: 0.7,
+                efficiency: 0.976,
+                // wind
+                directionDeg: 0,
+                speedMs: 0
+            },
+            // Step 2 - Power Curve
+            powerCurveData : [],
+            virtualizationResult: null,
+            // UI State
+            isLoading : false,
+            loadingTitle: null,
+            loadingSubtitle: null,
+            error : null,
+            // Chart state
+            isVirtualizing : false,
+            isDragging : false,
+            dragPointIndex : -1,
+        };
+    },
 };
+
+AppState.setState(AppState.resetUpdates());
 
 // State management functions
 const StateManager = {
@@ -44,21 +78,35 @@ const StateManager = {
     
     // Update state and trigger re-render
     setState(updates) {
-        Object.assign(AppState, updates);
-        this.notifyStateChange();
+        AppState.setState(updates);
+        this.notifyStateChange(Object.keys(updates));
     },
-    
+
+    // Reset state to initial
+    reset() {
+        this.setState(AppState.resetUpdates());
+    },
+
+    // Reset state to initial
+    restart() {
+        this.setState({
+            // Current step (Step)
+            currentStep : Step.UPLOAD,
+            // Step 0 - File Upload
+            gpxFileData : null
+        });
+    },
+
     // Navigate to specific step
     navigateToStep(stepIndex) {
-        if (stepIndex >= 0 && stepIndex <= 4) {
+        if (stepIndex >= 0 && stepIndex <= Step.max) {
             this.setState({ currentStep: stepIndex });
-            this.renderCurrentStep();
         }
     },
     
     // Go to next step
     nextStep() {
-        if (AppState.currentStep < 3) {
+        if (AppState.currentStep < Step.max) {
             this.navigateToStep(AppState.currentStep + 1);
         }
     },
@@ -69,31 +117,10 @@ const StateManager = {
             this.navigateToStep(AppState.currentStep - 1);
         }
     },
-    
-    // Reset state to initial
-    reset() {
-        AppState.currentStep = 0;
-        AppState.selectedGpxFile = null;
-        AppState.gpxFileData = null;
-        AppState.gpxAnalysis = null;
-        AppState.parametersData = null;
-        AppState.powerCurveData = [];
-        AppState.totalDistanceKm = 0;
-        AppState.virtualizationData = null;
-        AppState.gpxContent = null;
-        AppState.isLoading = false;
-        AppState.error = null;
-        AppState.dataChart = null;
-        AppState.virtualizationTimeout = null;
-        AppState.isVirtualizing = false;
-        AppState.isDragging = false;
-        AppState.dragPointIndex = -1;
-        this.renderCurrentStep();
-    },
-    
+
     // Set loading state
-    setLoading(isLoading) {
-        this.setState({ isLoading });
+    setLoading(isLoading, loadingTitle, loadingSubtitle) {
+        this.setState({ isLoading, loadingTitle, loadingSubtitle });
     },
     
     // Set error state
@@ -108,11 +135,10 @@ const StateManager = {
     
     // Render current step
     renderCurrentStep() {
-        const steps = ['upload', 'parameters', 'powercurve', 'results'];
-        const currentStepName = steps[AppState.currentStep];
+        const currentStepName = StepIds[AppState.currentStep];
         
         // Hide all step containers
-        steps.forEach(step => {
+        StepIds.forEach(step => {
             const container = document.getElementById(`step-${step}`);
             if (container) {
                 container.style.display = 'none';
@@ -124,133 +150,10 @@ const StateManager = {
         if (currentContainer) {
             currentContainer.style.display = 'block';
         }
-        
-        // Update progress indicator
-        this.updateProgressIndicator();
-        
-        // Trigger step-specific initialization
-        this.initializeCurrentStep();
     },
-    
-    // Update progress indicator
-    updateProgressIndicator() {
-        const progressBar = document.querySelector('.progress-bar');
-        const progressText = document.querySelector('.progress-text');
-        
-        if (progressBar) {
-            const percentage = (AppState.currentStep / 3) * 100;
-            progressBar.style.width = `${percentage}%`;
-        }
-        
-        if (progressText) {
-            const stepNames = ['Upload GPX', 'Set Parameters', 'Define Power Curve', 'View Results'];
-            progressText.textContent = stepNames[AppState.currentStep];
-        }
-    },
-    
-    // Initialize step-specific functionality
-    initializeCurrentStep() {
-        switch (AppState.currentStep) {
-            case 0:
-                this.initUploadStep();
-                break;
-            case 1:
-                this.initAnalysisStep();
-                this.initParametersStep();
-                break;
-            case 2:
-                this.initPowerCurveStep();
-                break;
-            case 3:
-                this.initResultsStep();
-                break;
-        }
-    },
-    
-    // Step initialization functions
-    initUploadStep() {
-        // File upload step initialization
-        console.log('Initializing upload step');
-    },
-    
-    initAnalysisStep() {
-        // Analysis step initialization
-        if (AppState.gpxAnalysis) {
-            this.displayAnalysisResults();
-        }
-    },
-    
-    initParametersStep() {
-        // Parameters step initialization
-        if (AppState.parametersData) {
-            this.loadParametersForm();
-        }
-    },
-    
-    initPowerCurveStep() {
-        // Power curve step initialization
-        if (typeof initializeDataChart === 'function') {
-            setTimeout(() => {
-                initializeDataChart();
-                if (AppState.powerCurveData.length > 0) {
-                    updatePowerTable();
-                    performBackgroundVirtualization();
-                }
-            }, 100);
-        }
-    },
-    
-    initResultsStep() {
-        // Results step initialization
-        if (AppState.virtualizationData) {
-            this.displayResults();
-        }
-    },
-    
-    // Display functions
-    displayAnalysisResults() {
-        if (AppState.gpxAnalysis) {
-            const distanceEl = document.getElementById('analysis-distance');
-            const pointsEl = document.getElementById('analysis-points');
-            
-            if (distanceEl) {
-                distanceEl.textContent = (AppState.gpxAnalysis.totalDistanceMeters / 1000).toFixed(2);
-            }
-            if (pointsEl) {
-                pointsEl.textContent = AppState.gpxAnalysis.totalPoints.toLocaleString();
-            }
-        }
-    },
-    
-    loadParametersForm() {
-        // Load saved parameters into form
-        if (AppState.parametersData) {
-            Object.keys(AppState.parametersData).forEach(key => {
-                const input = document.getElementById(key);
-                if (input) {
-                    if (input.type === 'checkbox') {
-                        input.checked = AppState.parametersData[key];
-                    } else if (input.type === 'datetime-local') {
-                        const date = new Date();
-                        date.setTime(Date.parse(AppState.parametersData[key]));
-                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-                        const iso = date.toISOString();
-                        input.value = iso.slice(0, 16);
-                    } else {
-                        input.value = AppState.parametersData[key];
-                    }
-                }
-            });
-        }
-    },
-    
-    displayResults() {
-        // Display virtualization results
-        console.log('Displaying results');
-    },
-    
+
     // State change listeners
-    listeners: [],
+    listeners: [ ],
     
     addListener(callback) {
         this.listeners.push(callback);
@@ -260,16 +163,17 @@ const StateManager = {
         this.listeners = this.listeners.filter(listener => listener !== callback);
     },
     
-    notifyStateChange() {
-        this.listeners.forEach(listener => listener(AppState));
+    notifyStateChange(keys) {
+        this.listeners.forEach(listener => listener(keys));
     }
 };
+
+StateManager.addListener(function (keys) {
+    if (keys.indexOf("currentStep") >= 0) {
+        StateManager.renderCurrentStep();
+    }
+});
 
 // Export for global access
 window.AppState = AppState;
 window.StateManager = StateManager;
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    StateManager.renderCurrentStep();
-});

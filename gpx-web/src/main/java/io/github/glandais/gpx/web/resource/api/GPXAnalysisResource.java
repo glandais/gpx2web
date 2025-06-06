@@ -39,16 +39,8 @@ public class GPXAnalysisResource {
             }
 
             GPXPath gpxPath = gpx.paths().get(0);
-
-            // Calculate total distance
-            double totalDistance = 0.0;
-            if (!gpxPath.getPoints().isEmpty()) {
-                Point lastPoint = gpxPath.getPoints().get(gpxPath.getPoints().size() - 1);
-                totalDistance = lastPoint.getDist();
-            }
-
             GPXAnalysisResponse analysis =
-                    new GPXAnalysisResponse(totalDistance, gpxPath.getPoints().size());
+                    new GPXAnalysisResponse(gpxPath.getDist(), gpx.name());
 
             return Response.ok(analysis).build();
 
