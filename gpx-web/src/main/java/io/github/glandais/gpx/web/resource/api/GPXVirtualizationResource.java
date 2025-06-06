@@ -1,5 +1,6 @@
 package io.github.glandais.gpx.web.resource.api;
 
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.web.model.VirtualizationRequest;
 import io.github.glandais.gpx.web.model.VirtualizationResponse;
 import io.github.glandais.gpx.web.service.VirtualizationService;
@@ -26,6 +27,7 @@ public class GPXVirtualizationResource {
     public Response virtualizeGpx(
             @RestForm("gpxFile") FileUpload gpxFile,
             @RestForm("parameters") @PartType(MediaType.APPLICATION_JSON) VirtualizationRequest parameters) {
+        Constants.DEBUG = true;
         try {
             VirtualizationResponse response = virtualizationService.virtualizeGpx(gpxFile, parameters);
             return Response.ok(response).build();

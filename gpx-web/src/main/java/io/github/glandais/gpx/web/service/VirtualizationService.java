@@ -74,7 +74,10 @@ public class VirtualizationService {
         gpxFileWriter.writeGPX(gpx, gpxWriter, true);
         String gpxContent = gpxWriter.toString();
 
-        return new VirtualizationResponse(gpxContent, jsonData);
+        // Calculate summary statistics
+        VirtualizationResponse.VirtualizationSummary summary = calculateSummary(gpxPath);
+
+        return new VirtualizationResponse(gpxContent, jsonData, summary);
     }
 
     private Cyclist createCyclist(VirtualizationRequest.CyclistParameters params) {
@@ -101,5 +104,22 @@ public class VirtualizationService {
     private Wind createWind(VirtualizationRequest.WindParameters params) {
         double windDirectionRad = Math.toRadians(params.directionDeg());
         return new Wind(params.speedMs(), windDirectionRad);
+    }
+
+    private VirtualizationResponse.VirtualizationSummary calculateSummary(GPXPath gpxPath) {
+        double totalDistanceKm = gpxPath.getDist() / 1000.0;
+
+        // Calculate total time from first to last point
+        var points = gpxPath.getPoints();
+        if (points.isEmpty()) {
+            return new VirtualizationResponse.VirtualizationSummary(0, 0, 0);
+        }
+
+        long totalTimeNanos = points.get(points.size() - 1).getElapsed().toNanos();
+        double totalTimeSeconds = totalTimeNanos / 1_000_000_000.0;
+
+        double averageSpeedKmH = totalTimeSeconds > 0 ? (totalDistanceKm / totalTimeSeconds) * 3600 : 0;
+
+        return new VirtualizationResponse.VirtualizationSummary(totalDistanceKm, totalTimeSeconds, averageSpeedKmH);
     }
 }
