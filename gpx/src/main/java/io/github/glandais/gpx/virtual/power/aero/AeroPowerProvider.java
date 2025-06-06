@@ -31,6 +31,7 @@ public class AeroPowerProvider implements PowerProvider {
             p_air = computePAirWithWind(location, aeroCoef, wind);
             // FIXME formulas
         }
+        location.putDebug(PropertyKeys.p_aero, p_air);
         return p_air;
     }
 

@@ -29,6 +29,8 @@ public class PropertyKeys {
             getPropertyKey(PropertyKeyEnum.heartRate, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, AngleUnit> lat = getPropertyKey(PropertyKeyEnum.lat, AngleUnit.INSTANCE);
     public static final PropertyKey<Double, AngleUnit> lon = getPropertyKey(PropertyKeyEnum.lon, AngleUnit.INSTANCE);
+    public static final PropertyKey<Double, SpeedUnit> p_aero =
+            getPropertyKey(PropertyKeyEnum.p_aero, SpeedUnit.INSTANCE);
     public static final PropertyKey<Double, SpeedUnit> p_cyclist_current_speed =
             getPropertyKey(PropertyKeyEnum.p_cyclist_current_speed, SpeedUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> p_cyclist_optimal_power =
@@ -39,10 +41,16 @@ public class PropertyKeys {
             getPropertyKey(PropertyKeyEnum.p_cyclist_raw, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> p_cyclist_wheel =
             getPropertyKey(PropertyKeyEnum.p_cyclist_wheel, DoubleUnit.INSTANCE);
+    public static final PropertyKey<Double, DoubleUnit> p_gravity =
+            getPropertyKey(PropertyKeyEnum.p_gravity, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> p_power_from_acc =
             getPropertyKey(PropertyKeyEnum.p_power_from_acc, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> p_power_wheel_from_acc =
             getPropertyKey(PropertyKeyEnum.p_power_wheel_from_acc, DoubleUnit.INSTANCE);
+    public static final PropertyKey<Double, DoubleUnit> p_rolling_resistance =
+            getPropertyKey(PropertyKeyEnum.p_rolling_resistance, DoubleUnit.INSTANCE);
+    public static final PropertyKey<Double, DoubleUnit> p_wheel_bearings =
+            getPropertyKey(PropertyKeyEnum.p_wheel_bearings, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> power =
             getPropertyKey(PropertyKeyEnum.power, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> radius =
