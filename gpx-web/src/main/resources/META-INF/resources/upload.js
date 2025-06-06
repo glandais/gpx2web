@@ -3,6 +3,7 @@ function initUploadHandlers() {
     const fileInput = document.getElementById('gpxFileInput');
     const uploadArea = document.getElementById('fileUploadArea');
     const fileSelectBtn = document.getElementById('fileSelectBtn');
+    const loadDemoBtn = document.getElementById('loadDemoBtn');
 
     // File input change
     fileInput.addEventListener('change', handleFileSelect);
@@ -20,6 +21,9 @@ function initUploadHandlers() {
         e.stopPropagation();
         fileInput.click();
     });
+
+    // Demo file loader
+    loadDemoBtn.addEventListener('click', loadDemoFile);
 }
 
 function handleFileSelect(event) {
@@ -102,5 +106,31 @@ async function analyzeGpxFile() {
     } catch (error) {
         StateManager.setLoading(false);
         StateManager.setError('Error analyzing GPX file: ' + error.message);
+    }
+}
+
+async function loadDemoFile() {
+    StateManager.setLoading(true, 'Loading Demo File', 'Loading ventoux.gpx...');
+
+    try {
+        // Fetch the demo file from resources
+        const response = await fetch('/ventoux.gpx');
+        
+        if (!response.ok) {
+            throw new Error('Demo file not found');
+        }
+
+        const gpxContent = await response.text();
+        
+        // Create a File object from the content
+        const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+        const demoFile = new File([blob], 'ventoux.gpx', { type: 'application/gpx+xml' });
+        
+        // Process the demo file like a regular upload
+        selectGpxFile(demoFile);
+
+    } catch (error) {
+        StateManager.setLoading(false);
+        StateManager.setError('Error loading demo file: ' + error.message);
     }
 }
