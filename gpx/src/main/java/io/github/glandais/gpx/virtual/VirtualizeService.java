@@ -8,8 +8,8 @@ import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.data.values.converter.Converters;
 import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
-import io.github.glandais.gpx.virtual.power.cyclist.GradeSpeedService;
-import io.github.glandais.gpx.virtual.power.cyclist.GradeSpeeds;
+import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeedService;
+import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeeds;
 import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,14 +27,14 @@ public class VirtualizeService {
 
     private final PowerComputer powerComputer;
 
-    private final GradeSpeedService gradeSpeedService;
+    private final OptimalSpeedService optimalSpeedService;
 
     private final SmoothService smoothService;
 
     public void virtualizeTrack(Course course) {
 
-        GradeSpeeds gradeSpeeds = new GradeSpeeds(gradeSpeedService, course);
-        course.setGradeSpeeds(gradeSpeeds);
+        OptimalSpeeds optimalSpeeds = new OptimalSpeeds(optimalSpeedService, course);
+        course.setOptimalSpeeds(optimalSpeeds);
 
         double equivalentMass = powerComputer.getEquivalentMass(course);
 

@@ -53,6 +53,7 @@ const AppState = {
             },
             // Step 2 - Power Curve
             powerCurveData : [],
+            chartDatasets: ['user_power', 'power', 'ele', 'speed'],
             virtualizationResult: null,
             // UI State
             isLoading : false,
@@ -125,6 +126,7 @@ const StateManager = {
     
     // Set error state
     setError(error) {
+        console.warn(error);
         this.setState({ error });
     },
     
