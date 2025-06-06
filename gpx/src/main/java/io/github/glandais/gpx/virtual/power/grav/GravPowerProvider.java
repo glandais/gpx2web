@@ -1,6 +1,7 @@
 package io.github.glandais.gpx.virtual.power.grav;
 
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.power.PowerProvider;
@@ -22,6 +23,8 @@ public class GravPowerProvider implements PowerProvider {
         final double mKg = course.getCyclist().getMKg();
         double grade = location.getGrade();
         double coef = Math.sin(Math.atan(grade));
-        return -mKg * Constants.G * location.getSpeed() * coef;
+        double powerGravity = -mKg * Constants.G * location.getSpeed() * coef;
+        location.putDebug(PropertyKeys.p_gravity, powerGravity);
+        return powerGravity;
     }
 }

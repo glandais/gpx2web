@@ -99,6 +99,40 @@
         .hidden {
             display: none !important;
         }
+        
+        .dataset-item {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        
+        .dataset-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .dataset-item.selected {
+            background-color: #e7f3ff;
+            border-color: #0d6efd;
+        }
+        
+        .dataset-label {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dataset-detail {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .dataset-category {
+            max-height: 400px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +337,9 @@
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Power Curve & Virtual Ride Data</h5>
                                     <div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#datasetModal">
+                                            <i class="fas fa-eye"></i> Configure Data (<span id="selectedDatasetCount">4</span>)
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary" id="resetZoomBtn">
                                             Reset Zoom
                                         </button>
@@ -358,6 +395,75 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dataset Selection Modal -->
+    <div class="modal fade" id="datasetModal" tabindex="-1" aria-labelledby="datasetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="datasetModalLabel">
+                        <i class="fas fa-chart-line"></i> Chart Data Configuration
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Power Datasets -->
+                        <div class="col-md-4">
+                            <h6 class="text-warning mb-3">
+                                <i class="fas fa-bolt"></i> Power Data
+                            </h6>
+                            <div id="powerDatasets" class="dataset-category">
+                                <!-- Power datasets will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Speed Datasets -->
+                        <div class="col-md-4">
+                            <h6 class="text-success mb-3">
+                                <i class="fas fa-tachometer-alt"></i> Speed Data
+                            </h6>
+                            <div id="speedDatasets" class="dataset-category">
+                                <!-- Speed datasets will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Other Datasets -->
+                        <div class="col-md-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-mountain"></i> Other Data
+                            </h6>
+                            <div id="otherDatasets" class="dataset-category">
+                                <!-- Other datasets will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Quick Actions -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                                <i class="fas fa-check-double"></i> Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllBtn">
+                                <i class="fas fa-times"></i> Clear All
+                            </button>
+                        </div>
+                        <div>
+                            <span class="text-muted">
+                                <span id="modalSelectedCount">4</span> of 15 datasets selected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
