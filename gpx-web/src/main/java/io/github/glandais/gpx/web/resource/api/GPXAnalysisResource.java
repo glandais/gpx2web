@@ -4,6 +4,7 @@ import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.io.read.GPXFileReader;
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.web.model.GPXAnalysisResponse;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -25,6 +26,7 @@ public class GPXAnalysisResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response analyzeGpx(@RestForm("gpxFile") FileUpload gpxFile) {
+        Constants.DEBUG = true;
         try {
             GPX gpx = gpxFileReader.parseGPX(gpxFile.uploadedFile().toFile());
 
