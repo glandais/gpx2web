@@ -2,7 +2,6 @@ package io.github.glandais.gpx.web.resource.api;
 
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
-import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.io.read.GPXFileReader;
 import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.web.model.GPXAnalysisResponse;
@@ -39,8 +38,7 @@ public class GPXAnalysisResource {
             }
 
             GPXPath gpxPath = gpx.paths().get(0);
-            GPXAnalysisResponse analysis =
-                    new GPXAnalysisResponse(gpxPath.getDist(), gpx.name());
+            GPXAnalysisResponse analysis = new GPXAnalysisResponse(gpxPath.getDist(), gpx.name());
 
             return Response.ok(analysis).build();
 

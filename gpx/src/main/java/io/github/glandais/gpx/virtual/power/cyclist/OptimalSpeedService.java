@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Singleton
 @Slf4j
-public class GradeSpeedService {
+public class OptimalSpeedService {
 
     final WheelBearingsPowerProvider wheelBearingsPowerProvider;
 
@@ -27,9 +27,10 @@ public class GradeSpeedService {
 
     final GravPowerProvider gravPowerProvider;
 
-    public double getSpeed(Course course, double grade, double power) {
+    public double getSpeed(Course course, double grade, double power, double bearing) {
         Point p = new Point();
         p.setGrade(grade);
+        p.setBearing(bearing);
         return getSpeed(p, course, power, 0.1, 30);
     }
 
