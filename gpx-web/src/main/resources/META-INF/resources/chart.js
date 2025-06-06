@@ -354,33 +354,81 @@ function populateDatasetModal() {
     speedContainer.innerHTML = '';
     otherContainer.innerHTML = '';
     
+    // Interest labels mapping
+    const interestLabels = {
+        [datasetInterest.mustSee]: 'Must See',
+        [datasetInterest.insights]: 'Insights',
+        [datasetInterest.computing]: 'Computing',
+        [datasetInterest.debug]: 'Debug'
+    };
+    
+    // Group datasets by axis and interest
+    const groupedDatasets = {
+        power: {},
+        speed: {},
+        other: {}
+    };
+    
     Object.entries(availableData).forEach(([key, dataset]) => {
-        const isSelected = AppState.chartDatasets.includes(key);
+        const axisGroup = dataset.axis === 'power' ? 'power' : 
+                         dataset.axis === 'speed' ? 'speed' : 'other';
         
-        const datasetItem = document.createElement('div');
-        datasetItem.className = `dataset-item ${isSelected ? 'selected' : ''}`;
-        datasetItem.style.cursor = 'pointer';
-        datasetItem.dataset.key = key;
-        
-        datasetItem.innerHTML = `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="dataset_${key}" ${isSelected ? 'checked' : ''}>
-                <label class="form-check-label w-100" for="dataset_${key}">
-                    <div class="dataset-label">${dataset.label}</div>
-                    <div class="dataset-detail">${dataset.detail}</div>
-                </label>
-            </div>
-        `;
-        
-        // Add to appropriate container
-        if (dataset.axis === 'power') {
-            powerContainer.appendChild(datasetItem);
-        } else if (dataset.axis === 'speed') {
-            speedContainer.appendChild(datasetItem);
-        } else {
-            otherContainer.appendChild(datasetItem);
+        const interest = dataset.interest;
+        if (!groupedDatasets[axisGroup][interest]) {
+            groupedDatasets[axisGroup][interest] = [];
         }
+        groupedDatasets[axisGroup][interest].push([key, dataset]);
     });
+    
+    // Function to create dataset items for a container
+    function populateContainer(container, datasets) {
+        // Sort interests by priority (mustSee first, debug last)
+        const sortedInterests = Object.keys(datasets).sort((a, b) => parseInt(a) - parseInt(b));
+        
+        sortedInterests.forEach(interest => {
+            if (datasets[interest] && datasets[interest].length > 0) {
+                // Create interest group header
+                const interestHeader = document.createElement('div');
+                interestHeader.className = 'interest-group-header mb-2';
+                interestHeader.innerHTML = `<small class="text-muted fw-bold">${interestLabels[interest]}</small>`;
+                container.appendChild(interestHeader);
+                
+                // Add datasets for this interest
+                datasets[interest].forEach(([key, dataset]) => {
+                    const isSelected = AppState.chartDatasets.includes(key);
+                    
+                    const datasetItem = document.createElement('div');
+                    datasetItem.className = `dataset-item ${isSelected ? 'selected' : ''}`;
+                    datasetItem.style.cursor = 'pointer';
+                    datasetItem.dataset.key = key;
+                    
+                    datasetItem.innerHTML = `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="dataset_${key}" ${isSelected ? 'checked' : ''}>
+                            <label class="form-check-label w-100" for="dataset_${key}">
+                                <div class="dataset-label">${dataset.label}</div>
+                                <div class="dataset-detail">${dataset.detail}</div>
+                            </label>
+                        </div>
+                    `;
+                    
+                    container.appendChild(datasetItem);
+                });
+                
+                // Add spacing after each interest group
+                if (interest !== sortedInterests[sortedInterests.length - 1]) {
+                    const spacer = document.createElement('div');
+                    spacer.className = 'mb-2';
+                    container.appendChild(spacer);
+                }
+            }
+        });
+    }
+    
+    // Populate each container
+    populateContainer(powerContainer, groupedDatasets.power);
+    populateContainer(speedContainer, groupedDatasets.speed);
+    populateContainer(otherContainer, groupedDatasets.other);
 }
 
 function setupDatasetModalHandlers() {
