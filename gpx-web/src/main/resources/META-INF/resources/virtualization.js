@@ -2,8 +2,10 @@
 var virtualizationTimeout;
 
 function initVirtualization() {
-    const generateBtn = document.getElementById('generateVirtualActivityBtn');
-    generateBtn.addEventListener('click', generateVirtualActivity);
+    const generateBtn = document.getElementById('downloadGpxBtn');
+    generateBtn.addEventListener('click', downloadGpx);
+    const generateJsonBtn = document.getElementById('downloadJsonBtn');
+    generateJsonBtn.addEventListener('click', downloadJson);
     document.getElementById('addPointBtn').addEventListener('click', function() {
         const powerCurveData = AppState.powerCurveData;
         const minDistance = powerCurveData[powerCurveData.length - 2].distanceKm;
@@ -184,8 +186,15 @@ StateManager.addListener(function (keys) {
     }
 });
 
+async function downloadGpx(callback) {
+    generateVirtualActivity((result) => downloadGpxFile(result.gpxContent));
+}
 
-async function generateVirtualActivity() {
+async function downloadJson() {
+    generateVirtualActivity((result) => downloadJsonFile(result.jsonData));
+}
+
+async function generateVirtualActivity(callback) {
     if (AppState.powerCurveData.length < 2) {
         alert('Power curve must have at least 2 points');
         return;
@@ -196,7 +205,7 @@ async function generateVirtualActivity() {
     await processVirtualization(AppState.powerCurveData,
         (result) => {
             StateManager.setLoading(false);
-            downloadGpxFile(result.gpxContent);
+            callback(result);
         },
         (error) => {
             StateManager.setLoading(false);

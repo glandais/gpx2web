@@ -55,6 +55,8 @@
             border-left: 4px solid #28a745;
             padding: 1rem;
             margin-bottom: 1.5rem;
+            z-index: 1020;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .file-upload-area {
@@ -179,7 +181,7 @@
                     <h1 class="mb-4">Cyclist & Bike Parameters</h1>
 
                     <!-- GPX Analysis Info -->
-                    <div class="analysis-info">
+                    <div class="analysis-info sticky-top">
                         <h6 class="mb-2">✓ Route Analysis</h6>
                         <div class="row">
                             <div class="col-md-4">
@@ -400,9 +402,14 @@
                             <button type="button" class="btn btn-success" onclick="StateManager.restart()">
                                 <i class="fas fa-plus"></i> Start New Activity
                             </button>
-                            <button type="button" class="btn btn-primary" id="generateVirtualActivityBtn">
-                                Download Virtual Activity <i class="fas fa-arrow-right"></i>
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-primary me-2" id="downloadJsonBtn">
+                                    Download JSON
+                                </button>
+                                <button type="button" class="btn btn-primary" id="downloadGpxBtn">
+                                    Download GPX
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
