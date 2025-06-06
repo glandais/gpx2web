@@ -34,8 +34,8 @@ const AppState = {
                 startTime : new Date(),
                 // cyclist
                 weightKg: 80,
-                powerWatts: 250,
-                harmonics: false,
+                powerWatts: 250, //not used
+                harmonics: true,
                 maxBrakeG: 0.6,
                 dragCoefficient: 0.7,
                 frontalAreaM2: 0.5,
