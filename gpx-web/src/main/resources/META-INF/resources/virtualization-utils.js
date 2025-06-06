@@ -7,26 +7,18 @@
  * @returns {Promise} Promise that resolves with the virtualization result
  */
 async function callVirtualizationAPI(powerCurveData, isBackground = false) {
-    // Get stored data
-    const gpxFileData = sessionStorage.getItem('gpxFileData');
-    const parametersData = sessionStorage.getItem('parametersData');
+    const { gpxFileData, parametersData } = AppState;
     
     if (!gpxFileData || !parametersData) {
         throw new Error('Missing required data. Please start over.');
     }
     
-    // Convert data URL back to file
-    const response = await fetch(gpxFileData);
-    const blob = await response.blob();
-    const fileInfo = JSON.parse(sessionStorage.getItem('selectedGpxFile'));
-    const file = new File([blob], fileInfo.name, { type: 'application/gpx+xml' });
-    
     // Prepare form data
     const formData = new FormData();
-    formData.append('gpxFile', file);
+    formData.append('gpxFile', gpxFileData);
     
-    // Prepare parameters object
-    const parameters = JSON.parse(parametersData);
+    // Use parameters directly from AppState
+    const parameters = parametersData;
     
     const requestData = {
         startTime: parameters.startTime,
@@ -82,14 +74,15 @@ async function processVirtualization(powerCurveData) {
         
         const result = await callVirtualizationAPI(powerCurveData);
         
-        // Store results and redirect
-        sessionStorage.setItem('virtualizationData', result.jsonData);
-        sessionStorage.setItem('gpxContent', result.gpxContent);
+        StateManager.setState({
+            virtualizationData: result.jsonData,
+            gpxContent: result.gpxContent
+        });
 
         hideVirtualizationProgress();
         
-        // Redirect to results page
-        window.location.href = '/results';
+        // Navigate to results step instead of redirecting
+        StateManager.nextStep();
         
     } catch (error) {
         console.error('Error during virtualization:', error);
