@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPX Virtual Cyclist - {title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .step-container {
+            display: none;
+            min-height: 600px;
+        }
+        
+        .step-container.active {
+            display: block;
+        }
+        
+        .power-curve-container {
+            height: 400px;
+            position: relative;
+        }
+        
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .editable-cell {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            width: 100%;
+        }
+        
+        .editable-cell:focus {
+            outline: none;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .btn-add-point {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        
+        .btn-remove-point {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .progress-container {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+        
+        .analysis-info {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-area:hover {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        
+        .file-upload-area.dragover {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Progress Indicator -->
+                <div class="progress-container">
+                    <h5 class="mb-2">GPX Virtual Cyclist</h5>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block progress-text">Upload GPX</small>
+                </div>
+
+                <!-- Step 0: File Upload -->
+                <div id="step-upload" class="step-container">
+                    <h1 class="mb-4">Upload GPX File</h1>
+                    
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <h4>Drop your GPX file here</h4>
+                        <p class="text-muted">or click to browse files</p>
+                        <input type="file" id="gpxFileInput" accept=".gpx" class="d-none">
+                        <button type="button" class="btn btn-primary" id="fileSelectBtn">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                    
+                    <div id="selectedFileInfo" class="mt-3 hidden">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-file-alt"></i> Selected File</h6>
+                            <p class="mb-0" id="selectedFileName"></p>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="analyzeBtn">
+                            Analyze GPX File <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 1: Analysis -->
+                <div id="step-analysis" class="step-container">
+                    <h1 class="mb-4">Route Analysis</h1>
+
+                    <div class="row mt-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="StateManager.prevStep()">
+                                <i class="fas fa-arrow-left"></i> Back to Upload
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="StateManager.nextStep()">
+                                Set Parameters <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Parameters -->
+                <div id="step-parameters" class="step-container">
+                    <h1 class="mb-4">Cyclist & Bike Parameters</h1>
+
+                    <div class="analysis-info">
+                        <h6 class="mb-2">✓ Analysis Complete</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Distance:</strong> <span id="analysis-distance">-</span> km
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Points:</strong> <span id="analysis-points">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="parametersForm">
+
+                        <!-- Start Time -->
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="fas fa-clock"></i> Start Time</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="startTime" class="form-label">Start Time</label>
+                                        <input type="datetime-local" class="form-control" id="startTime">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cyclist Parameters -->
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="fas fa-user"></i> Cyclist</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="weightKg" class="form-label">Weight (kg)</label>
+                                        <input type="number" class="form-control" id="weightKg" value="70" min="40" max="150">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="harmonics" class="form-label">Harmonics</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="harmonics" checked>
+                                            <label class="form-check-label" for="harmonics">
+                                                Enable harmonics
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="maxBrakeG" class="form-label">Max Brake G</label>
+                                        <input type="number" class="form-control" id="maxBrakeG" value="0.8" min="0.1" max="2" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="dragCoefficient" class="form-label">Drag Coefficient</label>
+                                        <input type="number" class="form-control" id="dragCoefficient" value="0.3" min="0.1" max="1" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="frontalAreaM2" class="form-label">Frontal Area (m²)</label>
+                                        <input type="number" class="form-control" id="frontalAreaM2" value="0.4" min="0.2" max="0.8" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="maxAngleDeg" class="form-label">Max Angle (°)</label>
+                                        <input type="number" class="form-control" id="maxAngleDeg" value="45" min="10" max="90">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="maxSpeedKmH" class="form-label">Max Speed (km/h)</label>
+                                        <input type="number" class="form-control" id="maxSpeedKmH" value="80" min="20" max="120">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bike Parameters -->
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="fas fa-bicycle"></i> Bike</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="rollingResistance" class="form-label">Rolling Resistance</label>
+                                        <input type="number" class="form-control" id="rollingResistance" value="0.005" min="0.001" max="0.02" step="0.001">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="efficiency" class="form-label">Efficiency</label>
+                                        <input type="number" class="form-control" id="efficiency" value="0.95" min="0.8" max="1" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="frontWheelInertia" class="form-label">Front Wheel Inertia</label>
+                                        <input type="number" class="form-control" id="frontWheelInertia" value="0.1" min="0.05" max="0.3" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="rearWheelInertia" class="form-label">Rear Wheel Inertia</label>
+                                        <input type="number" class="form-control" id="rearWheelInertia" value="0.15" min="0.05" max="0.3" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="wheelRadiusM" class="form-label">Wheel Radius (m)</label>
+                                        <input type="number" class="form-control" id="wheelRadiusM" value="0.33" min="0.25" max="0.4" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wind Parameters -->
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="fas fa-wind"></i> Wind</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="windSpeedMs" class="form-label">Wind Speed (m/s)</label>
+                                        <input type="number" class="form-control" id="windSpeedMs" value="0" min="0" max="30" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="windDirectionDeg" class="form-label">Wind Direction (°)</label>
+                                        <input type="number" class="form-control" id="windDirectionDeg" value="0" min="0" max="359">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="StateManager.prevStep()">
+                                <i class="fas fa-arrow-left"></i> Back to Analysis
+                            </button>
+                            <button type="button" class="btn btn-primary" id="saveParametersBtn">
+                                Define Power Curve <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Power Curve -->
+                <div id="step-powercurve" class="step-container">
+                    <h1 class="mb-4">Power Curve Configuration</h1>
+                    
+                    <!-- GPX Analysis Info -->
+                    <div class="analysis-info">
+                        <h6 class="mb-2">✓ Route Analysis</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Distance:</strong> <span id="totalDistance">-</span> km
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Points:</strong> <span id="totalPoints">-</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span id="virtualizationSummary" class="text-muted"><em>Modify power curve to see preview</em></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Power Curve Editor -->
+                    <div class="row">
+                        <!-- Unified Chart -->
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Power Curve & Virtual Ride Data</h5>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="resetZoomBtn">
+                                            Reset Zoom
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="power-curve-container">
+                                        <canvas id="dataChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <small class="text-muted">
+                                        <strong>Blue line:</strong> Your power curve (editable) | 
+                                        <strong>Green:</strong> Elevation | 
+                                        <strong>Orange:</strong> Speed | 
+                                        <strong>Red:</strong> Power output
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table Editor -->
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Power Points</h5>
+                                    <button type="button" class="btn btn-sm btn-add-point" id="addPointBtn">
+                                        + Add Point
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-container">
+                                        <table class="table table-sm mb-0">
+                                            <thead class="table-light sticky-top">
+                                                <tr>
+                                                    <th>Distance (km)</th>
+                                                    <th>Power (W)</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="powerPointsTable">
+                                                <!-- Power points will be dynamically added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="StateManager.prevStep()">
+                                <i class="fas fa-arrow-left"></i> Back to Parameters
+                            </button>
+                            <button type="button" class="btn btn-primary" id="generateVirtualActivityBtn">
+                                Generate Virtual Activity <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Results -->
+                <div id="step-results" class="step-container">
+                    <h1 class="mb-4">Virtual Activity Results</h1>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <h5><i class="fas fa-check-circle"></i> Virtual Activity Generated Successfully!</h5>
+                                <p class="mb-0">Your GPX file has been processed with your custom power curve.</p>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Download Results</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-primary btn-lg w-100 mb-3" id="downloadGpxBtn">
+                                                <i class="fas fa-download"></i> Download GPX File
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-secondary btn-lg w-100 mb-3" id="downloadJsonBtn">
+                                                <i class="fas fa-download"></i> Download JSON Data
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="StateManager.prevStep()">
+                                <i class="fas fa-arrow-left"></i> Back to Power Curve
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="StateManager.reset()">
+                                <i class="fas fa-plus"></i> Start New Activity
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="text-center text-white">
+            <div class="spinner-border mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h4 id="loadingText">Processing...</h4>
+            <p id="loadingSubtext">Please wait while we process your request.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/app-state.js"></script>
+    <script src="/virtualization-utils.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
