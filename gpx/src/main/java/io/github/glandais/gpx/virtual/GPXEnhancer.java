@@ -7,7 +7,6 @@ import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.srtm.GPXElevationFixer;
-import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.heartrate.HRSimulator;
 import io.github.glandais.gpx.virtual.maxspeed.MaxSpeedComputer;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
