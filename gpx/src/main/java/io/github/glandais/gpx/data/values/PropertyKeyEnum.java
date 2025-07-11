@@ -8,6 +8,7 @@ enum PropertyKeyEnum {
     elapsed,
     ele,
     grade,
+    heartRate,
     lat,
     lon,
     p_cyclist_current_speed,
@@ -28,6 +29,5 @@ enum PropertyKeyEnum {
     wind_bearing,
     wind_direction,
     wind_speed,
-
     virt_speed_current
 }

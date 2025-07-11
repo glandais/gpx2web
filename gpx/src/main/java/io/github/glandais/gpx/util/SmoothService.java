@@ -23,6 +23,11 @@ public class SmoothService {
         path.computeArrays();
     }
 
+    public void smoothHr(GPXPath path) {
+        smoothTime(path, PropertyKeys.heartRate, 10);
+        path.computeArrays();
+    }
+
     public void smoothAeroCoef(GPXPath path) {
         smoothDist(path, PropertyKeys.aeroCoef, 100);
         path.computeArrays();

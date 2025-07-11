@@ -25,6 +25,8 @@ public class PropertyKeys {
     public static final PropertyKey<Double, DoubleUnit> ele = getPropertyKey(PropertyKeyEnum.ele, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> grade =
             getPropertyKey(PropertyKeyEnum.grade, DoubleUnit.INSTANCE);
+    public static final PropertyKey<Double, DoubleUnit> heartRate =
+            getPropertyKey(PropertyKeyEnum.heartRate, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, AngleUnit> lat = getPropertyKey(PropertyKeyEnum.lat, AngleUnit.INSTANCE);
     public static final PropertyKey<Double, AngleUnit> lon = getPropertyKey(PropertyKeyEnum.lon, AngleUnit.INSTANCE);
     public static final PropertyKey<Double, SpeedUnit> p_cyclist_current_speed =
