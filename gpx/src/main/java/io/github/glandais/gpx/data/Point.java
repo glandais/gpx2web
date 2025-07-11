@@ -152,6 +152,14 @@ public class Point {
         return get(PropertyKeys.power);
     }
 
+    public void setHeartRate(Double value) {
+        put(PropertyKeys.heartRate, value);
+    }
+
+    public Double getHeartRate() {
+        return get(PropertyKeys.heartRate);
+    }
+
     public void setInstant(Instant start, Instant value) {
         put(PropertyKeys.time, value);
         if (start != null && value != null) {
