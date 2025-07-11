@@ -33,6 +33,7 @@
         <fit.version>21.176.0</fit.version>
         <timeshape.version>2025b.26</timeshape.version>
         <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+        <smile-core.version>3.1.1</smile-core.version>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +69,11 @@
                 <groupId>net.iakovlev</groupId>
                 <artifactId>timeshape</artifactId>
                 <version>${timeshape.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-core</artifactId>
+                <version>${smile-core.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

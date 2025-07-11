@@ -11,9 +11,11 @@ import lombok.Getter;
 public enum GPXField {
     cadence(PropertyKeys.cadence, "gpxtpx:cad", "cadence"),
 
+    heartRate(PropertyKeys.heartRate, "gpxtpx:hr", "hr", "heartrate"),
+
     power(PropertyKeys.power, "power"),
 
-    temperature(PropertyKeys.temperature, "gpxx:Temperature");
+    temperature(PropertyKeys.temperature, "gpxtpx:atemp", "gpxx:Temperature");
 
     @Getter
     private final PropertyKey<Double, ?> propertyKey;
