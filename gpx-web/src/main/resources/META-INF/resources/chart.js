@@ -33,6 +33,14 @@ const availableAxises = {
             min: 0,
             max: 1000
         }
+    },
+    heartRate: {
+        text: 'Heart rate (bpm)',
+        color: '#fd7e14',
+        defaultRange: {
+            min: 40,
+            max: 220
+        }
     }
 }
 
@@ -161,6 +169,12 @@ const availableData = {
         axis: 'power',
         label: 'Power',
         detail: 'Final power'
+    },
+    heartRate: {
+        interest: datasetInterest.mustSee,
+        axis: 'heartRate',
+        label: 'Heart rate',
+        detail: 'Heart rate'
     },
     radius: {
         interest: datasetInterest.computing,

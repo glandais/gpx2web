@@ -6,8 +6,6 @@ import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.io.read.GPXFileReader;
 import io.github.glandais.gpx.util.Constants;
-import io.github.glandais.gpx.util.SmoothService;
-import io.github.glandais.gpx.virtual.heartrate.HRSimulator;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderNone;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
