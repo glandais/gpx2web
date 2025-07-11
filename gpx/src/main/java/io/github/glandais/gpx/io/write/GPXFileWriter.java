@@ -146,12 +146,23 @@ public class GPXFileWriter implements FileExporter {
             if (extensions && !gpxData.isEmpty()) {
                 out.append("<extensions>");
                 gpxData.forEach((k, v) -> {
-                    if (v != null) {
+                    if (v != null && !k.startsWith("gpxtpx:")) {
                         out.append("<").append(k).append(">");
                         out.append(escape(v));
                         out.append("</").append(k).append(">");
                     }
                 });
+
+                out.append("<gpxtpx:TrackPointExtension>");
+                gpxData.forEach((k, v) -> {
+                    if (v != null && k.startsWith("gpxtpx:")) {
+                        out.append("<").append(k).append(">");
+                        out.append(escape(v));
+                        out.append("</").append(k).append(">");
+                    }
+                });
+                out.append("</gpxtpx:TrackPointExtension>");
+
                 out.append("</extensions>");
             }
             out.append("</trkpt>\n");
