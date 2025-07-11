@@ -2,7 +2,6 @@ package io.github.glandais.gpx.virtual.heartrate;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.util.SmoothService;
 import jakarta.inject.Singleton;
 import java.io.FileOutputStream;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import smile.data.DataFrame;
 import smile.data.formula.Formula;
