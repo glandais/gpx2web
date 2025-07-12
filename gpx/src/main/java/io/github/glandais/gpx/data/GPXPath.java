@@ -183,16 +183,18 @@ public class GPXPath {
      * @return Weighted average value
      */
     public double getAverage(final double from, final double to, PropertyKey<Double, DoubleUnit> property) {
-        if (points.isEmpty() || from == to) {
+        if (points.isEmpty()) {
             return 0.0;
         }
-        if (from >= to) {
+        if (from > to) {
             return getAverage(to, from, property);
         }
-
         // Create time index on demand for fast lookups
         if (timeIndex == null) {
             timeIndex = new FastTimeIndex(this);
+        }
+        if (from == to) {
+            return interpolatePropertyOptimized(from, property);
         }
 
         // Use trapezoidal rule for accurate integration
