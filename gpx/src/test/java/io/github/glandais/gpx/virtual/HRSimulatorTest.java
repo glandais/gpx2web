@@ -24,11 +24,14 @@ class HRSimulatorTest {
 
         List<GPXPath> hrPaths = new ArrayList<>();
         for (int i = 1; i <= 7; i++) {
-            GPX gpxHr = gpxFileReader.parseGPX(GPXEnhancerTest.class.getResourceAsStream("/hr/hr" + i + ".gpx"));
-            GPXPath gpxPathHr = gpxHr.paths().get(0);
-            hrPaths.add(gpxPathHr);
+            hrPaths.add(getGpxPath(gpxFileReader, "/hr/hr" + i + ".gpx"));
         }
         new HRSimulator(new SmoothService()).train(hrPaths);
+    }
+
+    private static GPXPath getGpxPath(GPXFileReader gpxFileReader, String fileName) throws Exception {
+        GPX gpxHr = gpxFileReader.parseGPX(GPXEnhancerTest.class.getResourceAsStream(fileName));
+        return gpxHr.paths().get(0);
     }
 
     @Test
@@ -36,8 +39,8 @@ class HRSimulatorTest {
     void test() {
         GPXFileReader gpxFileReader = new GPXFileReader();
         for (int i = 1; i <= 7; i++) {
-            GPX gpxHr = gpxFileReader.parseGPX(GPXEnhancerTest.class.getResourceAsStream("/hr/hr" + i + ".gpx"));
-            GPXPath path = gpxHr.paths().get(0);
+            String fileName = "/hr/hr" + i + ".gpx";
+            GPXPath path = getGpxPath(gpxFileReader, fileName);
             Context.INSTANCE.getGpxFileWriter().writeGPXPath(path, new File("target/hr-orig-" + i + ".gpx"), true);
             for (Point point : path.getPoints()) {
                 point.setHeartRate(null);
