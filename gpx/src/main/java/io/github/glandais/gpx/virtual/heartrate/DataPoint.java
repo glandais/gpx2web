@@ -17,12 +17,12 @@ public class DataPoint implements Tuple {
             new Field("hr5", PropertyKeys.heartRate, 5.0),
             new Field("hr10", PropertyKeys.heartRate, 10.0),
             new Field("hr30", PropertyKeys.heartRate, 30.0),
-            new Field("hr60", PropertyKeys.heartRate, 60.0),
+//            new Field("hr60", PropertyKeys.heartRate, 60.0),
 
             new Field("p5", PropertyKeys.power, 0.0, 5.0),
             new Field("p10", PropertyKeys.power, 0.0, 10.0),
-            new Field("p20", PropertyKeys.power, 0.0, 20.0),
-            new Field("p30", PropertyKeys.power, 0.0, 30.0),
+//            new Field("p20", PropertyKeys.power, 0.0, 20.0),
+//            new Field("p30", PropertyKeys.power, 0.0, 30.0),
             new Field("p60", PropertyKeys.power, 0.0, 60.0)
 
     );
