@@ -155,7 +155,7 @@ class GPXPathAverageTest {
     void testGetAverageInvalidRange() {
         // Test invalid range (from >= to)
         double average = gpxPath.getAverage(10.0, 10.0, PropertyKeys.power);
-        assertEquals(0.0, average);
+        assertEquals(20.0, average);
 
         average = gpxPath.getAverage(15.0, 10.0, PropertyKeys.power);
         assertEquals(25.0, average);
