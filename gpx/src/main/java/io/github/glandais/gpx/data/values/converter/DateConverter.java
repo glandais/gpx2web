@@ -8,11 +8,11 @@ public class DateConverter implements Converter<Instant, InstantUnit, Date> {
 
     @Override
     public Date convertFromStorage(Instant storageValue) {
-        return Date.from(storageValue);
+        return storageValue == null ? null : Date.from(storageValue);
     }
 
     @Override
     public Instant convertToStorage(Date value) {
-        return value.toInstant();
+        return value == null ? null : value.toInstant();
     }
 }

@@ -187,4 +187,28 @@ class GPXPathAverageTest {
         double average = emptyPath.getAverage(0.0, 10.0, PropertyKeys.power);
         assertEquals(0.0, average);
     }
+
+    @Test
+    void testSize() {
+        // Test empty path
+        GPXPath emptyPath = new GPXPath("Empty", GPXPathType.TRACK);
+        emptyPath.setPoints(new ArrayList<>());
+        assertEquals(0, emptyPath.size());
+
+        // Test path with points
+        assertEquals(3, gpxPath.size());
+
+        // Test adding more points
+        List<Point> points = new ArrayList<>(gpxPath.getPoints());
+        Point p4 = new Point();
+        p4.setInstant(baseTime, baseTime.plus(Duration.ofSeconds(20)));
+        p4.setPower(40.0);
+        p4.setLat(0.0);
+        p4.setLon(0.0);
+        p4.setEle(130.0);
+        points.add(p4);
+
+        gpxPath.setPoints(points);
+        assertEquals(4, gpxPath.size());
+    }
 }

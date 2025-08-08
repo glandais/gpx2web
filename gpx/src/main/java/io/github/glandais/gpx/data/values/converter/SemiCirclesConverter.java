@@ -10,11 +10,11 @@ public class SemiCirclesConverter implements Converter<Double, AngleUnit, Intege
 
     @Override
     public Integer convertFromStorage(Double storageValue) {
-        return toSemiCircles(storageValue);
+        return storageValue == null ? null : toSemiCircles(storageValue);
     }
 
     @Override
     public Double convertToStorage(Integer value) {
-        return value * Math.PI / 2147483648.0;
+        return value == null ? null : value * Math.PI / 2147483648.0;
     }
 }
