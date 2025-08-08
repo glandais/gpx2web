@@ -2,7 +2,7 @@ package io.github.glandais.gpx.filter;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.util.Simplifier;
 import io.github.glandais.gpx.util.Vector;
 import java.util.List;
@@ -39,11 +39,11 @@ public class GPXFilter {
         double lon = p.getLon();
         // fake z : increase 3x
         double ele = 3 * p.getEle();
-        double n = Constants.SEMI_MAJOR_AXIS
-                / Math.sqrt(1 - Constants.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
+        double n = GpxConstants.Physical.SEMI_MAJOR_AXIS
+                / Math.sqrt(1 - GpxConstants.Physical.FIRST_ECCENTRICITY_SQUARED * Math.sin(lat) * Math.sin(lat));
         double x = (n + ele) * Math.cos(lat) * Math.cos(lon); // ECEF x
         double y = (n + ele) * Math.cos(lat) * Math.sin(lon); // ECEF y
-        double z = (n * (1 - Constants.FIRST_ECCENTRICITY_SQUARED) + ele) * Math.sin(lat); // ECEF z
+        double z = (n * (1 - GpxConstants.Physical.FIRST_ECCENTRICITY_SQUARED) + ele) * Math.sin(lat); // ECEF z
         return new Vector(x, y, z); // Return x, y, z in ECEF
     }
 }

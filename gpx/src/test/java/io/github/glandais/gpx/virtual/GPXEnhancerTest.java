@@ -5,7 +5,7 @@ import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.io.read.GPXFileReader;
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderNone;
 import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
@@ -19,7 +19,7 @@ class GPXEnhancerTest {
     @SneakyThrows
     @Test
     public void virtualizeTest() {
-        Constants.DEBUG = true;
+        GpxConstants.DEBUG = true;
 
         String file = "/ventoux.gpx";
         String output = "output";
@@ -51,6 +51,6 @@ class GPXEnhancerTest {
         Context.INSTANCE.getJsonFileWriter().writeGPXPath(gpxPath, new File(outputFolder, output + ".json"));
         Context.INSTANCE.getFitFileWriter().writeGPXPath(gpxPath, new File("target/" + output + ".fit"));
 
-        Constants.DEBUG = false;
+        GpxConstants.DEBUG = false;
     }
 }

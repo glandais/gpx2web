@@ -2,7 +2,7 @@ package io.github.glandais.gpx.virtual.power;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.virtual.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.virtual.Course;
 import jakarta.inject.Singleton;
 import java.time.Duration;
@@ -33,13 +33,13 @@ public class PowerComputer {
         // p_sum = 0.5 * (mKg + ((I1 + I2) / (r^2))) * (new_speed * new_speed - speed * speed) / DT
         // (new_speed * new_speed - speed * speed) = DT * p_sum / (0.5 * (mKg + ((I1 + I2) / (r^2))))
         double newSpeed = Math.max(
-                Math.sqrt(dt * pSum / (0.5 * equivalentMass) + currentSpeed * currentSpeed), Constants.MINIMAL_SPEED);
+                Math.sqrt(dt * pSum / (0.5 * equivalentMass) + currentSpeed * currentSpeed), GpxConstants.Virtual.MINIMAL_SPEED);
         return (newSpeed + currentSpeed) * dt / 2;
     }
 
     public double getDt(double pSum, double equivalentMass, double currentSpeed, double dx) {
         double dt1 = -0.1;
-        double dt2 = Constants.DT + 0.1;
+        double dt2 = GpxConstants.Virtual.DT + 0.1;
 
         while (dt2 - dt1 >= dx / 10_000_000.0) {
             double dtMiddle = (dt1 + dt2) / 2;

@@ -49,7 +49,7 @@ final double crr = course.getCyclist().getCrr();
 final double grade = location.getGrade();
 
 double coef = Math.cos(Math.atan(grade));
-double p_rr = -coef * mKg * Constants.G * status.getSpeed() * crr;
+double p_rr = -coef * mKg * GpxConstants.Physical.G * status.getSpeed() * crr;
 ```
 
 ## Gravity
@@ -58,7 +58,7 @@ double p_rr = -coef * mKg * Constants.G * status.getSpeed() * crr;
         final double mKg = course.getCyclist().getMKg();
 double grade = location.getGrade();
 double coef = Math.sin(Math.atan(grade));
-        return-mKg *Constants.G *status.
+        return-mKg *GpxConstants.Physical.G *status.
 
 getSpeed() *coef;
 ```
@@ -111,7 +111,7 @@ Uses skadi data, available through AWS : https://registry.opendata.aws/terrain-t
 
 - given 3 points, compute the curvature (circle going through the three points)
 - https://en.wikipedia.org/wiki/Bicycle_and_motorcycle_dynamics#Leaning : ![img.png](img/leaning.png)
-    - `vmax = Math.sqrt(Constants.G * radius * cyclist.getTanMaxAngle());`
+    - `vmax = Math.sqrt(GpxConstants.Physical.G * radius * cyclist.getTanMaxAngle());`
 - for each point, minimum of this vmax and maximum cyclist speed
 
 ### Second pass (backward) :

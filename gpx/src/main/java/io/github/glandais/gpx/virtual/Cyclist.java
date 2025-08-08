@@ -1,6 +1,6 @@
 package io.github.glandais.gpx.virtual;
 
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -26,7 +26,7 @@ public class Cyclist {
     }
 
     public double getMaxBrakeMS2() {
-        return maxBrakeG * Constants.G;
+        return maxBrakeG * GpxConstants.Physical.G;
     }
 
     public double getMaxSpeedMs() {

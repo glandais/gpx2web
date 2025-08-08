@@ -6,7 +6,7 @@ import io.github.glandais.gpx.data.values.converter.Converter;
 import io.github.glandais.gpx.data.values.converter.Converters;
 import io.github.glandais.gpx.data.values.unit.Unit;
 import io.github.glandais.gpx.io.GPXField;
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.util.MagicPower2MapSpace;
 import io.github.glandais.gpx.util.Vector;
 import java.time.Duration;
@@ -90,7 +90,7 @@ public class Point {
     }
 
     public <S, U extends Unit<S>> void putDebug(PropertyKey<S, U> key, S value) {
-        if (Constants.DEBUG) {
+        if (GpxConstants.DEBUG) {
             this.put(key, value);
         }
     }
@@ -234,7 +234,7 @@ public class Point {
         double a = Math.sin(lat) * Math.sin(lat2) + Math.cos(lat) * Math.cos(lat2) * Math.cos(lon - lon2);
         double alpha = Math.acos(Math.max(-1.0, Math.min(1.0, a)));
         // WGS-84 semi-major axis
-        return alpha * Constants.SEMI_MAJOR_AXIS;
+        return alpha * GpxConstants.Physical.SEMI_MAJOR_AXIS;
     }
 
     public Point copy() {

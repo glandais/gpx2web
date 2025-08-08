@@ -2,7 +2,7 @@ package io.github.glandais.gpx.virtual.power.rolling;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.power.PowerProvider;
 import io.github.glandais.gpx.virtual.power.PowerProviderId;
@@ -26,7 +26,7 @@ public class RollingResistancePowerProvider implements PowerProvider {
         final double grade = location.getGrade();
 
         double coef = Math.cos(Math.atan(grade));
-        double powerRollingResistance = -coef * mKg * Constants.G * location.getSpeed() * crr;
+        double powerRollingResistance = -coef * mKg * GpxConstants.Physical.G * location.getSpeed() * crr;
         location.putDebug(PropertyKeys.p_rolling_resistance, powerRollingResistance);
         return powerRollingResistance;
     }

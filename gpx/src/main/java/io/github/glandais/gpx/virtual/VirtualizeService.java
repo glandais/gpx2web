@@ -1,7 +1,8 @@
 package io.github.glandais.gpx.virtual;
 
-import static io.github.glandais.gpx.virtual.Constants.DT;
+import static io.github.glandais.gpx.util.GpxConstants.Virtual.DT;
 
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
@@ -52,7 +53,7 @@ public class VirtualizeService {
         Point current = input.get(0).copy();
         current.setDist(0);
         current.setInstant(start, now);
-        current.setSpeed(Constants.MINIMAL_SPEED);
+        current.setSpeed(GpxConstants.Virtual.MINIMAL_SPEED);
         newPoints.add(current);
 
         while (current.getDist() != gpxPath.getDist()) {

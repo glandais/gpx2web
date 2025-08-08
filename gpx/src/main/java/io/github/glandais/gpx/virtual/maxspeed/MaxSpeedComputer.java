@@ -2,7 +2,7 @@ package io.github.glandais.gpx.virtual.maxspeed;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.util.Constants;
+import io.github.glandais.gpx.util.GpxConstants;
 import io.github.glandais.gpx.util.Vector;
 import io.github.glandais.gpx.virtual.Course;
 import io.github.glandais.gpx.virtual.Cyclist;
@@ -77,7 +77,7 @@ public class MaxSpeedComputer {
         p.putDebug(PropertyKeys.radius, radius);
 
         // https://en.wikipedia.org/wiki/Bicycle_and_motorcycle_dynamics#Leaning
-        double vmax = Math.sqrt(Constants.G * radius * cyclist.getTanMaxAngle());
+        double vmax = Math.sqrt(GpxConstants.Physical.G * radius * cyclist.getTanMaxAngle());
         p.setSpeedMax(Math.min(cyclist.getMaxSpeedMs(), vmax));
     }
 
@@ -130,8 +130,8 @@ public class MaxSpeedComputer {
     private Vector transform(Point point, Point pRef) {
         double lon = (point.getLon() - pRef.getLon());
         double lat = (point.getLat() - pRef.getLat());
-        double x = (lon / (2 * Math.PI)) * Constants.CIRC * Math.cos(pRef.getLat());
-        double y = (lat / (2 * Math.PI)) * Constants.CIRC;
+        double x = (lon / (2 * Math.PI)) * GpxConstants.Physical.CIRC * Math.cos(pRef.getLat());
+        double y = (lat / (2 * Math.PI)) * GpxConstants.Physical.CIRC;
         return new Vector(x, y, 0);
     }
 }
