@@ -2,7 +2,7 @@ package io.github.glandais.gpx.virtual.power;
 
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
-import io.github.glandais.gpx.virtual.Constants;
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.virtual.Course;
 import jakarta.inject.Singleton;
 import java.time.Duration;

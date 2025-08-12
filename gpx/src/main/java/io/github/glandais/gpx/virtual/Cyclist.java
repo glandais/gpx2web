@@ -18,7 +18,16 @@ public class Cyclist {
     private double maxSpeedKmH;
 
     public static Cyclist getDefault() {
-        return new Cyclist(80, 280, false, 0.6, 0.7, 0.5, 35, 100);
+        return new Cyclist(
+            Constants.DEFAULT_CYCLIST_MASS_KG,
+            Constants.DEFAULT_CYCLIST_POWER_W,
+            false, // harmonics - not a physical parameter
+            Constants.DEFAULT_MAX_BRAKE_G,
+            Constants.DEFAULT_DRAG_COEFFICIENT,
+            Constants.DEFAULT_FRONTAL_AREA,
+            Constants.DEFAULT_MAX_LEAN_ANGLE_DEG,
+            Constants.DEFAULT_MAX_SPEED_KMH
+        );
     }
 
     public double getTanMaxAngle() {

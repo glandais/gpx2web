@@ -1,6 +1,7 @@
 package io.github.glandais.gpx.virtual;
 
 import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProvider;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProvider;
 import io.github.glandais.gpx.virtual.power.cyclist.CyclistPowerProvider;
@@ -25,7 +26,7 @@ public class Course {
 
     protected final AeroProvider aeroProvider;
 
-    protected double rho = 1.225;
+    protected double rho = Constants.DEFAULT_AIR_DENSITY;
 
     protected OptimalSpeeds optimalSpeeds;
 }

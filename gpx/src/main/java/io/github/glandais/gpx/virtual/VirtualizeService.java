@@ -1,12 +1,12 @@
 package io.github.glandais.gpx.virtual;
 
-import static io.github.glandais.gpx.virtual.Constants.DT;
+import static io.github.glandais.gpx.util.Constants.DT;
 
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.data.values.converter.Converters;
-import io.github.glandais.gpx.util.SmoothService;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
 import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeedService;
 import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeeds;
@@ -28,8 +28,6 @@ public class VirtualizeService {
     private final PowerComputer powerComputer;
 
     private final OptimalSpeedService optimalSpeedService;
-
-    private final SmoothService smoothService;
 
     public void virtualizeTrack(Course course) {
 
