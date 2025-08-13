@@ -14,6 +14,7 @@ import io.github.glandais.gpx.srtm.GPXElevationFixer;
 import io.github.glandais.gpx.util.CacheFolderProvider;
 import io.github.glandais.gpx.virtual.GPXEnhancer;
 import io.github.glandais.gpx.virtual.StartTimeProvider;
+import io.github.glandais.gpx.virtual.heartrate.HRSimulator;
 import lombok.Getter;
 
 @Getter
@@ -33,6 +34,7 @@ public class Context {
     private final StartTimeProvider startTimeProvider;
     private final SRTMMapProducer srtmMapProducer;
     private final TileMapProducer tileMapProducer;
+    private final HRSimulator hrSimulator;
 
     Context() {
         EasyDI easyDI = new EasyDI();
@@ -49,5 +51,6 @@ public class Context {
         this.startTimeProvider = easyDI.getInstance(StartTimeProvider.class);
         this.srtmMapProducer = easyDI.getInstance(SRTMMapProducer.class);
         this.tileMapProducer = easyDI.getInstance(TileMapProducer.class);
+        this.hrSimulator = easyDI.getInstance(HRSimulator.class);
     }
 }

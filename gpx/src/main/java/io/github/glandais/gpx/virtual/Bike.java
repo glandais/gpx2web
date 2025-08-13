@@ -16,11 +16,10 @@ public class Bike {
 
     public static Bike getDefault() {
         return new Bike(
-            Constants.DEFAULT_CRR,
-            Constants.DEFAULT_INERTIA_FRONT,
-            Constants.DEFAULT_INERTIA_REAR,
-            Constants.DEFAULT_WHEEL_RADIUS,
-            Constants.DEFAULT_DRIVETRAIN_EFFICIENCY
-        );
+                Constants.DEFAULT_CRR,
+                Constants.DEFAULT_INERTIA_FRONT,
+                Constants.DEFAULT_INERTIA_REAR,
+                Constants.DEFAULT_WHEEL_RADIUS,
+                Constants.DEFAULT_DRIVETRAIN_EFFICIENCY);
     }
 }

@@ -2,11 +2,11 @@ package io.github.glandais.gpx.virtual;
 
 import static io.github.glandais.gpx.util.Constants.DT;
 
-import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.data.values.converter.Converters;
+import io.github.glandais.gpx.util.Constants;
 import io.github.glandais.gpx.virtual.power.PowerComputer;
 import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeedService;
 import io.github.glandais.gpx.virtual.power.cyclist.OptimalSpeeds;

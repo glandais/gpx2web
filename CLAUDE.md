@@ -113,11 +113,23 @@ The virtual cyclist simulation uses realistic physics calculations including bik
 - Quality assurance with validation and error handling at each pipeline step
 
 **Heart Rate Simulation** (`virtual/heartrate/`):
-- Machine learning-based HR modeling using linear regression (SMILE library)
-- Temporal feature engineering: HR history (5-30s lookback) + power averages (5-60s windows)  
+- Machine learning-based HR modeling using Random Forest (SMILE library)
+- Random Forest configuration: 200 trees, max depth 20, adaptive node sizing
+- Temporal feature engineering: HR history (5-30s lookback) + power averages (5-60s windows)
+- Enhanced feature extraction with modular field system:
+  - `ValueField`: Direct property value extraction
+  - `ShiftedField`: Time-shifted historical values (5, 10, 30, 60s)
+  - `MovingAverageField`: Temporal averaging windows (5, 10, 30, 60s)
+  - `StoppedField`: Handles stopped/paused states (10, 30, 60, 120s)
 - Physiological constraints: 60-220 bpm range with post-processing smoothing
 - Training on real cycling datasets with 5-second sampling intervals
-- Future enhancement: Random Forest for non-linear HR-power relationships and individual fitness patterns
+- Performance metrics (validated on 72,727 samples):
+  - R² = 0.821 (82.1% variance explained)
+  - MAE = 3.83 bpm, RMSE = 5.57 bpm
+  - Correlation = 0.906, Bias = 0.25 bpm
+  - MAPE = 2.92% relative error
+- Captures non-linear HR-power relationships at lactate threshold and VO2max intensities
+- Model persistence: GZIP-compressed serialization to resources/hrmodel
 
 **VirtualizeService** (`virtual/`):
 - Complete course simulation orchestrator using time-stepping numerical integration

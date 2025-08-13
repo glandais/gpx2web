@@ -19,15 +19,14 @@ public class Cyclist {
 
     public static Cyclist getDefault() {
         return new Cyclist(
-            Constants.DEFAULT_CYCLIST_MASS_KG,
-            Constants.DEFAULT_CYCLIST_POWER_W,
-            false, // harmonics - not a physical parameter
-            Constants.DEFAULT_MAX_BRAKE_G,
-            Constants.DEFAULT_DRAG_COEFFICIENT,
-            Constants.DEFAULT_FRONTAL_AREA,
-            Constants.DEFAULT_MAX_LEAN_ANGLE_DEG,
-            Constants.DEFAULT_MAX_SPEED_KMH
-        );
+                Constants.DEFAULT_CYCLIST_MASS_KG,
+                Constants.DEFAULT_CYCLIST_POWER_W,
+                false, // harmonics - not a physical parameter
+                Constants.DEFAULT_MAX_BRAKE_G,
+                Constants.DEFAULT_DRAG_COEFFICIENT,
+                Constants.DEFAULT_FRONTAL_AREA,
+                Constants.DEFAULT_MAX_LEAN_ANGLE_DEG,
+                Constants.DEFAULT_MAX_SPEED_KMH);
     }
 
     public double getTanMaxAngle() {
