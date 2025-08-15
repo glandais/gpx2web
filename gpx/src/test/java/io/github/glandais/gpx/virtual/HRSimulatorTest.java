@@ -27,6 +27,7 @@ class HRSimulatorTest {
         }
         HRSimulator hrSimulator = Context.INSTANCE.getHrSimulator();
         hrSimulator.train(hrPaths);
+        testWithStatistics();
     }
 
     private static GPXPath getGpxPath(GPXFileReader gpxFileReader, String fileName) throws Exception {

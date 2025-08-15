@@ -62,13 +62,12 @@ public class HRSimulator {
         this.randomForest = RandomForest.fit(
                 Formula.lhs("heartRate"),
                 DataFrame.of(dataPoints),
-                ntrees,
+                ntrees, // OK n_estimators
                 mtry,
-                maxDepth,
+                maxDepth, // OK max_depth
                 maxNodes,
                 nodeSize,
                 subsample);
-        System.out.println(randomForest);
 
         FileOutputStream fileOutputStream = new FileOutputStream("src/main/resources/hrmodel");
         GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
@@ -80,14 +79,11 @@ public class HRSimulator {
 
     public void simulateHeartRate(final GPXPath gpxPath) {
         List<Point> points = gpxPath.getPoints();
+        List<DataPoint> dataPoints = new ArrayList<>();
+        getDataPoints(dataPoints, gpxPath);
+        double[] predicted = randomForest.predict(DataFrame.of(dataPoints));
         for (int i = 0; i < points.size() - 1; i++) {
-            double t = points.get(i).getElapsedSeconds();
-            if (i == 0) {
-                points.get(i).setHeartRate(100.0);
-            }
-            DataPoint dataPoint = getDataPoint(gpxPath, t);
-            double hr = randomForest.predict(dataPoint);
-            points.get(i).setHeartRate(hr);
+            points.get(i).setHeartRate(predicted[i]);
         }
         smoothService.smoothHr(gpxPath);
     }
@@ -96,15 +92,7 @@ public class HRSimulator {
         if (sample.getPoints().isEmpty()) {
             return;
         }
-        double duration = sample.getElapsedSeconds()[sample.getPoints().size() - 1];
-        int n = (int) duration / 5;
-        for (int i = 0; i < n; i++) {
-            int t = i * 5;
-            dataPoints.add(getDataPoint(sample, t));
-        }
+        sample.getPoints().forEach(p -> dataPoints.add(new DataPoint(sample, p.getElapsedSeconds())));
     }
 
-    private DataPoint getDataPoint(GPXPath gpxPath, double t) {
-        return new DataPoint(gpxPath, t);
-    }
 }

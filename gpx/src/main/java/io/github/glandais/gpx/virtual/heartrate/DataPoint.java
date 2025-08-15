@@ -14,15 +14,20 @@ import smile.data.type.StructType;
 @Slf4j
 public class DataPoint implements Tuple {
 
-    private static final Stream<Field> singularFields = Stream.of(new ValueField(PropertyKeys.heartRate));
+    private static final Stream<Field> SINGULAR_FIELDS = Stream.of(
+            new ValueField(PropertyKeys.heartRate),
+            new ValueField(PropertyKeys.cadence),
+            new ValueField(PropertyKeys.power),
+            new ValueField(PropertyKeys.ele)
+            );
 
     public static final List<Field> FIELDS = Stream.of(
-                    singularFields,
-                    ShiftedField.shifted(PropertyKeys.heartRate, List.of(5.0, 10.0, 30.0, 60.0)),
-                    ShiftedField.shifted(PropertyKeys.power, List.of(5.0, 10.0, 30.0, 60.0)),
-                    StoppedField.stopped(List.of(10.0, 30.0, 60.0, 120.0)),
-                    MovingAverageField.movingAveraged(PropertyKeys.grade, List.of(5.0, 10.0, 30.0, 60.0)),
-                    MovingAverageField.movingAveraged(PropertyKeys.power, List.of(5.0, 10.0, 30.0, 60.0)))
+                    SINGULAR_FIELDS,
+                    MovingAverageField.movingAveraged(PropertyKeys.cadence, List.of(5.0, 10.0, 30.0, 60.0)),
+                    MovingAverageField.movingAveraged(PropertyKeys.power, List.of(5.0, 10.0, 30.0, 60.0)),
+                    ShiftedField.shifted(PropertyKeys.cadence, List.of(1.0, 5.0, 10.0, 15.0, 30.0)),
+                    ShiftedField.shifted(PropertyKeys.power, List.of(1.0, 5.0, 10.0, 15.0, 30.0))
+            )
             .flatMap(Function.identity())
             .toList();
 
