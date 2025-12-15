@@ -8,13 +8,30 @@
     <packaging>pom</packaging>
     <version>1.1.34-SNAPSHOT</version>
 
-    <distributionManagement>
-        <repository>
-            <id>repsy</id>
-            <name>gpx2web on Repsy</name>
-            <url>https://repo.repsy.io/mvn/glandais/gpx2web</url>
-        </repository>
-    </distributionManagement>
+    <name>gpx2web</name>
+    <description>Java GPX tools</description>
+    <url>https://github.com/glandais/gpx2web</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gabriel Landais</name>
+            <url>https://github.com/glandais</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>http://github.com/glandais/gpx2web</url>
+        <connection>scm:git:git://github.com/glandais/gpx2web.git</connection>
+        <developerConnection>scm:git:git@github.com:glandais/gpx2web.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <compiler-plugin.version>3.14.0</compiler-plugin.version>
@@ -204,6 +221,25 @@
                         </execution>
                     </executions>
                 </plugin>
+
+                <!-- Generate Javadoc JAR -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <doclint>none</doclint>
+                        <source>${java.version}</source>
+                    </configuration>
+                </plugin>
+
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
@@ -223,6 +259,42 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+
+                <!-- GPG Signing for Maven Central -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.8</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Prevent `gpg` from using pinentry programs -->
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Central Publishing Maven Plugin for Maven Central Portal -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.9.0</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <publishingServerId>central</publishingServerId>
+                        <tokenAuth>true</tokenAuth>
+                        <autoPublish>true</autoPublish>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -252,6 +324,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

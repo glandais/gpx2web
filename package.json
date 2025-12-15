@@ -1,0 +1,21 @@
+{
+  "name": "gpx2web",
+  "version": "0.0.0-development",
+  "description": "Java GPX tools",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:glandais/gpx2web.git"
+  },
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
+    "semantic-release": "^25.0.2"
+  }
+}

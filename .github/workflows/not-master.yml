@@ -3,7 +3,7 @@ name: not master
 on:
   push:
     branches-ignore:
-      - "master"
+      - "dev"
 
 jobs:
   build:
