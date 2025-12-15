@@ -42,7 +42,7 @@
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
 
-        <graphhopper-core.version>10.2</graphhopper-core.version>
+        <graphhopper-core.version>11.0</graphhopper-core.version>
         <jfreechart.version>1.5.6</jfreechart.version>
         <commons-io.version>2.20.0</commons-io.version>
         <lombok.version>1.18.42</lombok.version>
