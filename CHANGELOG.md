@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/glandais/gpx2web/compare/v1.2.0...v1.2.1) (2025-12-15)
+
+### Bug Fixes
+
+* release ([bbeb5d0](https://github.com/glandais/gpx2web/commit/bbeb5d078f96bd1ea64f4c211cb18d38f2ab009d))
+* release ([fa16db0](https://github.com/glandais/gpx2web/commit/fa16db0b38d0a4fff563242645f3c19ceeff86b3))
+
 ## [1.2.0](https://github.com/glandais/gpx2web/compare/v1.1.18...v1.2.0) (2025-12-15)
 
 ### Features
