@@ -1,0 +1,6 @@
+## [1.2.0](https://github.com/glandais/gpx2web/compare/v1.1.18...v1.2.0) (2025-12-15)
+
+### Features
+
+* release ([51ec96d](https://github.com/glandais/gpx2web/commit/51ec96d1d19b38c203f1e11eb24c4851b3fc66f7))
+* release ([37d9043](https://github.com/glandais/gpx2web/commit/37d9043c0ef470f61fdc7e95c9194a75780ae560))
