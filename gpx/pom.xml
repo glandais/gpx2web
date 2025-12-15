@@ -10,6 +10,31 @@
 
     <artifactId>gpx</artifactId>
 
+    <name>gpx2web - GPX module</name>
+    <description>Java GPX tools</description>
+    <url>https://github.com/glandais/gpx2web</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gabriel Landais</name>
+            <url>https://github.com/glandais</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>http://github.com/glandais/gpx2web</url>
+        <connection>scm:git:git://github.com/glandais/gpx2web.git</connection>
+        <developerConnection>scm:git:git@github.com:glandais/gpx2web.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>com.garmin</groupId>

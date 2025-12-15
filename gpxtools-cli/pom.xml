@@ -11,6 +11,31 @@
 
     <artifactId>gpxtools-cli</artifactId>
 
+    <name>gpx2web - CLI module</name>
+    <description>Java GPX tools</description>
+    <url>https://github.com/glandais/gpx2web</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gabriel Landais</name>
+            <url>https://github.com/glandais</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>http://github.com/glandais/gpx2web</url>
+        <connection>scm:git:git://github.com/glandais/gpx2web.git</connection>
+        <developerConnection>scm:git:git@github.com:glandais/gpx2web.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <quarkus.container-image.image>glandais/gpxtools-cli:latest</quarkus.container-image.image>
     </properties>
