@@ -34,22 +34,23 @@
     </scm>
 
     <properties>
-        <compiler-plugin.version>3.14.0</compiler-plugin.version>
+        <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.version>3.26.2</quarkus.platform.version>
+        <quarkus.platform.version>3.30.3</quarkus.platform.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
-        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
 
-        <graphhopper-core.version>10.2</graphhopper-core.version>
+        <graphhopper-core.version>11.0</graphhopper-core.version>
         <jfreechart.version>1.5.6</jfreechart.version>
-        <commons-io.version>2.20.0</commons-io.version>
+        <commons-io.version>2.21.0</commons-io.version>
         <lombok.version>1.18.42</lombok.version>
-        <jandex-maven-plugin.version>1.2.3</jandex-maven-plugin.version>
+        <jandex-maven-plugin.version>3.5.3</jandex-maven-plugin.version>
         <fit.version>21.176.0</fit.version>
-        <timeshape.version>2025b.26</timeshape.version>
-        <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+        <timeshape.version>2025b.28</timeshape.version>
+        <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
         <smile-core.version>3.1.1</smile-core.version>
     </properties>
 
@@ -155,7 +156,7 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.jboss.jandex</groupId>
+                    <groupId>io.smallrye</groupId>
                     <artifactId>jandex-maven-plugin</artifactId>
                     <version>${jandex-maven-plugin.version}</version>
                     <executions>
@@ -226,7 +227,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.12.0</version>
+                    <version>${maven-javadoc-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -308,7 +309,7 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.jboss.jandex</groupId>
+                <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
             </plugin>
             <plugin>
