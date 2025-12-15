@@ -51,6 +51,8 @@
         <timeshape.version>2025b.26</timeshape.version>
         <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
         <smile-core.version>3.1.1</smile-core.version>
+        <xstream.version>1.4.21</xstream.version>
+        <easy-di.version>0.6.0</easy-di.version>
     </properties>
 
     <dependencyManagement>
@@ -91,6 +93,17 @@
                 <groupId>com.github.haifengl</groupId>
                 <artifactId>smile-core</artifactId>
                 <version>${smile-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>${xstream.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.lestard</groupId>
+                <artifactId>easy-di</artifactId>
+                <version>${easy-di.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

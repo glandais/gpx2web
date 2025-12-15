@@ -28,6 +28,10 @@
             <artifactId>smile-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
             <scope>test</scope>
@@ -35,7 +39,6 @@
         <dependency>
             <groupId>eu.lestard</groupId>
             <artifactId>easy-di</artifactId>
-            <version>0.6.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
