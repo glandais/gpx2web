@@ -50,7 +50,7 @@
         <jandex-maven-plugin.version>3.5.3</jandex-maven-plugin.version>
         <fit.version>21.176.0</fit.version>
         <timeshape.version>2025b.28</timeshape.version>
-        <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>3.2.0</spotless-maven-plugin.version>
         <smile-core.version>3.1.1</smile-core.version>
     </properties>
 
