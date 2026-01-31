@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/glandais/gpx2web/compare/v1.2.7...v1.3.0) (2026-01-31)
+
+### Features
+
+* route colors ([b4cbe52](https://github.com/glandais/gpx2web/commit/b4cbe521d42a87d800be78b821cef26aa9e33d76))
+
 ## [1.2.7](https://github.com/glandais/gpx2web/compare/v1.2.6...v1.2.7) (2025-12-15)
 
 ### Bug Fixes
