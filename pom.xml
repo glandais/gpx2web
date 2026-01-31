@@ -51,7 +51,7 @@
         <fit.version>21.188.0</fit.version>
         <timeshape.version>2025b.28</timeshape.version>
         <spotless-maven-plugin.version>3.2.0</spotless-maven-plugin.version>
-        <smile-core.version>3.1.1</smile-core.version>
+        <smile-core.version>5.1.0</smile-core.version>
     </properties>
 
     <dependencyManagement>
