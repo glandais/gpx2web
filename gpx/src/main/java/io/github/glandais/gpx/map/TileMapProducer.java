@@ -47,6 +47,13 @@ public class TileMapProducer {
         doCreateTileMap(file, gpx, tileMapImage);
     }
 
+    public void createTileMap(
+            File file, GPX gpx, String urlPattern, double margin, Integer width, Integer height, List<Color> colors)
+            throws IOException {
+        TileMapImage tileMapImage = new TileMapImage(gpx, margin, cacheFolder, urlPattern, width, height);
+        doCreateTileMap(file, gpx, tileMapImage, colors);
+    }
+
     public void createTileMap(File file, GPX gpx, String urlPattern, double margin, int maxSize) throws IOException {
         TileMapImage tileMapImage = new TileMapImage(gpx, margin, maxSize, cacheFolder, urlPattern);
         doCreateTileMap(file, gpx, tileMapImage);
@@ -61,6 +68,16 @@ public class TileMapProducer {
         fillWithImages(tileMapImage);
         for (GPXPath path : gpx.paths()) {
             addPoints(tileMapImage, path);
+        }
+        tileMapImage.saveImage(file);
+    }
+
+    private void doCreateTileMap(File file, GPX gpx, TileMapImage tileMapImage, List<Color> colors) throws IOException {
+        fillWithImages(tileMapImage);
+        List<GPXPath> paths = gpx.paths();
+        for (int i = 0; i < paths.size(); i++) {
+            Color color = colors.get(i % colors.size());
+            addPoints(tileMapImage, paths.get(i), color);
         }
         tileMapImage.saveImage(file);
     }
@@ -122,6 +139,10 @@ public class TileMapProducer {
     }
 
     protected void addPoints(TileMapImage tileMapImage, GPXPath path) {
+        addPoints(tileMapImage, path, Color.RED);
+    }
+
+    protected void addPoints(TileMapImage tileMapImage, GPXPath path, Color color) {
         Graphics2D graphics = tileMapImage.getGraphics();
 
         graphics.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -129,7 +150,7 @@ public class TileMapProducer {
 
         AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
         graphics.setComposite(ac);
-        graphics.setColor(Color.RED);
+        graphics.setColor(color);
 
         drawPath(tileMapImage, path);
         // drawArrows(tileMapImage, path);
