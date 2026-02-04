@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/glandais/gpx2web/compare/v1.3.0...v1.3.1) (2026-02-04)
+
+### Bug Fixes
+
+* serializable climbs ([79f04b4](https://github.com/glandais/gpx2web/commit/79f04b40616fbe01a498434f14b73baad7332a9a))
+
 ## [1.3.0](https://github.com/glandais/gpx2web/compare/v1.2.7...v1.3.0) (2026-01-31)
 
 ### Features
