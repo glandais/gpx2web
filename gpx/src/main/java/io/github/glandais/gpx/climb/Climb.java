@@ -1,5 +1,6 @@
 package io.github.glandais.gpx.climb;
 
+import java.io.Serializable;
 import java.util.stream.Collectors;
 
 public record Climb(
@@ -13,7 +14,8 @@ public record Climb(
         double negativeElevation,
         double grade,
         double climbingGrade,
-        ClimbParts parts) {
+        ClimbParts parts)
+        implements Serializable {
     public Climb shiftDist(double dx) {
         return new Climb(
                 startDist + dx,
