@@ -35,22 +35,22 @@
 
     <properties>
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.version>3.31.2</quarkus.platform.version>
-        <surefire-plugin.version>3.5.4</surefire-plugin.version>
+        <quarkus.platform.version>3.35.2</quarkus.platform.version>
+        <surefire-plugin.version>3.5.5</surefire-plugin.version>
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
 
         <graphhopper-core.version>11.0</graphhopper-core.version>
         <jfreechart.version>1.5.6</jfreechart.version>
-        <commons-io.version>2.21.0</commons-io.version>
-        <lombok.version>1.18.42</lombok.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <lombok.version>1.18.46</lombok.version>
         <jandex-maven-plugin.version>3.5.3</jandex-maven-plugin.version>
-        <fit.version>21.194.0</fit.version>
+        <fit.version>21.202.0</fit.version>
         <timeshape.version>2025b.28</timeshape.version>
-        <spotless-maven-plugin.version>3.2.1</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
         <smile-core.version>3.1.1</smile-core.version>
     </properties>
 
@@ -173,15 +173,6 @@
                     <artifactId>quarkus-maven-plugin</artifactId>
                     <version>${quarkus.platform.version}</version>
                     <extensions>true</extensions>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>build</goal>
-                                <goal>generate-code</goal>
-                                <goal>generate-code-tests</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
