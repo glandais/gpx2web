@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/glandais/gpx2web/compare/v1.3.1...v1.4.0) (2026-05-05)
+
+### Features
+
+* mapterhorn elevation ([09b90b0](https://github.com/glandais/gpx2web/commit/09b90b087eaff8b085ec28e1a3186e80131d3c08))
+* remove hr simulator ([03af1ca](https://github.com/glandais/gpx2web/commit/03af1ca00826e31102dff7e6be1faafb75765199))
+
 ## [1.3.1](https://github.com/glandais/gpx2web/compare/v1.3.0...v1.3.1) (2026-02-04)
 
 ### Bug Fixes
