@@ -38,7 +38,7 @@ mvn clean package -Pnative
 
 ### Run CLI
 ```bash
-java -jar gpxtools-cli/target/gpxtools-cli-runner.jar
+java -jar gpxtools-cli/target/quarkus-app/quarkus-run.jar
 ```
 
 ## Architecture

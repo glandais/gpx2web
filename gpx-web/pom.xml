@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>gpx-web</artifactId>
+    <packaging>quarkus</packaging>
 
     <name>gpx2web - WEB module</name>
     <description>Java GPX tools</description>

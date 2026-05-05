@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>gpxtools-cli</artifactId>
+    <packaging>quarkus</packaging>
 
     <name>gpx2web - CLI module</name>
     <description>Java GPX tools</description>
