@@ -45,7 +45,7 @@ public class HRSimulator {
         for (GPXPath sample : samples) {
             getDataPoints(dataPoints, sample);
         }
-        this.linearModel = OLS.fit(Formula.lhs("hr"), DataFrame.of(dataPoints));
+        this.linearModel = OLS.fit(Formula.lhs("hr"), DataFrame.of(DataPoint.SCHEMA, dataPoints));
         System.out.println(linearModel);
 
         FileOutputStream fileOutputStream = new FileOutputStream("src/main/resources/hrmodel");

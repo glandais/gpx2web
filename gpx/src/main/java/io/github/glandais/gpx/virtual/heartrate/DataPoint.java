@@ -21,7 +21,7 @@ public class DataPoint implements Tuple {
             //            new Field("p30", PropertyKeys.power, 0.0, 30.0),
             new Field("p60", PropertyKeys.power, 0.0, 60.0));
 
-    private static final StructType SCHEMA =
+    public static final StructType SCHEMA =
             new StructType(FIELDS.stream().map(Field::getStructField).toList());
 
     private final double[] data;
