@@ -49,10 +49,6 @@
             <artifactId>timeshape</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.haifengl</groupId>
-            <artifactId>smile-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
             <scope>test</scope>

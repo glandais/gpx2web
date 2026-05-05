@@ -7,7 +7,6 @@ import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
 import io.github.glandais.gpx.srtm.GPXElevationFixer;
-import io.github.glandais.gpx.virtual.heartrate.HRSimulator;
 import io.github.glandais.gpx.virtual.maxspeed.MaxSpeedComputer;
 import io.github.glandais.gpx.virtual.power.aero.aero.AeroProviderConstant;
 import io.github.glandais.gpx.virtual.power.aero.wind.WindProviderNone;
@@ -33,8 +32,6 @@ public class GPXEnhancer {
     private final GPXPerDistance gpxPerDistance;
 
     private final StartTimeProvider startTimeProvider;
-
-    private final HRSimulator hrSimulator;
 
     public void virtualize(GPX gpx, boolean filter) {
         for (int i = 0; i < gpx.paths().size(); i++) {
@@ -70,7 +67,6 @@ public class GPXEnhancer {
         gpxElevationFixer.fixElevation(gpxPath);
         maxSpeedComputer.computeMaxSpeeds(course);
         virtualizeService.virtualizeTrack(course);
-        hrSimulator.simulateHeartRate(gpxPath);
         gpxPerSecond.computeOnePointPerSecond(gpxPath);
         if (filter) {
             GPXFilter.filterPointsDouglasPeucker(gpxPath);

@@ -107,17 +107,10 @@ This is a multi-module Maven project for GPX cycling data processing and virtual
 The virtual cyclist simulation uses realistic physics calculations including bike leaning dynamics for cornering, kinematic braking models, and comprehensive power modeling based on academic cycling research.
 
 **GPXEnhancer Pipeline Orchestrator** (`virtual/`):
-- 7-step virtualization pipeline: distance resampling → SRTM elevation → speed limits → physics simulation → heart rate → temporal resampling → Douglas-Peucker filtering
+- 6-step virtualization pipeline: distance resampling → SRTM elevation → speed limits → physics simulation → temporal resampling → Douglas-Peucker filtering
 - Data preprocessing: 10m distance intervals, ±1m SRTM elevation accuracy vs ±10-15m GPS
 - Multi-track support with temporal consistency across multi-day routes
 - Quality assurance with validation and error handling at each pipeline step
-
-**Heart Rate Simulation** (`virtual/heartrate/`):
-- Machine learning-based HR modeling using linear regression (SMILE library)
-- Temporal feature engineering: HR history (5-30s lookback) + power averages (5-60s windows)  
-- Physiological constraints: 60-220 bpm range with post-processing smoothing
-- Training on real cycling datasets with 5-second sampling intervals
-- Future enhancement: Random Forest for non-linear HR-power relationships and individual fitness patterns
 
 **VirtualizeService** (`virtual/`):
 - Complete course simulation orchestrator using time-stepping numerical integration
