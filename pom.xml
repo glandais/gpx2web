@@ -27,7 +27,7 @@
     </developers>
 
     <scm>
-        <url>http://github.com/glandais/gpx2web</url>
+        <url>https://github.com/glandais/gpx2web</url>
         <connection>scm:git:git://github.com/glandais/gpx2web.git</connection>
         <developerConnection>scm:git:git@github.com:glandais/gpx2web.git</developerConnection>
         <tag>HEAD</tag>
@@ -43,7 +43,6 @@
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
 
-        <graphhopper-core.version>11.0</graphhopper-core.version>
         <jfreechart.version>1.5.6</jfreechart.version>
         <commons-io.version>2.22.0</commons-io.version>
         <lombok.version>1.18.46</lombok.version>
@@ -51,6 +50,7 @@
         <fit.version>21.202.0</fit.version>
         <timeshape.version>2025b.28</timeshape.version>
         <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
+        <webp-imageio.version>0.10.0</webp-imageio.version>
     </properties>
 
     <dependencyManagement>
@@ -68,9 +68,9 @@
                 <version>${fit.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.graphhopper</groupId>
-                <artifactId>graphhopper-core</artifactId>
-                <version>${graphhopper-core.version}</version>
+                <groupId>com.github.usefulness</groupId>
+                <artifactId>webp-imageio</artifactId>
+                <version>${webp-imageio.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>

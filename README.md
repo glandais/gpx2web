@@ -345,9 +345,29 @@ Steps :
 
 ## Fix elevation
 
-Uses skadi data, available through AWS : https://registry.opendata.aws/terrain-tiles/
+Uses [Mapterhorn](https://mapterhorn.com/) terrain-RGB tiles (Terrarium-encoded WebP) to compute
+elevation by bilinear interpolation across 4 surrounding pixels at zoom 12 (~10 m horizontal
+resolution).
 
-[Graphhopper](https://www.graphhopper.com/) code is used to retrieve elevation for a point.
+Tiles are fetched from `https://tiles.mapterhorn.com/{z}/{x}/{y}.webp` and cached on disk under
+`<cache>/mapterhorn/{z}/{x}/{y}.webp`. The base URL, zoom level, tile size, in-memory LRU
+capacity, and User-Agent are all configurable via `MapterhornConfig`.
+
+### Attribution
+
+Elevation data shown by gpx2web is © Mapterhorn and its upstream sources. Mapterhorn is built
+from many national elevation datasets, each with its own license (mostly CC BY 4.0). When you
+display, redistribute, or publish maps or analyses produced with this tool, you must credit
+Mapterhorn and the underlying data providers as listed in the canonical attribution document.
+
+- Site: https://mapterhorn.com/
+- Attribution page: https://mapterhorn.com/attribution/
+- Machine-readable attribution (per-source license, producer, website):
+  https://download.mapterhorn.com/attribution.json
+
+If you self-host Mapterhorn tiles or point gpx2web at a private mirror via
+`MapterhornConfig.tileUrlTemplate`, you remain responsible for honouring the upstream licenses
+of every source dataset you use.
 
 ## MaxSpeedComputer: Cornering and Braking Limits
 
@@ -724,10 +744,12 @@ gpxPerDistance.computeOnePointPerDistance(gpxPath, 10.0);
 ```java
 gpxElevationFixer.fixElevation(gpxPath);
 ```
-- **Purpose**: Replace GPS elevation with accurate SRTM (Shuttle Radar Topography Mission) data
-- **Why critical**: GPS elevation accuracy ±10-15m, SRTM provides ±1m accuracy
+- **Purpose**: Replace GPS elevation with accurate terrain elevation
+- **Why critical**: GPS elevation accuracy ±10-15m, Mapterhorn provides sub-metre accuracy in
+  many regions (depending on the underlying national dataset)
 - **Impact**: Accurate grade calculation essential for gravity and rolling resistance power
-- **Data source**: NASA SRTM via GraphHopper, 90m resolution global coverage
+- **Data source**: [Mapterhorn](https://mapterhorn.com/) terrain-RGB tiles — see the Attribution
+  section for credit requirements.
 
 **3. Speed Constraint Calculation** (line 71)
 ```java
@@ -780,7 +802,7 @@ if (filter) {
 
 **Academic foundations:**
 - ✅ **Distance resampling**: Standard in GPS track processing and cycling analysis
-- ✅ **SRTM elevation**: Widely used in geographic analysis, ±1m accuracy
+- ✅ **Mapterhorn elevation**: Sub-metre accuracy in covered regions (see Attribution)
 - ✅ **Physics simulation**: Based on validated cycling power models (Martin et al.)
 - ✅ **Douglas-Peucker**: Established algorithm for curve simplification (O(n²) complexity)
 - ✅ **Pipeline ordering**: Logical sequence from raw data → physics → output formatting
@@ -816,7 +838,7 @@ Course course = new Course(
 
 **Computational complexity:**
 - Distance/temporal resampling: O(n log n) for point lookups
-- Elevation fixing: O(n) SRTM queries with caching
+- Elevation fixing: O(n) Mapterhorn tile queries with LRU + on-disk caching
 - Max speed computation: O(n) with circle geometry calculations
 - Physics simulation: O(n) time-stepping integration
 - Douglas-Peucker filtering: O(n²) worst case, typically O(n log n)
@@ -824,7 +846,7 @@ Course course = new Course(
 **Memory efficiency:**
 - In-place processing where possible
 - Streaming approach for large GPS tracks
-- SRTM data caching reduces network requests
+- Mapterhorn tile caching (in-memory LRU + on-disk) reduces network requests
 
 ### Quality Assurance
 
@@ -836,8 +858,7 @@ Course course = new Course(
 - Heart rate physiological bounds enforcement
 
 **Error handling:**
-- Graceful degradation if SRTM data unavailable
-- Fallback to GPS elevation with warnings
+- Mapterhorn fetch errors propagate as `UncheckedIOException` (no silent fallback to zero)
 - Default parameters if customization unavailable
 
 The GPXEnhancer pipeline represents a comprehensive approach to virtual cyclist simulation, combining established GPS processing techniques with validated cycling physics models to produce realistic and accurate virtual cycling experiences.

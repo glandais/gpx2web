@@ -41,8 +41,8 @@
             <artifactId>fit</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.graphhopper</groupId>
-            <artifactId>graphhopper-core</artifactId>
+            <groupId>com.github.usefulness</groupId>
+            <artifactId>webp-imageio</artifactId>
         </dependency>
         <dependency>
             <groupId>net.iakovlev</groupId>
@@ -51,6 +51,11 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
