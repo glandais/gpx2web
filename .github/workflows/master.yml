@@ -36,7 +36,7 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.REPSY_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.REPSY_PASSWORD }}
       - name: push_release
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'Release ${{ steps.get_version.outputs.version }}'
           tagging_message: "${{ steps.get_version.outputs.version }}"
@@ -50,6 +50,6 @@ jobs:
       - name: Modify versions
         run: ./mvnw -B versions:set -DnextSnapshot versions:commit
       - name: push_snapshot
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'Next SNAPSHOT'
