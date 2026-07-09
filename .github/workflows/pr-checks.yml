@@ -17,6 +17,10 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
           cache: 'maven'
+      - name: Check formatting
+        # must run before the build: spotless is bound to apply, not check,
+        # so any later phase would silently reformat the sources first
+        run: ./mvnw -B -ntp spotless:check
       - name: Build with Maven
         # gpg signing is bound to the verify phase for Maven Central releases
         run: ./mvnw -B -ntp verify -Dgpg.skip=true
