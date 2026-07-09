@@ -48,7 +48,7 @@
         <lombok.version>1.18.46</lombok.version>
         <jandex-maven-plugin.version>3.5.3</jandex-maven-plugin.version>
         <fit.version>21.202.0</fit.version>
-        <timeshape.version>2025b.28</timeshape.version>
+        <timeshape.version>2026b.29</timeshape.version>
         <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
         <webp-imageio.version>0.10.0</webp-imageio.version>
     </properties>
