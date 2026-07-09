@@ -56,18 +56,38 @@ class GPXTest {
 
     @Test
     void testWithWaypoints() {
-        Point wp = new Point();
-        wp.setLat(Math.toRadians(45.0));
-        wp.setLon(Math.toRadians(90.0));
-        GPXWaypoint waypoint = new GPXWaypoint("WP1", wp);
+        GPX gpx = new GPX("WithWaypoints", Collections.emptyList(), Arrays.asList(createWaypoint("WP1", 45.0, 90.0)));
 
-        GPX gpx = new GPX("WithWaypoints", Collections.emptyList(), Collections.singletonList(waypoint));
+        assertEquals(90.0, gpx.getMinlonDeg(), 1e-9);
+        assertEquals(90.0, gpx.getMaxlonDeg(), 1e-9);
+        assertEquals(45.0, gpx.getMinlatDeg(), 1e-9);
+        assertEquals(45.0, gpx.getMaxlatDeg(), 1e-9);
+    }
 
-        // Should include waypoint coordinates in bounds
-        assertFalse(Double.isNaN(gpx.getMinlonDeg()));
-        assertFalse(Double.isNaN(gpx.getMaxlonDeg()));
-        assertFalse(Double.isNaN(gpx.getMinlatDeg()));
-        assertFalse(Double.isNaN(gpx.getMaxlatDeg()));
+    @Test
+    void testBoundsMergePathsAndWaypoints() {
+        // Path spans 45..46 lat, 90..91 lon (degrees)
+        GPXPath path = createTestPath("Path1");
+        GPX gpx = new GPX(
+                "Merged",
+                Collections.singletonList(path),
+                Arrays.asList(createWaypoint("South", 44.0, 92.0), createWaypoint("North", 47.0, 89.0)));
+
+        assertEquals(89.0, gpx.getMinlonDeg(), 1e-9);
+        assertEquals(92.0, gpx.getMaxlonDeg(), 1e-9);
+        assertEquals(44.0, gpx.getMinlatDeg(), 1e-9);
+        assertEquals(47.0, gpx.getMaxlatDeg(), 1e-9);
+    }
+
+    @Test
+    void testWaypointsInsidePathDoNotWidenBounds() {
+        GPXPath path = createTestPath("Path1");
+        GPX gpx = new GPX("Inside", Collections.singletonList(path), Arrays.asList(createWaypoint("Mid", 45.5, 90.5)));
+
+        assertEquals(90.0, gpx.getMinlonDeg(), 1e-9);
+        assertEquals(91.0, gpx.getMaxlonDeg(), 1e-9);
+        assertEquals(45.0, gpx.getMinlatDeg(), 1e-9);
+        assertEquals(46.0, gpx.getMaxlatDeg(), 1e-9);
     }
 
     @Test
@@ -86,6 +106,13 @@ class GPXTest {
         String str = gpx1.toString();
         assertNotNull(str);
         assertTrue(str.contains("Test"));
+    }
+
+    private GPXWaypoint createWaypoint(String name, double latDeg, double lonDeg) {
+        Point point = new Point();
+        point.setLat(Math.toRadians(latDeg));
+        point.setLon(Math.toRadians(lonDeg));
+        return new GPXWaypoint(name, point);
     }
 
     private GPXPath createTestPath(String name) {

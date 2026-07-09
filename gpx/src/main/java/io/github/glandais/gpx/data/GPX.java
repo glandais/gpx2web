@@ -19,7 +19,7 @@ public record GPX(String name, List<GPXPath> paths, List<GPXWaypoint> waypoints)
 
     private DoubleStream mergeLon(DoubleStream pathLon) {
         return DoubleStream.concat(
-                pathLon, waypoints.stream().mapToDouble(w -> w.point().getLon()));
+                pathLon, waypoints.stream().mapToDouble(w -> w.point().getLonDeg()));
     }
 
     public double getMinlonDeg() {
@@ -32,7 +32,7 @@ public record GPX(String name, List<GPXPath> paths, List<GPXWaypoint> waypoints)
 
     private DoubleStream mergeLat(DoubleStream pathLon) {
         return DoubleStream.concat(
-                pathLon, waypoints.stream().mapToDouble(w -> w.point().getLat()));
+                pathLon, waypoints.stream().mapToDouble(w -> w.point().getLatDeg()));
     }
 
     public double getMinlatDeg() {
