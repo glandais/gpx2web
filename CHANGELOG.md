@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/glandais/gpx2web/compare/v1.4.0...v1.4.1) (2026-07-09)
+
+### Bug Fixes
+
+* GPX bounds mixed waypoint radians with path degrees ([ec96ece](https://github.com/glandais/gpx2web/commit/ec96ecea72ac13d9fb03548e81f8cf9ef11b26fe))
+
 ## [1.4.0](https://github.com/glandais/gpx2web/compare/v1.3.1...v1.4.0) (2026-05-05)
 
 ### Features
