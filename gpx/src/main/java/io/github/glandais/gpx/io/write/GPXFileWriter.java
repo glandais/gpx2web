@@ -182,16 +182,29 @@ public class GPXFileWriter implements FileExporter {
 
     public static String escape(String s) {
         StringBuilder out = new StringBuilder(Math.max(16, s.length()));
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c > 127 || c == '"' || c == '\'' || c == '<' || c == '>' || c == '&') {
-                out.append("&#");
-                out.append((int) c);
-                out.append(';');
-            } else {
-                out.append(c);
+        s.codePoints().forEach(cp -> {
+            if (!isXmlChar(cp)) {
+                return;
             }
-        }
+            if (cp > 127 || cp == '"' || cp == '\'' || cp == '<' || cp == '>' || cp == '&') {
+                out.append("&#").append(cp).append(';');
+            } else {
+                out.append((char) cp);
+            }
+        });
         return out.toString();
+    }
+
+    /**
+     * The XML 1.0 Char production. Excludes control characters, lone surrogates and the two
+     * noncharacters, none of which a character reference can express.
+     */
+    private static boolean isXmlChar(int cp) {
+        return cp == 0x9
+                || cp == 0xA
+                || cp == 0xD
+                || (cp >= 0x20 && cp <= 0xD7FF)
+                || (cp >= 0xE000 && cp <= 0xFFFD)
+                || (cp >= 0x10000 && cp <= 0x10FFFF);
     }
 }
