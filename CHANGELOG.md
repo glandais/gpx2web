@@ -1,3 +1,9 @@
+## [1.4.4](https://github.com/glandais/gpx2web/compare/v1.4.3...v1.4.4) (2026-07-10)
+
+### Bug Fixes
+
+* bump the minor-and-patch group across 1 directory with 10 updates ([#158](https://github.com/glandais/gpx2web/issues/158)) ([004121d](https://github.com/glandais/gpx2web/commit/004121dba26bc8d950fc5610757212e0fa30f54e))
+
 ## [1.4.3](https://github.com/glandais/gpx2web/compare/v1.4.2...v1.4.3) (2026-07-10)
 
 ### Bug Fixes

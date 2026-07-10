@@ -6,7 +6,7 @@
     <groupId>io.github.glandais.gpx2web</groupId>
     <artifactId>cycling-tools</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.4-SNAPSHOT</version>
+    <version>1.4.4</version>
 
     <name>gpx2web</name>
     <description>Java GPX tools</description>
