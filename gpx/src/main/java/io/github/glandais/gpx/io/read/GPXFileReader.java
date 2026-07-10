@@ -3,12 +3,14 @@ package io.github.glandais.gpx.io.read;
 import io.github.glandais.gpx.data.*;
 import io.github.glandais.gpx.io.GPXField;
 import jakarta.inject.Singleton;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +21,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 @Service
 @Singleton
@@ -32,13 +35,7 @@ public class GPXFileReader {
     }
 
     public GPX parseGPX(InputStream is, String forcedName, boolean erasePathNames) throws Exception {
-        return parseGPX(is, forcedName, erasePathNames, (db, f) -> {
-            try {
-                return db.parse(f);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return parseGPX(is.readAllBytes(), forcedName, erasePathNames, "input stream");
     }
 
     public GPX parseGPX(File file) throws Exception {
@@ -46,20 +43,39 @@ public class GPXFileReader {
     }
 
     public GPX parseGPX(File file, String forcedName, boolean erasePathNames) throws Exception {
-        return parseGPX(file, forcedName, erasePathNames, (db, f) -> {
-            try {
-                return db.parse(f);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return parseGPX(Files.readAllBytes(file.toPath()), forcedName, erasePathNames, file.getPath());
     }
 
-    private <T> GPX parseGPX(
-            T file, String forcedName, boolean erasePathNames, BiFunction<DocumentBuilder, T, Document> parser)
-            throws Exception {
-        DocumentBuilder db = newSecureDocumentBuilder();
-        Document gpxDocument = parser.apply(db, file);
+    /**
+     * Parses strictly first. Only when that fails on malformed XML do we retry once on repaired
+     * bytes, through the same hardened builder. Surviving repair grants no extra trust: a DOCTYPE is
+     * still refused on the second pass. When repair does not help, the original error is what the
+     * caller sees.
+     */
+    private GPX parseGPX(byte[] raw, String forcedName, boolean erasePathNames, String source) throws Exception {
+        Document gpxDocument;
+        try {
+            gpxDocument = parseDocument(raw);
+        } catch (SAXException | IOException strictFailure) {
+            byte[] repaired = GpxXmlRepair.repair(raw);
+            if (repaired == null) {
+                throw strictFailure;
+            }
+            try {
+                gpxDocument = parseDocument(repaired);
+            } catch (SAXException | IOException repairFailure) {
+                throw strictFailure;
+            }
+            log.warn("Repaired malformed XML in {}: {}", source, strictFailure.getMessage());
+        }
+        return toGPX(gpxDocument, forcedName, erasePathNames);
+    }
+
+    private Document parseDocument(byte[] raw) throws ParserConfigurationException, SAXException, IOException {
+        return newSecureDocumentBuilder().parse(new ByteArrayInputStream(raw));
+    }
+
+    private GPX toGPX(Document gpxDocument, String forcedName, boolean erasePathNames) {
         String gpxName;
         if (forcedName != null) {
             gpxName = forcedName;
