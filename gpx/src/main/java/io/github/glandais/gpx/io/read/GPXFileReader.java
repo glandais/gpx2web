@@ -9,8 +9,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -56,8 +58,7 @@ public class GPXFileReader {
     private <T> GPX parseGPX(
             T file, String forcedName, boolean erasePathNames, BiFunction<DocumentBuilder, T, Document> parser)
             throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
+        DocumentBuilder db = newSecureDocumentBuilder();
         Document gpxDocument = parser.apply(db, file);
         String gpxName;
         if (forcedName != null) {
@@ -86,6 +87,27 @@ public class GPXFileReader {
             gpxPath.computeArrays();
         }
         return gpx;
+    }
+
+    /**
+     * Builds a {@link DocumentBuilder} hardened against XXE: no DOCTYPE, no external entities, no
+     * entity-expansion bombs. GPX has no legitimate use for any of those, and the parsed text is
+     * routinely echoed back to callers, so a resolved entity would be a file-read / SSRF primitive.
+     */
+    private static DocumentBuilder newSecureDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        // Rejects any document containing a DOCTYPE outright — the simplest, strongest guard.
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        dbf.setExpandEntityReferences(false);
+        dbf.setXIncludeAware(false);
+        dbf.setNamespaceAware(false);
+        return dbf.newDocumentBuilder();
     }
 
     private String getMetadataName(Element element) {
