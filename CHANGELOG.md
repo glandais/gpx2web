@@ -1,3 +1,9 @@
+## [1.4.2](https://github.com/glandais/gpx2web/compare/v1.4.1...v1.4.2) (2026-07-10)
+
+### Bug Fixes
+
+* harden GPX XML parser against XXE ([24b0dfd](https://github.com/glandais/gpx2web/commit/24b0dfd31ab1bdb7326ceaa20f2ad81bf3d37d0e))
+
 ## [1.4.1](https://github.com/glandais/gpx2web/compare/v1.4.0...v1.4.1) (2026-07-09)
 
 ### Bug Fixes
