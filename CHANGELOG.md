@@ -1,3 +1,9 @@
+## [1.4.3](https://github.com/glandais/gpx2web/compare/v1.4.2...v1.4.3) (2026-07-10)
+
+### Bug Fixes
+
+* GPX writer emitted invalid XML that the reader could not read back ([#160](https://github.com/glandais/gpx2web/issues/160)) ([75ff865](https://github.com/glandais/gpx2web/commit/75ff865556ba4428737b05fc8c468273855a6a0a)), closes [#1](https://github.com/glandais/gpx2web/issues/1)
+
 ## [1.4.2](https://github.com/glandais/gpx2web/compare/v1.4.1...v1.4.2) (2026-07-10)
 
 ### Bug Fixes
