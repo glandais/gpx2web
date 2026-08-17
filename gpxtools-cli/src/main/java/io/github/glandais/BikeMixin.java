@@ -27,7 +27,7 @@ public class BikeMixin {
     @CommandLine.Option(
             names = {"--bike-wheel-radius"},
             description = "Wheel radius (m)")
-    private double wheelRadius = 0.7;
+    private double wheelRadius = 0.35;
 
     @CommandLine.Option(
             names = {"--bike-efficiency"},
