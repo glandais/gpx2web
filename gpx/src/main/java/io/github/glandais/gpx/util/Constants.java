@@ -8,8 +8,9 @@ public class Constants {
     // s
     public static final double DT = 1.0;
 
-    // g, cyclist from earth
-    public static final double G = 9.8;
+    // g, cyclist from earth — standard gravity g0 (SI exact)
+    // Was 9.8; the exact value removes a 0.07% systematic bias on the gravity and rolling terms.
+    public static final double G = 9.80665;
 
     // WGS-84 semi-major axis (m)
     public static final double SEMI_MAJOR_AXIS = 6378137.0;
@@ -33,9 +34,12 @@ public class Constants {
     public static final double DEFAULT_INERTIA_FRONT = 0.05; // Front wheel
     public static final double DEFAULT_INERTIA_REAR = 0.07; // Rear wheel (slightly heavier)
 
-    // Standard road bike wheel radius (m) - 700c wheels with typical tire
-    // Source: Standard wheel sizing, ~1.4m diameter for 700x25c tires
-    public static final double DEFAULT_WHEEL_RADIUS = 0.7;
+    // Standard road bike wheel radius (m) - 700c wheel with a 25mm tire
+    // Source: Standard wheel sizing, ~0.7m diameter for 700x25c tires, so a 0.35m radius.
+    // Martin et al. (1998) use r = 0.311m for a 20mm tire.
+    // Was 0.7 until the research review: that is the *diameter*. The bug understated the
+    // rotating mass in PowerComputer's equivalent mass (I/r^2) by ~0.73kg.
+    public static final double DEFAULT_WHEEL_RADIUS = 0.35;
 
     // Drivetrain efficiency (dimensionless, 0-1)
     // Source: Typical modern road bike drivetrain efficiency
@@ -52,9 +56,11 @@ public class Constants {
     public static final double DEFAULT_CYCLIST_POWER_W = 280;
 
     // Maximum braking deceleration coefficient (g units)
-    // Source: Academic research shows bicycle braking limit ~0.67g, 0.6g provides safety margin
+    // Source: the pitch-over (stoppie) ceiling is 0.56-0.63g, but measured riders actually use
+    // 0.41 +/- 0.07g in combined braking - about 60-65% of the limit.
     // Reference: SAE Technical Paper 2020-01-0876 "Bicycle Braking Performance Testing and Analysis"
-    public static final double DEFAULT_MAX_BRAKE_G = 0.6;
+    // 0.4 models a believable rider; 0.6 is the physical ceiling, i.e. an "expert descender".
+    public static final double DEFAULT_MAX_BRAKE_G = 0.4;
 
     // Aerodynamic drag coefficient (dimensionless)
     // Source: Academic cycling aerodynamics research, typical range 0.6-0.8
@@ -69,6 +75,10 @@ public class Constants {
     // Maximum lean angle for cornering (degrees)
     // Source: Practical limit on crowned roads from cycling physics research
     // Reference: Brandt's analysis of bicycle cornering dynamics
+    // Cornering uses v_max = sqrt(g * R * tan(theta)) = sqrt(mu * g * R) with mu == tan(theta),
+    // so this parameter IS a tyre friction coefficient: 35 deg => mu = 0.70.
+    // Zignoli (2020) measures mu = 0.90 dry (42.0 deg) and mu = 0.36 wet (19.8 deg) for road
+    // tyres, so the default sits at 78% of dry grip - a confident rider leaving margin.
     public static final double DEFAULT_MAX_LEAN_ANGLE_DEG = 35;
 
     // Maximum speed capability (km/h)

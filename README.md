@@ -200,7 +200,7 @@ The system uses academically validated default parameters for virtual cyclist si
 | `DEFAULT_CRR` | 0.004 | - | Rolling resistance coefficient | bicyclerollingresistance.com research |
 | `DEFAULT_INERTIA_FRONT` | 0.05 | kg⋅m² | Front wheel rotational inertia | Physics education materials |
 | `DEFAULT_INERTIA_REAR` | 0.07 | kg⋅m² | Rear wheel rotational inertia | Physics education materials |  
-| `DEFAULT_WHEEL_RADIUS` | 0.7 | m | Wheel radius (700c + tire) | Standard wheel sizing |
+| `DEFAULT_WHEEL_RADIUS` | 0.35 | m | Wheel radius (700c + 25mm tire) | Standard wheel sizing (0.7 m is the diameter) |
 | `DEFAULT_DRIVETRAIN_EFFICIENCY` | 0.976 | - | Mechanical efficiency | Typical modern road bike |
 | `DEFAULT_AIR_DENSITY` | 1.225 | kg/m³ | Air density at sea level | ISO Standard Atmosphere (15°C, 1 atm) |
 
@@ -210,17 +210,17 @@ The system uses academically validated default parameters for virtual cyclist si
 |-----------|-------|------|-------------|-----------------|
 | `DEFAULT_CYCLIST_MASS_KG` | 80 | kg | Total system mass (cyclist + bike) | Typical recreational cyclist |
 | `DEFAULT_CYCLIST_POWER_W` | 280 | W | Sustained power output (FTP) | ~3.5 W/kg intermediate level |
-| `DEFAULT_MAX_BRAKE_G` | 0.6 | g | Maximum braking deceleration | SAE 2020-01-0876 research |
+| `DEFAULT_MAX_BRAKE_G` | 0.4 | g | Maximum braking deceleration | Measured riders use 0.41 ± 0.07 g (ceiling 0.56-0.63 g) |
 | `DEFAULT_DRAG_COEFFICIENT` | 0.7 | - | Aerodynamic drag coefficient | "Aerodynamic drag in cycling" studies |
 | `DEFAULT_FRONTAL_AREA` | 0.5 | m² | Cyclist frontal area | Professional cycling aerodynamics |
-| `DEFAULT_MAX_LEAN_ANGLE_DEG` | 35 | ° | Maximum cornering lean angle | Brandt cycling physics |
+| `DEFAULT_MAX_LEAN_ANGLE_DEG` | 35 | ° | Maximum cornering lean angle (µ = tan θ = 0.70) | Brandt ; Zignoli 2020 (µ 0.90 dry / 0.36 wet) |
 | `DEFAULT_MAX_SPEED_KMH` | 100 | km/h | Maximum speed capability | Reasonable road cycling limit |
 
 **Parameter Validation:**
 - All values researched against academic cycling literature
 - Rolling resistance: Modern road tire typical range 0.003-0.005
 - Power output: Represents competitive recreational cyclist (Cat 3-4 racing level)
-- Braking: 0.6g provides safety margin below ~0.67g bicycle limit
+- Braking: 0.4g is what riders actually use; 0.56-0.63g is the pitch-over ceiling
 - Aerodynamics: CdA = 0.35 m² matches published cycling research
 - Air density: ISO standard used in cycling aerodynamics research (Martin et al.)
 - Lean angle: Practical limit on crowned roads per cycling dynamics analysis

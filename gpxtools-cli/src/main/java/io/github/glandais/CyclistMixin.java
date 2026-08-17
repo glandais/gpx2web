@@ -22,7 +22,7 @@ public class CyclistMixin {
     @CommandLine.Option(
             names = {"--cyclist-max-brake"},
             description = "Cyclist max brake (g)")
-    private double maxBrakeG = 0.6;
+    private double maxBrakeG = 0.4;
 
     @CommandLine.Option(
             names = {"--cyclist-cd"},
