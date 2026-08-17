@@ -6,7 +6,7 @@
     <parent>
         <artifactId>cycling-tools</artifactId>
         <groupId>io.github.glandais.gpx2web</groupId>
-        <version>1.4.5-SNAPSHOT</version>
+        <version>1.4.5</version>
     </parent>
 
     <artifactId>gpx-web</artifactId>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>io.github.glandais.gpx2web</groupId>
             <artifactId>gpx</artifactId>
-            <version>1.4.5-SNAPSHOT</version>
+            <version>1.4.5</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
