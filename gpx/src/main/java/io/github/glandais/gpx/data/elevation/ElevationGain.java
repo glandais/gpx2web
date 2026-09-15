@@ -52,10 +52,10 @@ public class ElevationGain {
         }
         double[] distanceM = new double[points.size()];
         double[] elevationM = new double[points.size()];
-        double[] pathDists = path.getDists();
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
-            distanceM[i] = pathDists != null && pathDists.length == points.size() ? pathDists[i] : p.getDist();
+            // Same value as path.getDists()[i]: computeArrays() writes both from one loop.
+            distanceM[i] = p.getDist();
             Double source = p.get(PropertyKeys.sourceEle);
             elevationM[i] = source == null || source.isNaN() ? p.getEle() : source;
         }

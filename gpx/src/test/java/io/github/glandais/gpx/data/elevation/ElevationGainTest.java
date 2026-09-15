@@ -42,7 +42,7 @@ class ElevationGainTest {
      */
     @Test
     void smoothClimbSampledFinelyIsNotSwallowedByTheDeadBand() {
-        int n = 251; // 500 m of climb at 2 m spacing
+        int n = 251; // 500 m of climb in 2 m steps, sampled every 10 m
         double[] dist = evenlySpaced(n, 10.0);
         double[] ele = new double[n];
         for (int i = 0; i < n; i++) {
