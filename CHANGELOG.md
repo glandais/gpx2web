@@ -1,3 +1,13 @@
+## [1.5.0](https://github.com/glandais/gpx2web/compare/v1.4.5...v1.5.0) (2026-09-15)
+
+### Features
+
+* **gpx:** measure cumulative ascent at a stated scale ([#185](https://github.com/glandais/gpx2web/issues/185)) ([ff78f9c](https://github.com/glandais/gpx2web/commit/ff78f9cac5755eb53b21f6cea3227befe561206c))
+
+### Bug Fixes
+
+* **release:** pin conventional-changelog preset to v9 for writer 8 compat ([fdc6443](https://github.com/glandais/gpx2web/commit/fdc644370ba23e8fc093f673d5b46ed8d8c427f5)), closes [#178](https://github.com/glandais/gpx2web/issues/178)
+
 ## [1.4.5](https://github.com/glandais/gpx2web/compare/v1.4.4...v1.4.5) (2026-08-17)
 
 ## [1.4.4](https://github.com/glandais/gpx2web/compare/v1.4.3...v1.4.4) (2026-07-10)
