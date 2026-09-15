@@ -2,8 +2,10 @@ package io.github.glandais.process;
 
 import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
+import io.github.glandais.ElevationGainMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.elevation.ElevationGain;
 import io.github.glandais.gpx.io.read.GPXFileReader;
 import io.github.glandais.gpx.io.write.GPXFileWriter;
 import io.github.glandais.gpx.io.write.tabular.CSVFileWriter;
@@ -63,6 +65,9 @@ public class ProcessCommand implements Runnable {
 
     @CommandLine.Mixin
     protected BikeMixin bikeMixin;
+
+    @CommandLine.Mixin
+    protected ElevationGainMixin elevationGainMixin;
 
     @Option(
             names = {"--csv"},
@@ -151,7 +156,6 @@ public class ProcessCommand implements Runnable {
 
         if (!gpxElevation) {
             gpxElevationFixer.fixElevation(path);
-            log.info("D+ : {} m", path.getTotalElevation());
         }
 
         if (gpxPower) {
@@ -163,6 +167,11 @@ public class ProcessCommand implements Runnable {
                 path, start, cyclistMixin.getCyclist(), bikeMixin.getBike(), powerProvider, windProvider, aeroProvider);
         maxSpeedComputer.computeMaxSpeeds(course);
         virtualizeService.virtualizeTrack(course);
+
+        // Last, so the reported figure describes the file the caller receives: every stage above
+        // calls computeArrays(), which clears the measurement by design.
+        ElevationGain.annotate(path, elevationGainMixin.getElevationGainOptions());
+        log.info("D+ : {} m", path.getReportedTotalElevation());
 
         log.info("Writing GPX for {}", path.getName());
         gpxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".gpx"), true);

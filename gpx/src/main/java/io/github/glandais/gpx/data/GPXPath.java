@@ -30,6 +30,11 @@ public class GPXPath {
     // m
     private double totalElevationNegative;
 
+    // m, NaN until ElevationGain measured this path — "not measured" must never read as "flat"
+    private double elevationGainFiltered = Double.NaN;
+    // m, NaN until measured; negative like totalElevationNegative
+    private double elevationLossFiltered = Double.NaN;
+
     // rad
     private double minlon;
     private double maxlon;
@@ -95,6 +100,9 @@ public class GPXPath {
         maxElevation = -Double.MAX_VALUE;
         totalElevation = 0;
         totalElevationNegative = 0;
+        // The points moved, so any previous measurement describes a profile that no longer exists.
+        elevationGainFiltered = Double.NaN;
+        elevationLossFiltered = Double.NaN;
         minlon = Double.MAX_VALUE;
         maxlon = -Double.MAX_VALUE;
         minlat = Double.MAX_VALUE;
@@ -305,5 +313,27 @@ public class GPXPath {
 
     public double getMaxlonDeg() {
         return Math.toDegrees(maxlon);
+    }
+
+    /**
+     * Cache what {@link io.github.glandais.gpx.data.elevation.ElevationGain} measured. The only
+     * intended caller is that accumulator — the two scalars must never hold anything else.
+     */
+    public void setFilteredElevation(double gain, double loss) {
+        this.elevationGainFiltered = gain;
+        this.elevationLossFiltered = loss;
+    }
+
+    /**
+     * Cumulative ascent to report: the scale-aware figure when it has been measured, else the raw
+     * sum of positive deltas.
+     */
+    public double getReportedTotalElevation() {
+        return Double.isNaN(elevationGainFiltered) ? totalElevation : elevationGainFiltered;
+    }
+
+    /** Cumulative descent to report, negative. See {@link #getReportedTotalElevation()}. */
+    public double getReportedTotalElevationNegative() {
+        return Double.isNaN(elevationLossFiltered) ? totalElevationNegative : elevationLossFiltered;
     }
 }

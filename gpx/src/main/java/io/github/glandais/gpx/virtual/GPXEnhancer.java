@@ -3,6 +3,8 @@ package io.github.glandais.gpx.virtual;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.elevation.ElevationGain;
+import io.github.glandais.gpx.data.elevation.ElevationGainOptions;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
@@ -34,16 +36,25 @@ public class GPXEnhancer {
     private final StartTimeProvider startTimeProvider;
 
     public void virtualize(GPX gpx, boolean filter) {
+        virtualize(gpx, filter, ElevationGainOptions.DEFAULT);
+    }
+
+    /** @param elevationGainOptions the scale cumulative ascent is reported at */
+    public void virtualize(GPX gpx, boolean filter, ElevationGainOptions elevationGainOptions) {
         for (int i = 0; i < gpx.paths().size(); i++) {
-            virtualize(gpx.paths().get(i), filter, i + 1);
+            virtualize(gpx.paths().get(i), filter, i + 1, elevationGainOptions);
         }
     }
 
     public void virtualize(GPXPath gpxPath, boolean filter) {
-        virtualize(gpxPath, filter, 1);
+        virtualize(gpxPath, filter, 1, ElevationGainOptions.DEFAULT);
     }
 
     public void virtualize(GPXPath gpxPath, boolean filter, int ddays) {
+        virtualize(gpxPath, filter, ddays, ElevationGainOptions.DEFAULT);
+    }
+
+    public void virtualize(GPXPath gpxPath, boolean filter, int ddays, ElevationGainOptions elevationGainOptions) {
         Cyclist cyclist = Cyclist.getDefault();
         Bike bike = Bike.getDefault();
 
@@ -58,10 +69,14 @@ public class GPXEnhancer {
                 new PowerProviderConstant(),
                 new WindProviderNone(),
                 new AeroProviderConstant());
-        virtualize(course, filter);
+        virtualize(course, filter, elevationGainOptions);
     }
 
     public void virtualize(Course course, boolean filter) {
+        virtualize(course, filter, ElevationGainOptions.DEFAULT);
+    }
+
+    public void virtualize(Course course, boolean filter, ElevationGainOptions elevationGainOptions) {
         GPXPath gpxPath = course.getGpxPath();
         gpxPerDistance.computeOnePointPerDistance(gpxPath, 10.0);
         gpxElevationFixer.fixElevation(gpxPath);
@@ -71,5 +86,8 @@ public class GPXEnhancer {
         if (filter) {
             GPXFilter.filterPointsDouglasPeucker(gpxPath);
         }
+        // Last, so the reported figure describes the path the caller actually receives: every
+        // earlier stage calls computeArrays(), which clears the measurement by design.
+        ElevationGain.annotate(gpxPath, elevationGainOptions);
     }
 }

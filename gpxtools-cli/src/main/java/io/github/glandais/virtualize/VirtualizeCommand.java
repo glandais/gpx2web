@@ -2,8 +2,10 @@ package io.github.glandais.virtualize;
 
 import io.github.glandais.BikeMixin;
 import io.github.glandais.CyclistMixin;
+import io.github.glandais.ElevationGainMixin;
 import io.github.glandais.FilesMixin;
 import io.github.glandais.gpx.data.GPXPath;
+import io.github.glandais.gpx.data.elevation.ElevationGain;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
@@ -67,6 +69,9 @@ public class VirtualizeCommand implements Runnable {
 
     @CommandLine.Mixin
     protected BikeMixin bikeMixin;
+
+    @CommandLine.Mixin
+    protected ElevationGainMixin elevationGainMixin;
 
     @Option(
             names = {"--csv"},
@@ -135,8 +140,6 @@ public class VirtualizeCommand implements Runnable {
         gpxElevationFixer.fixElevation(path);
         GPXFilter.filterPointsDouglasPeucker(path);
 
-        log.info("D+ : {} m", path.getTotalElevation());
-
         Instant start = getNextStart();
 
         Course course = new Course(
@@ -146,6 +149,11 @@ public class VirtualizeCommand implements Runnable {
 
         gpxPerSecond.computeOnePointPerSecond(path);
         GPXFilter.filterPointsDouglasPeucker(path);
+
+        // Last, so the reported figure describes the file the caller receives: every stage above
+        // calls computeArrays(), which clears the measurement by design.
+        ElevationGain.annotate(path, elevationGainMixin.getElevationGainOptions());
+        log.info("D+ : {} m", path.getReportedTotalElevation());
 
         log.info("Writing GPX for {}", path.getName());
         gpxFileWriter.writeGPXPath(path, new File(pathFolder, path.getName() + ".gpx"), true);

@@ -99,8 +99,8 @@ public class FitFileWriter implements FileExporter {
 
         lapMesg.setTotalElapsedTime(duration);
 
-        lapMesg.setTotalAscent((int) path.getTotalElevation());
-        lapMesg.setTotalDescent((int) -path.getTotalElevationNegative());
+        lapMesg.setTotalAscent((int) path.getReportedTotalElevation());
+        lapMesg.setTotalDescent((int) -path.getReportedTotalElevationNegative());
 
         double maxSpeed = 0.0;
         for (Point point : points) {
