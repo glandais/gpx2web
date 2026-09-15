@@ -24,6 +24,7 @@ enum PropertyKeyEnum {
     p_wheel_bearings,
     power,
     radius,
+    source_ele,
     speed,
     speed_max,
     speed_max_incline,

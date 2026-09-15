@@ -17,6 +17,18 @@ public record GPX(String name, List<GPXPath> paths, List<GPXWaypoint> waypoints)
         return paths.stream().mapToDouble(GPXPath::getTotalElevationNegative).sum();
     }
 
+    /** Scale-aware cumulative ascent when measured, raw sum otherwise. */
+    public double getReportedTotalElevation() {
+        return paths.stream().mapToDouble(GPXPath::getReportedTotalElevation).sum();
+    }
+
+    /** Scale-aware cumulative descent when measured, raw sum otherwise. Negative. */
+    public double getReportedTotalElevationNegative() {
+        return paths.stream()
+                .mapToDouble(GPXPath::getReportedTotalElevationNegative)
+                .sum();
+    }
+
     private DoubleStream mergeLon(DoubleStream pathLon) {
         return DoubleStream.concat(
                 pathLon, waypoints.stream().mapToDouble(w -> w.point().getLonDeg()));

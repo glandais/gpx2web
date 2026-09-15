@@ -2,6 +2,7 @@ package io.github.glandais.gpx.srtm;
 
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.values.PropertyKeys;
 import io.github.glandais.gpx.util.SmoothService;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,24 @@ public class GPXElevationFixer {
         log.debug("Fixing elevation for {}", path.getName());
 
         setEleOnPath(path);
+        keepSourceElevation(path);
         smoothService.smoothEle(path, 150);
 
         log.debug("Fixed elevation for {}", path.getName());
+    }
+
+    /**
+     * Snapshot the DEM altitude before the 150 m kernel runs.
+     *
+     * <p>That kernel is sized for the physics — it exists to give the simulation stable gradients —
+     * and reading cumulative ascent off its output runs systematically low. {@link
+     * io.github.glandais.gpx.data.elevation.ElevationGain} measures this untouched profile instead,
+     * smoothing its own private copy at its own scale.
+     */
+    private void keepSourceElevation(GPXPath path) {
+        for (Point point : path.getPoints()) {
+            point.put(PropertyKeys.sourceEle, point.getEle());
+        }
     }
 
     private void setEleOnPath(GPXPath path) {

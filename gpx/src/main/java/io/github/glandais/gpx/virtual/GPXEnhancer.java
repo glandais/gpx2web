@@ -3,6 +3,8 @@ package io.github.glandais.gpx.virtual;
 import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.data.elevation.ElevationGain;
+import io.github.glandais.gpx.data.elevation.ElevationGainOptions;
 import io.github.glandais.gpx.filter.GPXFilter;
 import io.github.glandais.gpx.filter.GPXPerDistance;
 import io.github.glandais.gpx.filter.GPXPerSecond;
@@ -14,6 +16,7 @@ import io.github.glandais.gpx.virtual.power.cyclist.PowerProviderConstant;
 import jakarta.inject.Singleton;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -32,6 +35,10 @@ public class GPXEnhancer {
     private final GPXPerDistance gpxPerDistance;
 
     private final StartTimeProvider startTimeProvider;
+
+    /** The scale cumulative ascent is reported at. See {@link ElevationGainOptions}. */
+    @Setter
+    private ElevationGainOptions elevationGainOptions = ElevationGainOptions.DEFAULT;
 
     public void virtualize(GPX gpx, boolean filter) {
         for (int i = 0; i < gpx.paths().size(); i++) {
@@ -71,5 +78,8 @@ public class GPXEnhancer {
         if (filter) {
             GPXFilter.filterPointsDouglasPeucker(gpxPath);
         }
+        // Last, so the reported figure describes the path the caller actually receives: every
+        // earlier stage calls computeArrays(), which clears the measurement by design.
+        ElevationGain.annotate(gpxPath, elevationGainOptions);
     }
 }

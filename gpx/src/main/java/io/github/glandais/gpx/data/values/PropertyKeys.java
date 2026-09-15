@@ -55,6 +55,8 @@ public class PropertyKeys {
             getPropertyKey(PropertyKeyEnum.power, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, DoubleUnit> radius =
             getPropertyKey(PropertyKeyEnum.radius, DoubleUnit.INSTANCE);
+    public static final PropertyKey<Double, DoubleUnit> sourceEle =
+            getPropertyKey(PropertyKeyEnum.source_ele, DoubleUnit.INSTANCE);
     public static final PropertyKey<Double, SpeedUnit> speed =
             getPropertyKey(PropertyKeyEnum.speed, SpeedUnit.INSTANCE);
     public static final PropertyKey<Double, SpeedUnit> speed_max =
