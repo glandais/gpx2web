@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sun.net.httpserver.HttpServer;
+import io.github.glandais.gpx.util.StallingServer;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,9 +18,11 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
@@ -27,6 +30,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class HttpTileFetcherTest {
 
@@ -239,6 +244,21 @@ class HttpTileFetcherTest {
             assertEquals(before + 1, requestCount.get(), "corrupted tile should be downloaded again");
             assertEquals(600.0, tile.getElevation(3, 3), 1e-9);
             assertArrayEquals(tileBytes, Files.readAllBytes(cachedTile(coord).toPath()));
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(StallingServer.Mode.class)
+    @Timeout(10)
+    void stalledDownloadTimesOutAndCachesNothing(StallingServer.Mode mode) throws IOException {
+        try (StallingServer stalling = new StallingServer(mode)) {
+            String url = "http://127.0.0.1:" + stalling.port() + "/{z}/{x}/{y}.webp";
+            HttpTileFetcher fetcher =
+                    new HttpTileFetcher(configFor(url), Duration.ofSeconds(1), Duration.ofMillis(500));
+            TileCoord coord = new TileCoord(11, 13, 14);
+
+            assertThrows(HttpTimeoutException.class, () -> fetcher.fetch(coord));
+            assertNothingCached(coord);
         }
     }
 }

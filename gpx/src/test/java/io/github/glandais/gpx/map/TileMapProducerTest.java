@@ -7,6 +7,7 @@ import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.GPXPathType;
 import io.github.glandais.gpx.data.Point;
+import io.github.glandais.gpx.util.StallingServer;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -16,9 +17,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +30,10 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class TileMapProducerTest {
 
@@ -152,6 +158,25 @@ class TileMapProducerTest {
 
         assertTrue(e.getMessage().contains("not a decodable image"), e.getMessage());
         assertFalse(Files.exists(first));
+    }
+
+    @ParameterizedTest
+    @EnumSource(StallingServer.Mode.class)
+    @Timeout(10)
+    void stalledDownloadTimesOutAndCachesNothing(StallingServer.Mode mode) throws IOException {
+        try (StallingServer stalling = new StallingServer(mode)) {
+            TileMapProducer stalled =
+                    new TileMapProducer(() -> cacheDir.toFile(), Duration.ofSeconds(1), Duration.ofMillis(500));
+            String pattern = "http://127.0.0.1:" + stalling.port() + "/{z}/{x}/{y}.png";
+            File out = outDir.resolve("map.png").toFile();
+
+            assertThrows(
+                    HttpTimeoutException.class,
+                    () -> stalled.createTileMap(out, gpx(), pattern, 0.2, 256, 256, List.of(Color.RED)));
+
+            assertEquals(List.of(), cachedFiles());
+            assertFalse(out.exists());
+        }
     }
 
     private void render(File out) throws IOException {

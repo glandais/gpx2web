@@ -1,9 +1,9 @@
 package io.github.glandais.gpx.srtm.mapterhorn;
 
+import io.github.glandais.gpx.util.HttpDownloads;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,16 +13,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import javax.imageio.ImageIO;
 
 public class HttpTileFetcher implements TileFetcher {
 
     private final MapterhornConfig cfg;
     private final HttpClient httpClient;
+    private final Duration requestTimeout;
 
     public HttpTileFetcher(MapterhornConfig cfg) {
+        this(cfg, HttpDownloads.DEFAULT_CONNECT_TIMEOUT, HttpDownloads.DEFAULT_REQUEST_TIMEOUT);
+    }
+
+    /**
+     * @param connectTimeout time allowed to open the connection
+     * @param requestTimeout time allowed for a whole tile download, headers and body
+     */
+    public HttpTileFetcher(MapterhornConfig cfg, Duration connectTimeout, Duration requestTimeout) {
         this.cfg = cfg;
-        this.httpClient = HttpClient.newBuilder().build();
+        this.httpClient = HttpDownloads.newClient(connectTimeout);
+        this.requestTimeout = requestTimeout;
     }
 
     @Override
@@ -71,9 +82,14 @@ public class HttpTileFetcher implements TileFetcher {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                     .setHeader("User-Agent", cfg.userAgent())
+                    .timeout(requestTimeout)
                     .build();
-            HttpResponse<Path> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofFile(tmp, StandardOpenOption.WRITE));
+            HttpResponse<Path> response = HttpDownloads.send(
+                    httpClient,
+                    request,
+                    HttpResponse.BodyHandlers.ofFile(tmp, StandardOpenOption.WRITE),
+                    requestTimeout,
+                    "downloading tile " + coord.cacheKey() + " at " + url);
             int status = response.statusCode();
             if (status / 100 != 2) {
                 throw new IOException("HTTP " + status + " for tile " + coord.cacheKey() + " at " + url);
@@ -84,12 +100,6 @@ public class HttpTileFetcher implements TileFetcher {
                 Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
             }
             return url;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            InterruptedIOException ioe =
-                    new InterruptedIOException("Interrupted while downloading tile " + coord.cacheKey() + " at " + url);
-            ioe.initCause(e);
-            throw ioe;
         } finally {
             Files.deleteIfExists(tmp);
         }

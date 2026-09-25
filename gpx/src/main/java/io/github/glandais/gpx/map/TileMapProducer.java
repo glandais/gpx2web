@@ -4,13 +4,14 @@ import io.github.glandais.gpx.data.GPX;
 import io.github.glandais.gpx.data.GPXPath;
 import io.github.glandais.gpx.data.Point;
 import io.github.glandais.gpx.util.CacheFolderProvider;
+import io.github.glandais.gpx.util.HttpDownloads;
 import io.github.glandais.gpx.util.Vector;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -40,10 +42,23 @@ public class TileMapProducer {
 
     protected final File cacheFolder;
 
+    protected final Duration requestTimeout;
+
+    @Inject
     public TileMapProducer(final CacheFolderProvider cacheFolderProvider) {
+        this(cacheFolderProvider, HttpDownloads.DEFAULT_CONNECT_TIMEOUT, HttpDownloads.DEFAULT_REQUEST_TIMEOUT);
+    }
+
+    /**
+     * @param connectTimeout time allowed to open the connection to the tile server
+     * @param requestTimeout time allowed for a whole tile download, headers and body
+     */
+    public TileMapProducer(
+            final CacheFolderProvider cacheFolderProvider, Duration connectTimeout, Duration requestTimeout) {
         super();
         this.cacheFolder = cacheFolderProvider.getCacheFolder();
-        this.httpClient = HttpClient.newBuilder().build();
+        this.httpClient = HttpDownloads.newClient(connectTimeout);
+        this.requestTimeout = requestTimeout;
     }
 
     public void createTileMap(File file, GPX gpx, String urlPattern, double margin, Integer width, Integer height)
@@ -156,9 +171,14 @@ public class TileMapProducer {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                     .setHeader("User-Agent", USER_AGENT)
+                    .timeout(requestTimeout)
                     .build();
-            HttpResponse<Path> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofFile(tmp, StandardOpenOption.WRITE));
+            HttpResponse<Path> response = HttpDownloads.send(
+                    httpClient,
+                    request,
+                    HttpResponse.BodyHandlers.ofFile(tmp, StandardOpenOption.WRITE),
+                    requestTimeout,
+                    "downloading tile " + url);
             int status = response.statusCode();
             if (status < 200 || status >= 300) {
                 throw new IOException("Failed to download tile " + url + ": HTTP " + status);
@@ -169,11 +189,6 @@ public class TileMapProducer {
                 Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
             }
             return url;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            InterruptedIOException ioe = new InterruptedIOException("Interrupted while downloading tile " + url);
-            ioe.initCause(e);
-            throw ioe;
         } finally {
             Files.deleteIfExists(tmp);
         }
