@@ -1,3 +1,9 @@
+## [1.5.1](https://github.com/glandais/gpx2web/compare/v1.5.0...v1.5.1) (2026-09-25)
+
+### Bug Fixes
+
+* **gpx:** never cache a failed tile download ([86a584c](https://github.com/glandais/gpx2web/commit/86a584c92461c470b8fd4d342fcd0e34b9d282e1))
+
 ## [1.5.0](https://github.com/glandais/gpx2web/compare/v1.4.5...v1.5.0) (2026-09-15)
 
 ### Features
