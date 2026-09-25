@@ -1,6 +1,8 @@
 package io.github.glandais.gpx.srtm.mapterhorn;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,15 +11,22 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class HttpTileFetcherTest {
 
@@ -54,6 +63,22 @@ class HttpTileFetcherTest {
             if (path.endsWith("/missing.webp")) {
                 exchange.sendResponseHeaders(404, -1);
                 exchange.close();
+                return;
+            }
+            if (path.endsWith("/error.webp")) {
+                byte[] body = "{}".getBytes();
+                exchange.sendResponseHeaders(500, body.length);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(body);
+                }
+                return;
+            }
+            if (path.endsWith("/garbage.webp")) {
+                byte[] body = "not an image".getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(body);
+                }
                 return;
             }
             exchange.getResponseHeaders().set("Content-Type", "image/png");
@@ -112,5 +137,108 @@ class HttpTileFetcherTest {
 
         IOException ex = assertThrows(IOException.class, () -> fetcher.fetch(new TileCoord(11, 1, 2)));
         assertTrue(ex.getMessage().contains("404"), "expected 404 in message: " + ex.getMessage());
+    }
+
+    private String serverUrl(String path) {
+        return "http://127.0.0.1:" + server.getAddress().getPort() + path;
+    }
+
+    private File cachedTile(TileCoord coord) {
+        return new File(cacheRoot.toFile(), "mapterhorn/" + coord.cacheKey() + ".webp");
+    }
+
+    /** Nothing in the tile's cache directory: neither the tile nor a leftover temporary file. */
+    private void assertNothingCached(TileCoord coord) throws IOException {
+        File tile = cachedTile(coord);
+        assertFalse(tile.exists(), "no tile should be cached at " + tile);
+        File dir = tile.getParentFile();
+        if (dir.isDirectory()) {
+            try (var files = Files.list(dir.toPath())) {
+                assertEquals(0, files.count(), "no temporary file should be left in " + dir);
+            }
+        }
+    }
+
+    @Test
+    void serverErrorFailsAndCachesNothing() throws IOException {
+        HttpTileFetcher fetcher = new HttpTileFetcher(configFor(serverUrl("/error.webp")));
+        TileCoord coord = new TileCoord(11, 3, 4);
+
+        IOException ex = assertThrows(IOException.class, () -> fetcher.fetch(coord));
+        assertTrue(ex.getMessage().contains("500"), "expected 500 in message: " + ex.getMessage());
+        assertNothingCached(coord);
+    }
+
+    @Test
+    @Timeout(30)
+    void connectionDroppedMidBodyFailsAndCachesNothing() throws Exception {
+        // com.sun.net.httpserver keeps the connection open when a handler writes less than the announced
+        // Content-Length, so a raw socket plays the server that resets mid-transfer.
+        try (ServerSocket socket = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            Thread serverThread = new Thread(() -> {
+                try (Socket client = socket.accept()) {
+                    InputStream in = client.getInputStream();
+                    // Consume the request headers
+                    int matched = 0;
+                    byte[] end = "\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
+                    while (matched < end.length) {
+                        int b = in.read();
+                        if (b < 0) {
+                            return;
+                        }
+                        matched = b == end[matched] ? matched + 1 : (b == end[0] ? 1 : 0);
+                    }
+                    OutputStream out = client.getOutputStream();
+                    out.write(("HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: " + tileBytes.length
+                                    + "\r\n\r\n")
+                            .getBytes(StandardCharsets.US_ASCII));
+                    out.write(tileBytes, 0, tileBytes.length / 2);
+                    out.flush();
+                } catch (IOException e) {
+                    // the client side reports the failure
+                }
+            });
+            serverThread.start();
+
+            String url = "http://127.0.0.1:" + socket.getLocalPort() + "/{z}/{x}/{y}.webp";
+            HttpTileFetcher fetcher = new HttpTileFetcher(configFor(url));
+            TileCoord coord = new TileCoord(11, 5, 6);
+
+            assertThrows(IOException.class, () -> fetcher.fetch(coord));
+            assertNothingCached(coord);
+            serverThread.join(5_000);
+        }
+    }
+
+    @Test
+    void undecodableDownloadFailsAndCachesNothing() throws IOException {
+        HttpTileFetcher fetcher = new HttpTileFetcher(configFor(serverUrl("/garbage.webp")));
+        TileCoord coord = new TileCoord(11, 7, 8);
+
+        IOException ex = assertThrows(IOException.class, () -> fetcher.fetch(coord));
+        assertTrue(ex.getMessage().contains("Could not decode"), ex.getMessage());
+        assertNothingCached(coord);
+    }
+
+    @Test
+    void corruptedCachedTileIsDownloadedAgain() throws IOException {
+        HttpTileFetcher fetcher = new HttpTileFetcher(configFor(serverUrl("/{z}/{x}/{y}.webp")));
+        TileCoord truncated = new TileCoord(11, 9, 10);
+        TileCoord garbage = new TileCoord(11, 11, 12);
+        // A partial download left by an older version, and a cached error body
+        File truncatedFile = cachedTile(truncated);
+        truncatedFile.getParentFile().mkdirs();
+        Files.write(truncatedFile.toPath(), Arrays.copyOf(tileBytes, tileBytes.length / 2));
+        File garbageFile = cachedTile(garbage);
+        garbageFile.getParentFile().mkdirs();
+        Files.write(garbageFile.toPath(), "{}".getBytes());
+
+        for (TileCoord coord : new TileCoord[] {truncated, garbage}) {
+            int before = requestCount.get();
+            TerrainTile tile = fetcher.fetch(coord);
+            assertEquals(before + 1, requestCount.get(), "corrupted tile should be downloaded again");
+            assertEquals(600.0, tile.getElevation(3, 3), 1e-9);
+            assertArrayEquals(tileBytes, Files.readAllBytes(cachedTile(coord).toPath()));
+        }
     }
 }
