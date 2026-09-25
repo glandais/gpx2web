@@ -9,17 +9,22 @@ import jakarta.inject.Singleton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -109,32 +114,68 @@ public class TileMapProducer {
         int zoom = tileMapImage.getZoom();
         String urlPattern = tileMapImage.getUrlPattern();
         File tile = new File(cache, zoom + SEPARATOR + i + SEPARATOR + j);
-        if (!tile.exists()) {
-            downloadTile(i, j, zoom, urlPattern, tile);
+        if (tile.exists()) {
+            BufferedImage cached = readImage(tile);
+            if (cached != null) {
+                return cached;
+            }
+            // Not an image: an error body or an empty placeholder cached by an older version.
+            Files.deleteIfExists(tile.toPath());
         }
+        String url = downloadTile(i, j, zoom, urlPattern, tile);
+        BufferedImage downloaded = readImage(tile);
+        if (downloaded == null) {
+            Files.deleteIfExists(tile.toPath());
+            throw new IOException("Tile downloaded from " + url + " is not a decodable image");
+        }
+        return downloaded;
+    }
+
+    private static BufferedImage readImage(File tile) throws IOException {
         if (tile.length() == 0) {
             return null;
-        } else {
+        }
+        try {
             return ImageIO.read(tile);
+        } catch (IIOException e) {
+            // Corrupted or truncated image data
+            return null;
         }
     }
 
-    private synchronized void downloadTile(int i, int j, int zoom, String urlPattern, File tile) throws IOException {
+    private synchronized String downloadTile(int i, int j, int zoom, String urlPattern, File tile) throws IOException {
         String url = urlPattern
                 .replace("{z}", "" + zoom)
                 .replace("{x}", "" + i)
                 .replace("{y}", "" + j)
                 .replace("{s}", "" + ABC.charAt(ThreadLocalRandom.current().nextInt(3)));
-        tile.getParentFile().mkdirs();
+        Path target = tile.toPath();
+        Path dir = Files.createDirectories(target.getParent());
+        // Download next to the target, then move it into place: a reader never sees a partial or an error body.
+        Path tmp = Files.createTempFile(dir, "." + tile.getName() + "-", ".part");
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                     .setHeader("User-Agent", USER_AGENT)
                     .build();
-            httpClient
-                    .send(request, HttpResponse.BodyHandlers.ofFile(tile.toPath()))
-                    .body();
-        } catch (FileNotFoundException | InterruptedException e) {
-            FileUtils.touch(tile);
+            HttpResponse<Path> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofFile(tmp, StandardOpenOption.WRITE));
+            int status = response.statusCode();
+            if (status < 200 || status >= 300) {
+                throw new IOException("Failed to download tile " + url + ": HTTP " + status);
+            }
+            try {
+                Files.move(tmp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return url;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            InterruptedIOException ioe = new InterruptedIOException("Interrupted while downloading tile " + url);
+            ioe.initCause(e);
+            throw ioe;
+        } finally {
+            Files.deleteIfExists(tmp);
         }
     }
 
