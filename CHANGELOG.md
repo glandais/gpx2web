@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/glandais/gpx2web/compare/v1.5.1...v1.5.2) (2026-09-25)
+
+### Bug Fixes
+
+* **gpx:** never cache a partial elevation tile download ([8627ce2](https://github.com/glandais/gpx2web/commit/8627ce273e4867cd628b4e698446767195ff6829))
+* **gpx:** time out stalled tile downloads ([64f3c4b](https://github.com/glandais/gpx2web/commit/64f3c4b332f97100233982a47adc384f2742b2cb))
+
 ## [1.5.1](https://github.com/glandais/gpx2web/compare/v1.5.0...v1.5.1) (2026-09-25)
 
 ### Bug Fixes
