@@ -1,16 +1,30 @@
 # GPX cycling tools
 
-Java libraries available here :
+[![Maven Central gpx](https://img.shields.io/maven-central/v/io.github.glandais.gpx2web/gpx?label=io.github.glandais.gpx2web%3Agpx)](https://central.sonatype.com/artifact/io.github.glandais.gpx2web/gpx)
+
+## Installation
+
+The `gpx` library is published on Maven Central.
+
+### Maven
 
 ```xml
-
-<repositories>
-    <repository>
-        <id>gpx2web</id>
-        <url>https://repo.repsy.io/mvn/glandais/gpx2web</url>
-    </repository>
-</repositories>
+<dependency>
+  <groupId>io.github.glandais.gpx2web</groupId>
+  <artifactId>gpx</artifactId>
+  <version>1.5.2</version>
+</dependency>
 ```
+
+### Gradle
+
+```kotlin
+dependencies {
+    implementation("io.github.glandais.gpx2web:gpx:1.5.2")
+}
+```
+
+The badge above is the source of truth for the current version.
 
 # GPX Stuff (gpx module)
 
